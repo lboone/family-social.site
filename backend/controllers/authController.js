@@ -126,7 +126,7 @@ exports.verifyAccount = catchAsync(async (req, res, next) => {
     user,
     200,
     res,
-    "Account verified successfully! You can now log in."
+    "Account verified successfully! You will be contacted when your account is active."
   );
 });
 
@@ -176,4 +176,99 @@ exports.resendOtp = catchAsync(async (req, res, next) => {
       new AppError("Failed to resend OTP. Please try again later.", 500)
     );
   }
+});
+
+exports.login = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return next(new AppError("Please provide email and password", 400));
+  }
+
+  const user = await User.findOne({ email }).select("+password");
+  if (!user || !(await user.correctPassword(password, user.password))) {
+    return next(new AppError("Incorrect credentials", 401));
+  }
+
+  if (!user.isVerified) {
+    return next(new AppError("Account not verified", 401));
+  }
+
+  if (!user.isActive) {
+    return next(
+      new AppError(
+        "Account is not active, please contact an admin to activate your account.",
+        403
+      )
+    );
+  }
+
+  // TODO: Add next layer of checks isActive.
+  createSendToken(user, 200, res, "Login successful!");
+});
+
+exports.setActive = catchAsync(async (req, res, next) => {
+  const { email, isActive } = req.body;
+  if (!email || !isActive) {
+    return next(new AppError("Email and isActive are required", 400));
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  const tmpIsActive = isActive === "true" || isActive === true; // Ensure boolean value
+  user.isActive = tmpIsActive;
+  await user.save({ validateBeforeSave: false });
+
+  if (user.isActive) {
+    const htmlTemplate = loadTemplate("activeAccountTemplate.hbs", {
+      title: "Account Activation",
+      username: user.username,
+      message: "Your account has been activated. You can log in now!",
+    });
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "Account Activation Successful",
+        html: htmlTemplate,
+      });
+
+      res.status(200).json({
+        status: "success",
+        message: `User account has been activated. An email has been sent to ${user.email}.`,
+      });
+    } catch (error) {
+      await User.findByIdAndDelete(user._id);
+      return next(
+        new AppError(
+          "There was an error activating the account. Please try again later.",
+          500
+        )
+      );
+    }
+  }
+});
+
+exports.setAdmin = catchAsync(async (req, res, next) => {
+  const { email, isAdmin } = req.body;
+  if (!email || !isAdmin) {
+    return next(new AppError("Email and isAdmin are required", 400));
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  const tmpIsAdmin = isAdmin === "true" || isAdmin === true; // Ensure boolean value
+  user.role = tmpIsAdmin ? "admin" : "user"; // Set role based on isAdmin
+  await user.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    status: "success",
+    message: `User role updated to ${user.role}`,
+  });
 });

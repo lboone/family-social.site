@@ -72,6 +72,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isActive: {
+      type: Boolean,
+      default: false,
+    },
     otp: {
       type: String,
       default: null,
@@ -87,6 +91,11 @@ const userSchema = new mongoose.Schema(
     resetPasswordOTPExpires: {
       type: Date,
       default: null,
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
     },
     createdAt: {
       type: Date,
@@ -105,6 +114,16 @@ userSchema.pre("save", async function (next) {
   this.passwordConfirm = undefined; // Remove passwordConfirm after hashing
   next();
 });
+
+userSchema.methods.correctPassword = async function (
+  userPassword,
+  databasePassword
+) {
+  return await bcrypt.compare(userPassword, databasePassword);
+};
+userSchema.methods.isAdmin = function () {
+  return this.role === "admin";
+};
 
 const User = mongoose.model("User", userSchema);
 module.exports = User;

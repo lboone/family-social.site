@@ -3,7 +3,7 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const User = require("../models/userModel");
 
-const isAuthenticated = catchAsync(async (req, res, next) => {
+const isSignedUp = catchAsync(async (req, res, next) => {
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
   if (!token) {
     return next(
@@ -25,4 +25,4 @@ const isAuthenticated = catchAsync(async (req, res, next) => {
   next();
 });
 
-module.exports = isAuthenticated;
+module.exports = isSignedUp;
