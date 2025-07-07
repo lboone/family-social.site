@@ -207,6 +207,18 @@ exports.login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res, "Login successful!");
 });
 
+exports.logout = catchAsync(async (req, res, next) => {
+  res.cookie("token", "loggedout", {
+    expires: new Date(Date.now() + 10 * 1000), // Set cookie to expire in 10 seconds
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production", // Set secure flag in production
+  });
+  res.status(200).json({
+    status: "success",
+    message: "You have been logged out.",
+  });
+});
+
 exports.setActive = catchAsync(async (req, res, next) => {
   const { email, isActive } = req.body;
   if (!email || !isActive) {
