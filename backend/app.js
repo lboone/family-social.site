@@ -8,6 +8,7 @@ const globalErrorHandler = require("./controllers/errorController");
 const path = require("path");
 const AppError = require("./utils/appError");
 const userRouter = require("./routes/userRoutes");
+const postRouter = require("./routes/postRoutes");
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use(express.json({ limit: "10kb" }));
 app.use(`${process.env.API_ROUTE}/users`, userRouter);
 
 // Routes for posts
+app.use(`${process.env.API_ROUTE}/posts`, postRouter);
 
 // 404 handler - must be defined AFTER all other routes
 app.use((req, res, next) => {
