@@ -171,7 +171,7 @@ exports.deletePost = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.likeOrDislikePost = catchAsync(async (req, res, next) => {
+exports.likeOrUnlikePost = catchAsync(async (req, res, next) => {
   const { postId } = req.params;
   const userId = req.user._id;
   const post = await Post.findById(postId);
@@ -198,6 +198,38 @@ exports.likeOrDislikePost = catchAsync(async (req, res, next) => {
     message: isLiked ? "Post unliked successfully" : "Post liked successfully",
     data: {
       post,
+    },
+  });
+});
+
+exports.addComment = catchAsync(async (req, res, next) => {
+  const { postId } = req.params;
+  const userId = req.user._id;
+  const { text } = req.body;
+  const post = await Post.findById(postId);
+  if (!post) {
+    return next(new AppError("Post not found", 404));
+  }
+
+  if (!text || text.trim() === "") {
+    return next(new AppError("Comment text cannot be empty", 400));
+  }
+
+  const comment = await Comment.create({
+    text,
+    user: userId,
+  });
+  post.comments.push(comment);
+  await post.save({ validateBeforeSave: false });
+  await comment.populate({
+    path: "user",
+    select: "username profilePicture bio",
+  });
+  return res.status(201).json({
+    status: "success",
+    message: "Comment added successfully",
+    data: {
+      comment,
     },
   });
 });
