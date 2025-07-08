@@ -11,12 +11,13 @@ const {
   resetPassword,
   changePassword,
 } = require("../controllers/authController");
+const { getProfile } = require("../controllers/userController");
 const isSignedUp = require("../middleware/isSignedUp");
 const isAllowedUser = require("../middleware/isAllowedUser");
 const isAdmin = require("../middleware/isAdmin");
 
 const router = express.Router();
-
+// Auth Routes
 router.post("/signup", signup);
 router.post("/verify", isSignedUp, verifyAccount);
 router.post("/resend-otp", isSignedUp, resendOtp);
@@ -28,4 +29,6 @@ router.post("/change-password", isAllowedUser, changePassword);
 router.post("/set-active", isAdmin, setActive);
 router.post("/set-admin", isAdmin, setAdmin);
 
+// User Routes
+router.get("/profile/:id", isAllowedUser, getProfile);
 module.exports = router;
