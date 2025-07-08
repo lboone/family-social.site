@@ -11,10 +11,16 @@ const {
   resetPassword,
   changePassword,
 } = require("../controllers/authController");
-const { getProfile } = require("../controllers/userController");
+const {
+  getProfile,
+  editProfile,
+  suggestedUser,
+  followUnfollow,
+} = require("../controllers/userController");
 const isSignedUp = require("../middleware/isSignedUp");
 const isAllowedUser = require("../middleware/isAllowedUser");
 const isAdmin = require("../middleware/isAdmin");
+const upload = require("../middleware/multer");
 
 const router = express.Router();
 // Auth Routes
@@ -31,4 +37,13 @@ router.post("/set-admin", isAdmin, setAdmin);
 
 // User Routes
 router.get("/profile/:id", isAllowedUser, getProfile);
+router.post(
+  "/edit-prifile",
+  isAllowedUser,
+  upload.single("profilePicture"),
+  editProfile
+);
+router.get("/suggested-users", isAllowedUser, suggestedUser);
+router.post("/follow-unfollow/:id", isAllowedUser, followUnfollow);
+
 module.exports = router;
