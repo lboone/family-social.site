@@ -16,6 +16,7 @@ const {
   editProfile,
   suggestedUser,
   followUnfollow,
+  getMe,
 } = require("../controllers/userController");
 const isSignedUp = require("../middleware/isSignedUp");
 const isAllowedUser = require("../middleware/isAllowedUser");
@@ -38,12 +39,13 @@ router.post("/set-admin", isAdmin, setAdmin);
 // User Routes
 router.get("/profile/:id", isAllowedUser, getProfile);
 router.post(
-  "/edit-prifile",
+  "/edit-profile",
   isAllowedUser,
   upload.single("profilePicture"),
   editProfile
 );
 router.get("/suggested-users", isAllowedUser, suggestedUser);
 router.post("/follow-unfollow/:id", isAllowedUser, followUnfollow);
+router.get("/me", isAllowedUser, getMe);
 
 module.exports = router;
