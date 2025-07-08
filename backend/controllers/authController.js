@@ -301,6 +301,36 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   );
 });
 
+exports.changePassword = catchAsync(async (req, res, next) => {
+  const { currentPassword, newPassword, newPasswordConfirm } = req.body;
+  if (!currentPassword || !newPassword || !newPasswordConfirm) {
+    return next(new AppError("All fields are required", 400));
+  }
+
+  const { email } = req.user;
+  if (!email) {
+    return next(new AppError("Email is required", 400));
+  }
+
+  const user = await User.findOne({ email }).select("+password");
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+  if (!(await user.correctPassword(currentPassword, user.password))) {
+    return next(new AppError("Current password is incorrect", 401));
+  }
+
+  if (newPassword !== newPasswordConfirm) {
+    return next(new AppError("New passwords do not match", 400));
+  }
+
+  user.password = newPassword;
+  user.passwordConfirm = undefined; // Remove passwordConfirm after hashing
+  await user.save({ validateBeforeSave: false });
+
+  createSendToken(user, 200, res, "Password changed successfully!");
+});
+
 exports.setActive = catchAsync(async (req, res, next) => {
   const { email, isActive } = req.body;
   if (!email || !isActive) {

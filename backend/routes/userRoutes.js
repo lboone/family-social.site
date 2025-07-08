@@ -9,6 +9,7 @@ const {
   logout,
   forgetPassword,
   resetPassword,
+  changePassword,
 } = require("../controllers/authController");
 const isSignedUp = require("../middleware/isSignedUp");
 const isAllowedUser = require("../middleware/isAllowedUser");
@@ -23,6 +24,7 @@ router.post("/login", login);
 router.post("/logout", isAllowedUser, logout);
 router.post("/forget-password", forgetPassword);
 router.post("/reset-password", resetPassword);
+router.post("/change-password", isAllowedUser, changePassword);
 router.post("/set-active", isAdmin, setActive);
 router.post("/set-admin", isAdmin, setAdmin);
 
