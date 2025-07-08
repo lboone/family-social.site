@@ -219,6 +219,88 @@ exports.logout = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.forgetPassword = catchAsync(async (req, res, next) => {
+  const { email } = req.body;
+  if (!email) {
+    return next(new AppError("Email is required", 400));
+  }
+  const user = await User.findOne({ email });
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  const otp = generateOtp();
+  const resetExpires = Date.now() + 300000; // OTP valid for 5 minutes
+
+  user.resetPasswordOTP = otp;
+  user.resetPasswordOTPExpires = resetExpires;
+  await user.save({ validateBeforeSave: false });
+
+  const htmlTemplate = loadTemplate("otpTemplate.hbs", {
+    title: "Reset Password OTP",
+    username: user.username,
+    otp: user.resetPasswordOTP,
+    message: "Your password reset OTP is:",
+  });
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: "Password Reset OTP (Valid for 5 minutes)",
+      html: htmlTemplate,
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Password reset email sent to your email.",
+    });
+  } catch (error) {
+    user.resetPasswordOTP = undefined; // Clear OTP if email sending fails
+    user.resetPasswordOTPExpires = undefined; // Clear OTP expiration
+    await user.save({ validateBeforeSave: false });
+    console.error("Error sending password reset email:", error);
+    return next(
+      new AppError(
+        "Failed to send password reset email. Please try again later.",
+        500
+      )
+    );
+  }
+});
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  const { email, otp, password, passwordConfirm } = req.body;
+  if (!email || !otp || !password || !passwordConfirm) {
+    return next(new AppError("All fields are required", 400));
+  }
+
+  const user = await User.findOne({
+    email,
+    resetPasswordOTP: otp,
+    resetPasswordOTPExpires: { $gt: Date.now() },
+  });
+  if (!user) {
+    return next(new AppError("User not found", 400));
+  }
+
+  if (password !== passwordConfirm) {
+    return next(new AppError("Passwords do not match", 400));
+  }
+
+  user.password = password;
+  user.passwordConfirm = undefined; // Remove passwordConfirm after hashing
+  user.resetPasswordOTP = undefined; // Clear OTP after hashing
+  user.resetPasswordOTPExpires = undefined; // Clear OTP expiration
+  await user.save({ validateBeforeSave: false });
+
+  createSendToken(
+    user,
+    200,
+    res,
+    "Password reset successful! You can now log in with your new password."
+  );
+});
+
 exports.setActive = catchAsync(async (req, res, next) => {
   const { email, isActive } = req.body;
   if (!email || !isActive) {

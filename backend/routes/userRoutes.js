@@ -7,6 +7,8 @@ const {
   setActive,
   setAdmin,
   logout,
+  forgetPassword,
+  resetPassword,
 } = require("../controllers/authController");
 const isSignedUp = require("../middleware/isSignedUp");
 const isAllowedUser = require("../middleware/isAllowedUser");
@@ -19,6 +21,8 @@ router.post("/verify", isSignedUp, verifyAccount);
 router.post("/resend-otp", isSignedUp, resendOtp);
 router.post("/login", login);
 router.post("/logout", isAllowedUser, logout);
+router.post("/forget-password", forgetPassword);
+router.post("/reset-password", resetPassword);
 router.post("/set-active", isAdmin, setActive);
 router.post("/set-admin", isAdmin, setAdmin);
 
