@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack --port 8001",
+    "dev": "next dev --turbopack --port 3001",
     "prebuild": "npm install",
     "build": "next build",
     "start": "next start --port 8001",

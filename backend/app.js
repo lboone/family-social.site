@@ -12,12 +12,17 @@ const postRouter = require("./routes/postRoutes");
 
 const app = express();
 
+const corsOrigin =
+  process.env.NODE_ENV === "development"
+    ? process.env.DEV_CORS_ORIGIN || "http://localhost:3001"
+    : process.env.PROD_CORS_ORIGIN || "http://localhost:8001";
+
 app.use("/", express.static("uploads"));
 app.use(cookieParser());
 app.use(helmet());
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: corsOrigin,
     credentials: true,
   })
 );
