@@ -1,6 +1,6 @@
 export interface UseFormHandleSubmitOptions {
   validate?: (formData: T) => Record<string, string> | null;
-  onSuccess?: () => void;
+  onSuccess?: (result: T) => void;
   onError?: (error: Error) => void;
   resetOnSuccess?: boolean;
 }
@@ -20,7 +20,7 @@ export interface User {
   posts: Post[];
   savedPosts: string[] | Post[];
   isVerified: boolean;
-  isValid: boolean;
+  isActive: boolean;
   role: "user" | "admin";
 }
 

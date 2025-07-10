@@ -58,13 +58,7 @@ export function useForm<T extends Record<string, string | number | boolean>>(
 
       const result = await handleAuthRequest(formData, onSubmit, setIsLoading);
 
-      if (result) {
-        options?.onSuccess?.();
-        if (options?.resetOnSuccess) {
-          resetForm();
-        }
-        toast.success(result.data.message || "Form submitted successfully");
-      } else {
+      if (result instanceof Error) {
         const err =
           result instanceof Error
             ? result
@@ -78,6 +72,12 @@ export function useForm<T extends Record<string, string | number | boolean>>(
           console.error("Form submission error:", err);
           setErrors({ submit: err.message });
         }
+      } else {
+        options?.onSuccess?.(result);
+        if (options?.resetOnSuccess) {
+          resetForm();
+        }
+        toast.success(result.data.message || "Form submitted successfully");
       }
     };
   };

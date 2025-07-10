@@ -2,15 +2,21 @@
 
 import { useForm } from "@/hooks/useForm";
 import { API_URL_USER } from "@/server";
+import { setAuthUser } from "@/store/authSlice"; // Adjust the import path as necessary
 import { SignUpFormData, UseFormHandleSubmitOptions } from "@/types";
 import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
 import InputField from "../Form/InputField";
 import LoadingButton from "../Form/LoadingButton";
 import PasswordInput from "./PasswordInput";
 
 const Signup = () => {
+  const dispatch = useDispatch();
+  const router = useRouter();
+
   const { formData, handleChange, handleSubmit, isLoading, errors } =
     useForm<SignUpFormData>({
       username: "",
@@ -58,12 +64,9 @@ const Signup = () => {
 
   const options: UseFormHandleSubmitOptions = {
     validate: validateForm,
-    onSuccess: () => {
-      // Redirect to HomePage
-      // Add our user to redux
-    },
-    onError: (error: Error) => {
-      console.error("Signup error:", error);
+    onSuccess: (result) => {
+      dispatch(setAuthUser(result.data.data.user));
+      router.push("/");
     },
   };
 
