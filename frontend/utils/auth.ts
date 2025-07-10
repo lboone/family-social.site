@@ -134,7 +134,13 @@ export type LogoutFunction = ReturnType<typeof useLogout>;
 
 // Helper to check if user is authenticated
 export const isAuthenticated = (user: User | null): boolean => {
-  return user !== null && user !== undefined && Boolean(user?._id);
+  return (
+    user !== null &&
+    user !== undefined &&
+    Boolean(user?._id) &&
+    user.isActive &&
+    user.isVerified
+  );
 };
 
 // Import this type helper for use with useSelector
