@@ -9,6 +9,7 @@ interface InputFieldProps {
   placeholder?: string;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  errors: Record<string, string>;
   containerClassName?: string;
   inputClassName?: string;
   labelClassName?: string;
@@ -21,6 +22,7 @@ const InputField = ({
   placeholder,
   value,
   onChange,
+  errors,
   containerClassName,
   inputClassName,
   labelClassName,
@@ -41,6 +43,9 @@ const InputField = ({
         onChange={onChange}
         className={cn("auth_text_input", inputClassName)}
       />
+      {errors[name] && (
+        <span className="text-red-500 text-sm">{errors[name]}</span>
+      )}
     </div>
   );
 };

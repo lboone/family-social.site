@@ -1,3 +1,13 @@
+export interface UseFormHandleSubmitOptions {
+  validate?: (formData: T) => Record<string, string> | null;
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+  resetOnSuccess?: boolean;
+}
+export interface UseFormHandleSubmit {
+  onSubmit: (formData: T) => Promise<T>;
+  options?: UseFormHandleSubmitOptions;
+}
 export interface User {
   _id: string;
   username: string;
@@ -36,4 +46,12 @@ export interface Post {
   likes: string[];
   comments: Comment[];
   createdAt: string;
+}
+
+export interface SignUpFormData {
+  username: string;
+  email: string;
+  password: string;
+  passwordConfirm: string;
+  [key: string]: string; // Index signature for compatibility
 }
