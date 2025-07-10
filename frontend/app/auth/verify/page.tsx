@@ -2,9 +2,9 @@ import Verify from "@/components/Auth/Verify";
 
 const VerifyPage = () => {
   return (
-    <>
-      <Verify />
-    </>
+    //<VerifiedProvider>
+    <Verify />
+    //</VerifiedProvider>
   );
 };
 export default VerifyPage;

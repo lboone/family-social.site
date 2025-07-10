@@ -3,6 +3,23 @@ import { useSelector } from "react-redux";
 
 export const useGetUser = () => {
   const user = useSelector((state: RootState) => state.auth.user);
+  if (!user) {
+    return {
+      user: null,
+      role: "user",
+      isAdmin: false,
+      isVerified: false,
+      isActive: false,
+      isAuthorized: false,
+      email: "",
+      username: "",
+      bio: "",
+      followersCount: 0,
+      followingCount: 0,
+      postsCount: 0,
+      savedPostsCount: 0,
+    };
+  }
   const role = user?.role || "user"; // Default to 'user' if role is undefined
   const isAdmin = user?.role === "admin";
   const isVerified = user?.isVerified || false;

@@ -2,9 +2,9 @@ import Login from "@/components/Auth/Login";
 
 const LoginPage = () => {
   return (
-    <>
-      <Login />
-    </>
+    //<LoggedInProvider>
+    <Login />
+    //</LoggedInProvider>
   );
 };
 export default LoginPage;

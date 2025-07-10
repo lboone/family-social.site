@@ -121,23 +121,22 @@
   .no-spinner {
     @apply appearance-none;
   }
+  .text_primary {
+    @apply text-sky-600 dark:text-sky-400;
+  }
+  .bg_primary {
+    @apply bg-sky-600 dark:bg-sky-400 text-white dark:text-sky-900;
+  }
+  .auth_form {
+    @apply block w-[90%] sm:w-[80%] md:w-[60%] lg:w-[90%] xl:w-[80%];
+  }
+  .auth_label {
+    @apply font-semibold mb-2 block;
+  }
+  .auth_text_input {
+    @apply px-4 py-3 bg-gray-200 rounded-lg w-full block outline-none;
+  }
 }
-.text_primary {
-  @apply text-sky-600 dark:text-sky-400;
-}
-.bg_primary {
-  @apply bg-sky-600 dark:bg-sky-400 text-white dark:text-sky-900;
-}
-.auth_form {
-  @apply block w-[90%] sm:w-[80%] md:w-[60%] lg:w-[90%] xl:w-[80%];
-}
-.auth_label {
-  @apply font-semibold mb-2 block;
-}
-.auth_text_input {
-  @apply px-4 py-3 bg-gray-200 rounded-lg w-full block outline-none;
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;

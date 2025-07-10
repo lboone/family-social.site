@@ -66,3 +66,8 @@ export interface VerifyFormData {
   otp: string;
   [key: string]: string; // Index signature for compatibility
 }
+
+export interface ForgotPasswordFormData {
+  email: string;
+  [key: string]: string; // Index signature for compatibility
+}

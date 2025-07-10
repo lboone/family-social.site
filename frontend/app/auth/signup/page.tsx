@@ -2,9 +2,9 @@ import Signup from "@/components/Auth/Signup";
 
 const SignUpPage = () => {
   return (
-    <>
-      <Signup />
-    </>
+    //<LoggedInProvider>
+    <Signup />
+    //</LoggedInProvider>
   );
 };
 export default SignUpPage;
