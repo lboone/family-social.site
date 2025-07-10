@@ -52,15 +52,18 @@ export const LoginExample = () => {
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit, {
-        validate: validateForm,
-        onSuccess: () => {
-          alert("Login successful!");
+      onSubmit={handleSubmit({
+        onSubmit,
+        options: {
+          validate: validateForm,
+          onSuccess: () => {
+            alert("Login successful!");
+          },
+          onError: (error) => {
+            alert(`Login failed: ${error.message}`);
+          },
+          resetOnSuccess: false, // Don't reset login form on success
         },
-        onError: (error) => {
-          alert(`Login failed: ${error.message}`);
-        },
-        resetOnSuccess: false, // Don't reset login form on success
       })}
     >
       <div>
@@ -151,12 +154,15 @@ export const ContactFormExample = () => {
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit, {
-        validate: validateForm,
-        onSuccess: () => {
-          alert("Message sent successfully!");
+      onSubmit={handleSubmit({
+        onSubmit,
+        options: {
+          validate: validateForm,
+          onSuccess: () => {
+            alert("Message sent successfully!");
+          },
+          resetOnSuccess: true, // Reset form after successful submission
         },
-        resetOnSuccess: true, // Reset form after successful submission
       })}
     >
       <div>
@@ -291,20 +297,23 @@ export const RegistrationExample = () => {
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit, {
-        validate: validateForm,
-        onSuccess: () => {
-          alert(
-            "Registration successful! Please check your email for verification."
-          );
+      onSubmit={handleSubmit({
+        onSubmit,
+        options: {
+          validate: validateForm,
+          onSuccess: () => {
+            alert(
+              "Registration successful! Please check your email for verification."
+            );
+          },
+          onError: (error) => {
+            // You can also set field-specific errors here
+            if (error.message.includes("username")) {
+              setFieldError("username", error.message);
+            }
+          },
+          resetOnSuccess: true,
         },
-        onError: (error) => {
-          // You can also set field-specific errors here
-          if (error.message.includes("username")) {
-            setFieldError("username", error.message);
-          }
-        },
-        resetOnSuccess: true,
       })}
     >
       <div>
