@@ -7,6 +7,7 @@ export const useGetUser = () => {
   const isAdmin = user?.role === "admin";
   const isVerified = user?.isVerified || false;
   const isActive = user?.isActive || false;
+  const isAuthorized = isVerified && isActive;
   const email = user?.email || "";
   const username = user?.username || "";
   const bio = user?.bio || "";
@@ -20,6 +21,7 @@ export const useGetUser = () => {
     isAdmin,
     isVerified,
     isActive,
+    isAuthorized,
     email,
     username,
     bio,

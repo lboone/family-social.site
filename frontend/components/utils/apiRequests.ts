@@ -16,9 +16,9 @@ export const handleAuthRequest = async <T>(
     return response;
   } catch (error) {
     const axiosError = error as AxiosError<ApiErrorResponse>;
-    console.error("API Error:", axiosError);
+    //console.error("API Error:", axiosError);
     if (axiosError.response?.data?.message) {
-      console.error("Error message:", axiosError.response.data.message);
+      //console.error("Error message:", axiosError.response.data.message);
       toast.error(axiosError.response.data.message);
     } else {
       toast.error("An unexpected error occurred");

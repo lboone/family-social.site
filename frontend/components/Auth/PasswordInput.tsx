@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 interface PasswordInputProps {
@@ -11,6 +12,7 @@ interface PasswordInputProps {
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   errors: Record<string, string>;
+  showForgetPassword?: boolean;
   containerClassName?: string;
   inputClassName?: string;
   labelClassName?: string;
@@ -23,6 +25,7 @@ const PasswordInput = ({
   value,
   onChange,
   errors,
+  showForgetPassword = false,
   containerClassName,
   inputClassName,
   labelClassName,
@@ -64,6 +67,13 @@ const PasswordInput = ({
             <EyeOffIcon className="w-5 h-5" />
           )}
         </button>
+        {showForgetPassword && (
+          <Link href="/auth/forgot-password">
+            <span className="mt-2 text_primary block font-semibold text-base cursor-pointer text-right">
+              Forgot Password?
+            </span>
+          </Link>
+        )}
       </div>
       {errors[name] && (
         <span className="text-red-500 text-sm">{errors[name]}</span>

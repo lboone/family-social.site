@@ -3,7 +3,11 @@
 import { useForm } from "@/hooks/useForm";
 import { API_URL_USER } from "@/server";
 import { setAuthUser } from "@/store/authSlice"; // Adjust the import path as necessary
-import { SignUpFormData, UseFormHandleSubmitOptions } from "@/types";
+import {
+  LoginFormData,
+  SignUpFormData,
+  UseFormHandleSubmitOptions,
+} from "@/types";
 import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,22 +17,20 @@ import InputField from "../Form/InputField";
 import LoadingButton from "../Form/LoadingButton";
 import PasswordInput from "./PasswordInput";
 
-const Signup = () => {
+const Login = () => {
   const dispatch = useDispatch();
   const router = useRouter();
 
   const { formData, handleChange, handleSubmit, isLoading, errors } =
-    useForm<SignUpFormData>({
-      username: "",
+    useForm<LoginFormData>({
       email: "",
       password: "",
-      passwordConfirm: "",
     });
 
   // Your signup submission logic
   const onSubmit = async (data: SignUpFormData) => {
-    // Call your signup API here
-    return await axios.post(`${API_URL_USER}/signup`, data, {
+    // Call your login API here
+    return await axios.post(`${API_URL_USER}/login`, data, {
       withCredentials: true,
     });
   };
@@ -36,12 +38,6 @@ const Signup = () => {
   // Validation function
   const validateForm = (data: SignUpFormData) => {
     const errors: Record<string, string> = {};
-
-    if (!data.username.trim()) {
-      errors.username = "Username is required";
-    } else if (data.username.length < 3) {
-      errors.username = "Username must be at least 3 characters";
-    }
 
     if (!data.email.trim()) {
       errors.email = "Email is required";
@@ -53,10 +49,6 @@ const Signup = () => {
       errors.password = "Password is required";
     } else if (data.password.length < 8) {
       errors.password = "Password must be at least 8 characters";
-    }
-
-    if (data.password !== data.passwordConfirm) {
-      errors.passwordConfirm = "Passwords do not match";
     }
 
     return Object.keys(errors).length > 0 ? errors : null;
@@ -75,8 +67,8 @@ const Signup = () => {
       <div className="grid grid-cols-1 lg:grid-cols-7 gap-8">
         <div className="lg:col-span-4 h-screen hidden lg:block">
           <Image
-            src="/images/signup-banner.jpg"
-            alt="Signup"
+            src="/images/login-banner.jpg"
+            alt="Login"
             width={1000}
             height={1000}
             className="w-full h-full object-cover"
@@ -84,8 +76,7 @@ const Signup = () => {
         </div>
         <div className="lg:col-span-3 flex flex-col items-center justify-center h-screen">
           <h1 className="font-bold text-xl sm:text-2xl text-left uppercase mb-8">
-            Sign Up With{" "}
-            <span className="text_primary ml-2">Family Social</span>
+            Login With<span className="text_primary ml-2">Family Social</span>
           </h1>
           <form
             className="auth_form"
@@ -94,15 +85,6 @@ const Signup = () => {
               options,
             })}
           >
-            <InputField
-              name="username"
-              label="User Name"
-              placeholder="Enter your username"
-              value={formData.username}
-              onChange={handleChange}
-              errors={errors}
-            />
-
             <InputField
               name="email"
               label="Email"
@@ -120,15 +102,7 @@ const Signup = () => {
               value={formData.password}
               onChange={handleChange}
               errors={errors}
-            />
-
-            <PasswordInput
-              name="passwordConfirm"
-              placeholder="Confirm your password"
-              label="Confirm Password"
-              value={formData.passwordConfirm}
-              onChange={handleChange}
-              errors={errors}
+              showForgetPassword
             />
 
             {/* {errors.submit && (
@@ -141,14 +115,14 @@ const Signup = () => {
               type="submit"
               isLoading={isLoading}
             >
-              Sign Up Now
+              Login Now
             </LoadingButton>
           </form>
           <h1 className="mt-4 text-lg text-gray-800">
-            Already have account?
-            <Link href="/auth/login">
+            Don&apos;t have account?
+            <Link href="/auth/signup">
               <span className="text-blue-800 underline cursor-pointer font-medium ml-2">
-                Login
+                Sign Up
               </span>
             </Link>
           </h1>
@@ -157,5 +131,4 @@ const Signup = () => {
     </div>
   );
 };
-
-export default Signup;
+export default Login;

@@ -55,3 +55,9 @@ export interface SignUpFormData {
   passwordConfirm: string;
   [key: string]: string; // Index signature for compatibility
 }
+
+export interface LoginFormData {
+  email: string;
+  password: string;
+  [key: string]: string; // Index signature for compatibility
+}

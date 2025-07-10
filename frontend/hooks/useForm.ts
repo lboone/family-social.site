@@ -1,7 +1,12 @@
 import { handleAuthRequest } from "@/components/utils/apiRequests";
 import { UseFormHandleSubmit } from "@/types";
+import { AxiosError } from "axios";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { toast } from "sonner";
+
+interface ApiErrorResponse {
+  message: string;
+}
 
 // Generic form hook that can work with any form data type
 export function useForm<T extends Record<string, string | number | boolean>>(
@@ -60,17 +65,14 @@ export function useForm<T extends Record<string, string | number | boolean>>(
 
       if (result instanceof Error) {
         const err =
-          result instanceof Error
-            ? result
-            : new Error("An unknown error occurred");
-
+          (result as AxiosError<ApiErrorResponse>) ||
+          new Error("An unknown error occurred");
         // Call error callback if provided
         if (options?.onError) {
           options.onError(err);
         } else {
           // Default error handling
-          console.error("Form submission error:", err);
-          setErrors({ submit: err.message });
+          setErrors({ submit: err.response?.data?.message || err.message });
         }
       } else {
         options?.onSuccess?.(result);

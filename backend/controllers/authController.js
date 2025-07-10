@@ -56,6 +56,12 @@ exports.signup = catchAsync(async (req, res, next) => {
   if (existingUser) {
     return next(new AppError("Email already registered", 400));
   }
+
+  const existingUsername = await User.findOne({ username });
+  if (existingUsername) {
+    return next(new AppError("Username already taken", 400));
+  }
+
   const otp = generateOtp();
   const otpExpires = Date.now() + 24 * 60 * 60 * 100;
   const newUser = await User.create({
