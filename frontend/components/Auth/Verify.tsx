@@ -12,13 +12,15 @@ import { UseFormHandleSubmitOptions, VerifyFormData } from "@/types";
 import axios from "axios";
 import { MailCheckIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useDispatch } from "react-redux";
+import { toast } from "sonner";
 
 const Verify = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const otpRef = useRef<OTPInputRef>(null);
+  const [isResending, setIsResending] = useState(false);
 
   // Use the useForm hook for form state management
   const { formData, updateField, handleSubmit, isLoading, errors } =
@@ -75,6 +77,7 @@ const Verify = () => {
 
   // Handle resend OTP
   const handleResendOTP = async () => {
+    setIsResending(true);
     try {
       // Clear current OTP
       otpRef.current?.clear();
@@ -86,9 +89,12 @@ const Verify = () => {
         {},
         { withCredentials: true }
       );
-      console.log("OTP resent successfully");
+      toast.success("OTP resent successfully");
     } catch (error) {
+      toast.error("Failed to resend OTP");
       console.error("Failed to resend OTP:", error);
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -124,13 +130,15 @@ const Verify = () => {
           <h1 className="text-sm sm:text-lg font-medium text-gray-700">
             Didn&apos;t get the OTP code?
           </h1>
-          <button
+          <LoadingButton
             type="button"
+            variant="ghost"
             onClick={handleResendOTP}
-            className="text-sm sm:text-lg font-medium text_primary underline hover:no-underline"
+            className="text-sm sm:text-lg font-medium text_primary underline hover:no-underline py-0 px-0 bg-white dark:bg-white hover:bg-white"
+            isLoading={isResending}
           >
             Resend Code
-          </button>
+          </LoadingButton>
         </div>
 
         <LoadingButton
@@ -138,7 +146,7 @@ const Verify = () => {
           className="mt-6 w-52"
           isLoading={isLoading}
           type="submit"
-          disabled={formData.otp.length !== 6} // Disable if OTP is not complete
+          disabled={formData.otp.length !== 6 || isLoading} // Disable if OTP is not complete
         >
           Verify
         </LoadingButton>

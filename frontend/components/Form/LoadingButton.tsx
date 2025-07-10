@@ -18,7 +18,7 @@ const LoadingButton = ({
     <Button
       disabled={isLoading}
       className={cn(
-        "bg_primary text-white px-4 py-6 text-lg rounded-lg",
+        "bg-sky-600 dark:bg-sky-400 text-white dark:text-sky-900 px-4 py-6 text-lg rounded-lg hover:cursor-pointer",
         className
       )}
       {...props}
