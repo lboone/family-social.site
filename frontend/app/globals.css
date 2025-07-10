@@ -112,6 +112,16 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+@layer utilities {
+  .no-spinner::-webkit-inner-spin-button,
+  .no-spinner::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .no-spinner {
+    @apply appearance-none;
+  }
+}
 .text_primary {
   @apply text-sky-600 dark:text-sky-400;
 }

@@ -1,5 +1,8 @@
 "use client";
 
+import PasswordInput from "@/components/Auth/PasswordInput";
+import InputField from "@/components/Form/InputField";
+import LoadingButton from "@/components/Form/LoadingButton";
 import { useForm } from "@/hooks/useForm";
 import { API_URL_USER } from "@/server";
 import { setAuthUser } from "@/store/authSlice"; // Adjust the import path as necessary
@@ -13,9 +16,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
-import InputField from "../Form/InputField";
-import LoadingButton from "../Form/LoadingButton";
-import PasswordInput from "./PasswordInput";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -72,6 +72,7 @@ const Login = () => {
             width={1000}
             height={1000}
             className="w-full h-full object-cover"
+            priority
           />
         </div>
         <div className="lg:col-span-3 flex flex-col items-center justify-center h-screen">

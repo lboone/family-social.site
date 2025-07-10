@@ -61,3 +61,8 @@ export interface LoginFormData {
   password: string;
   [key: string]: string; // Index signature for compatibility
 }
+
+export interface VerifyFormData {
+  otp: string;
+  [key: string]: string; // Index signature for compatibility
+}
