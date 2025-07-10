@@ -71,3 +71,11 @@ export interface ForgotPasswordFormData {
   email: string;
   [key: string]: string; // Index signature for compatibility
 }
+
+export interface ResetPasswordFormData {
+  email: string;
+  otp: string;
+  password: string;
+  passwordConfirm: string;
+  [key: string]: string; // Index signature for compatibility
+}

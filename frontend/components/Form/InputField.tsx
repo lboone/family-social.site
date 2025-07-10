@@ -10,6 +10,7 @@ interface InputFieldProps {
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   errors: Record<string, string>;
+  hidden?: boolean;
   containerClassName?: string;
   inputClassName?: string;
   labelClassName?: string;
@@ -23,19 +24,20 @@ const InputField = ({
   value,
   onChange,
   errors,
+  hidden = false,
   containerClassName,
   inputClassName,
   labelClassName,
 }: InputFieldProps) => {
   return (
     <div className={cn("mb-4", containerClassName)}>
-      {label && (
+      {label && !hidden && (
         <label className={cn("auth_label", labelClassName)} htmlFor={name}>
           {label}
         </label>
       )}
       <input
-        type={type}
+        type={hidden ? "hidden" : type}
         id={name}
         name={name}
         placeholder={placeholder}

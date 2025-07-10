@@ -279,7 +279,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   if (!email || !otp || !password || !passwordConfirm) {
     return next(new AppError("All fields are required", 400));
   }
-
+  console.log({ email, otp, password, passwordConfirm });
   const user = await User.findOne({
     email,
     resetPasswordOTP: otp,

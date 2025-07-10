@@ -46,7 +46,9 @@ const ForgotPassword = () => {
   const options: UseFormHandleSubmitOptions = {
     validate: validateForm,
     onSuccess: () => {
-      router.push("/");
+      router.push(
+        "/auth/reset-password?email=" + encodeURIComponent(formData.email)
+      );
     },
   };
 
