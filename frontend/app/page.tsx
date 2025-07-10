@@ -1,10 +1,11 @@
 import Home from "@/components/Home/Home";
+import VerifiedProvider from "@/HOC/VerifiedProvider";
 
 const HomePage = () => {
   return (
-    <div>
+    <VerifiedProvider>
       <Home />
-    </div>
+    </VerifiedProvider>
   );
 };
 export default HomePage;

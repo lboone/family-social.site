@@ -66,6 +66,8 @@ const Signup = () => {
     validate: validateForm,
     onSuccess: (result) => {
       dispatch(setAuthUser(result.data.data.user));
+      console.log("User signed up successfully");
+      // Redirect to verify page after successful signup
       router.push("/auth/verify");
     },
   };

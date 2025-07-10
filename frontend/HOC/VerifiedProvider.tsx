@@ -3,6 +3,7 @@ import PageLoader from "@/components/Form/PageLoader";
 import useGetUser from "@/hooks/useGetUser";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface VerifiedProviderProps {
   children: React.ReactNode;
@@ -14,14 +15,13 @@ const VerifiedProvider = ({ children }: VerifiedProviderProps) => {
   const { user, isVerified } = useGetUser();
 
   useEffect(() => {
-    if (!user) {
-      router.push("/auth/login");
-    } else if (user && isVerified) {
-      router.push("/");
+    if (user && !isVerified) {
+      router.push("/auth/verify");
+      toast.error("Please verify your account to access this page.");
     } else {
       setIsPageLoading(false);
     }
-  }, [user, router, isVerified]);
+  }, [router, user, isVerified]);
   return <>{isPageLoading ? <PageLoader /> : children}</>;
 };
 export default VerifiedProvider;
