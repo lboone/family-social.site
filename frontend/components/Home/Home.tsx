@@ -1,6 +1,7 @@
 "use client";
 import useGetUser from "@/hooks/useGetUser";
 import { MenuIcon } from "lucide-react";
+import LogoutButton from "../Auth/LogoutButton";
 import {
   Sheet,
   SheetContent,
@@ -43,6 +44,7 @@ const Home = () => {
       ) : (
         <h1 className="text-3xl font-bold text-center mt-10">
           Welcome to Family Social
+          <LogoutButton variant="outline" size="sm"></LogoutButton>
         </h1>
       )}
     </>

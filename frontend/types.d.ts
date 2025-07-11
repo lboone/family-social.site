@@ -79,3 +79,12 @@ export interface ResetPasswordFormData {
   passwordConfirm: string;
   [key: string]: string; // Index signature for compatibility
 }
+
+export interface SuggestedUsersFormData {
+  data: {
+    data: {
+      users: Array<User>;
+    };
+  };
+  [key: object]: object; // Index signature for compatibility
+}

@@ -83,7 +83,7 @@ const LeftSidebar = () => {
       <div className="lg:p-6 p-3 cursor-pointer">
         <div
           onClick={() => router.push("/")}
-          className="flex justify-center border-t-1 border-b-1 border-sky-600 "
+          className="flex justify-center border-t-1 border-b-1 border-sky-600/50 "
         >
           <Image
             src="/images/logo.png"
