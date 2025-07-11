@@ -1,21 +1,16 @@
+"use client";
 import { cn } from "@/lib/utils";
 import { User } from "@/types";
 import { BookmarkIcon, GridIcon } from "lucide-react";
+import { useState } from "react";
+import Posts from "./Posts";
+import Saved from "./Saved";
 
 interface ProfileBottomProps {
-  isOwnProfile: boolean;
-  isFollowing: boolean;
   userProfile: User;
-  postOrSave: string;
-  setPostOrSave: (value: string) => void;
 }
-const ProfileBottom = ({
-  isOwnProfile,
-  isFollowing,
-  userProfile,
-  postOrSave,
-  setPostOrSave,
-}: ProfileBottomProps) => {
+const ProfileBottom = ({ userProfile }: ProfileBottomProps) => {
+  const [postOrSave, setPostOrSave] = useState<string>("POST");
   return (
     <div className="mt-10">
       <div className="flex items-center justify-center space-x-14">
@@ -40,6 +35,8 @@ const ProfileBottom = ({
           <span className="font-semibold">Saved</span>
         </div>
       </div>
+      {postOrSave === "POST" && <Posts userProfile={userProfile} />}
+      {postOrSave === "SAVE" && <Saved userProfile={userProfile} />}
     </div>
   );
 };

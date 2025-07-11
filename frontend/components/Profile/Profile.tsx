@@ -4,7 +4,6 @@ import useGetUser from "@/hooks/useGetUser";
 import { API_URL_USER } from "@/server";
 import { User, UserProfileFormData } from "@/types";
 import axios from "axios";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import PageLoader from "../Form/PageLoader";
 import LeftSidebar from "../Home/LeftSidebar";
@@ -17,9 +16,7 @@ interface ProfileProps {
   id: string;
 }
 const Profile = ({ id }: ProfileProps) => {
-  const router = useRouter();
   const { user } = useGetUser();
-  const [postOrSave, setPostOrSave] = useState<string>("POST");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [userProfile, setUserProfile] = useState<User>();
 
@@ -65,18 +62,14 @@ const Profile = ({ id }: ProfileProps) => {
       </div>
       <div className="flex-1 md:ml-[20%] overflow-y-auto">
         <SidebarMobile />
-        <ProfileHeader
-          isOwnProfile={isOwnProfile}
-          isFollowing={isFollowing}
-          userProfile={userProfile!}
-        />
-        <ProfileBottom
-          isOwnProfile={isOwnProfile}
-          isFollowing={isFollowing}
-          userProfile={userProfile!}
-          postOrSave={postOrSave}
-          setPostOrSave={setPostOrSave}
-        />
+        <div className="w-[90%] sm:w-[80%] mx-auto">
+          <ProfileHeader
+            isOwnProfile={isOwnProfile}
+            isFollowing={isFollowing}
+            userProfile={userProfile!}
+          />
+          <ProfileBottom userProfile={userProfile!} />
+        </div>
       </div>
     </div>
   );
