@@ -4,7 +4,6 @@ import useGetUser from "@/hooks/useGetUser";
 import { API_URL_USER } from "@/server";
 import { SuggestedUsersFormData, User } from "@/types";
 import axios from "axios";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import PageLoader from "../Form/PageLoader";
 import { handleAuthRequest } from "../utils/apiRequests";
@@ -16,7 +15,6 @@ const RightSidebar = () => {
 
   const [suggestedUsers, setSuggestedUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   const [formData] = useState<SuggestedUsersFormData>({
     data: {

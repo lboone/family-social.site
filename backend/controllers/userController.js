@@ -69,7 +69,10 @@ exports.editProfile = catchAsync(async (req, res, next) => {
 
 exports.suggestedUser = catchAsync(async (req, res, next) => {
   const loginUserId = req.user.id;
-  const users = await User.find({ _id: { $ne: loginUserId } })
+  const users = await User.find({
+    _id: { $ne: loginUserId },
+    isVerified: true,
+  })
     .select(
       "-password -otp -otpExpires -resetPasswordOTP -resetPasswordOTPExpires"
     )

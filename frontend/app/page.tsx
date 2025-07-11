@@ -1,11 +1,11 @@
 import Home from "@/components/Home/Home";
-import VerifiedProvider from "@/HOC/VerifiedProvider";
+import NeedsVerificationProvider from "@/HOC/NeedsVerificationProvider";
 
 const HomePage = () => {
   return (
-    <VerifiedProvider>
+    <NeedsVerificationProvider>
       <Home />
-    </VerifiedProvider>
+    </NeedsVerificationProvider>
   );
 };
 export default HomePage;

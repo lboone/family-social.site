@@ -88,3 +88,12 @@ export interface SuggestedUsersFormData {
   };
   [key: object]: object; // Index signature for compatibility
 }
+
+export interface UserProfileFormData {
+  data: {
+    data: {
+      user: User | undefined;
+    };
+  };
+  [key: object]: object; // Index signature for compatibility
+}

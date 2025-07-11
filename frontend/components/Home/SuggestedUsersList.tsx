@@ -1,4 +1,6 @@
+"use client";
 import { User } from "@/types";
+import { useRouter } from "next/navigation";
 import UserAvatar from "./UserAvatar";
 
 interface SuggestedUsersListProps {
@@ -11,17 +13,21 @@ const SuggestedUsersList = ({ suggestedUsers }: SuggestedUsersListProps) => {
         <h1 className="font-semibold text-gray-700">Suggested Users</h1>
         <h1 className="font-medium cursor-pointer">See all</h1>
       </div>
-      {suggestedUsers.slice(0, 5).map((user) => (
-        <SuggestedUser key={user._id} user={user} />
-      ))}
+      {suggestedUsers.slice(0, 5).map((user) => {
+        return <SuggestedUser key={user._id} user={user} />;
+      })}
     </div>
   );
 };
 export default SuggestedUsersList;
 
 const SuggestedUser = ({ user }: { user: User }) => {
+  const router = useRouter();
   return (
-    <div className="mt-6 cursor-pointer">
+    <div
+      className="mt-6 cursor-pointer"
+      onClick={() => router.push(`/profile/${user._id}`)}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4 cursor-pointer">
           <UserAvatar user={user} />

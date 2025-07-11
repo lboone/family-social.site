@@ -1,18 +1,30 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 import { User } from "@/types";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 
 interface UserAvatarProps {
   user: User;
+  avatarClassName?: string;
+  avatarImageClassName?: string;
+  avatarFallbackClassName?: string;
 }
-const UserAvatar = ({ user }: UserAvatarProps) => {
+const UserAvatar = ({
+  user,
+  avatarClassName,
+  avatarImageClassName,
+  avatarFallbackClassName,
+}: UserAvatarProps) => {
   return (
-    <Avatar className="w-9 h-9">
+    <Avatar className={cn("w-9 h-9", avatarClassName)}>
       <AvatarImage
         src={user?.profilePicture}
         alt={user?.username}
-        className="w-8 h-8 rounded-full object-cover"
+        className={cn(
+          "w-8 h-8 rounded-full object-cover",
+          avatarImageClassName
+        )}
       />
-      <AvatarFallback className="text-xs">
+      <AvatarFallback className={cn("text-xs", avatarFallbackClassName)}>
         {user?.username
           ? user?.username?.charAt(0).toUpperCase() +
             user?.username?.charAt(1).toUpperCase()

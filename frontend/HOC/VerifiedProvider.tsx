@@ -12,16 +12,24 @@ const VerifiedProvider = ({ children }: VerifiedProviderProps) => {
   const router = useRouter();
 
   const [isPageLoading, setIsPageLoading] = useState(true);
-  const { user, isVerified } = useGetUser();
+  const { user, isVerified, isActive } = useGetUser();
 
   useEffect(() => {
-    if (user && !isVerified) {
-      router.push("/auth/verify");
-      toast.error("Please verify your account to access this page.");
-    } else {
-      setIsPageLoading(false);
+    if (!user) {
+      router.push("/auth/login");
     }
-  }, [router, user, isVerified]);
+
+    if (user && isVerified) {
+      if (!isActive) {
+        toast.error(
+          "Your account is not active.  Please wait for admin to approve it."
+        );
+      }
+      router.push("/");
+    }
+    setIsPageLoading(false);
+  }, [router, user, isVerified, isActive, setIsPageLoading]);
+
   return <>{isPageLoading ? <PageLoader /> : children}</>;
 };
 export default VerifiedProvider;
