@@ -1,5 +1,6 @@
 "use client";
 import useGetUser from "@/hooks/useGetUser";
+import { useLogout } from "@/utils/auth";
 import {
   HeartIcon,
   HomeIcon,
@@ -15,6 +16,23 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 const LeftSidebar = () => {
   const { user } = useGetUser();
   const router = useRouter();
+  const logout = useLogout();
+
+  const handleSidebar = (label: string) => {
+    if (label === "Home") {
+      router.push("/");
+    }
+    if (label === "Logout") {
+      handleLogout();
+    }
+  };
+
+  const handleLogout = async () => {
+    await logout({
+      redirectTo: "/auth/login",
+      showToast: true,
+    });
+  };
 
   const SidebarLinks = [
     {
@@ -63,13 +81,16 @@ const LeftSidebar = () => {
   return (
     <div className="h-full">
       <div className="lg:p-6 p-3 cursor-pointer">
-        <div onClick={() => router.push("/")}>
+        <div
+          onClick={() => router.push("/")}
+          className="flex justify-center border-t-1 border-b-1 border-sky-600 "
+        >
           <Image
             src="/images/logo.png"
             alt="Logo"
             width={150}
             height={50}
-            className="mb-14"
+            className="my-2"
           />
         </div>
         <div className="mt-6">
@@ -78,6 +99,7 @@ const LeftSidebar = () => {
               <div
                 key={index}
                 className="flex items-center mb-2 rounded-lg p-3 cursor-pointer group transition-all duration-200 hover:bg-gray-100 space-x-2"
+                onClick={() => handleSidebar(link.label)}
               >
                 <div className="group-hover:scale-110 transition-all duration-200">
                   {link.icon}
