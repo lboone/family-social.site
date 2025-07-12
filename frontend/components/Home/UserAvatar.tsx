@@ -7,17 +7,19 @@ interface UserAvatarProps {
   avatarClassName?: string;
   avatarImageClassName?: string;
   avatarFallbackClassName?: string;
+  selectedImage?: string | null;
 }
 const UserAvatar = ({
   user,
   avatarClassName,
   avatarImageClassName,
   avatarFallbackClassName,
+  selectedImage = null,
 }: UserAvatarProps) => {
   return (
     <Avatar className={cn("w-9 h-9", avatarClassName)}>
       <AvatarImage
-        src={user?.profilePicture}
+        src={selectedImage || user?.profilePicture}
         alt={user?.username}
         className={cn(
           "w-8 h-8 rounded-full object-cover",

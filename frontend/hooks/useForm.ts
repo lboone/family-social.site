@@ -9,9 +9,9 @@ interface ApiErrorResponse {
 }
 
 // Generic form hook that can work with any form data type
-export function useForm<T extends Record<string, string | number | boolean>>(
-  initialValues: T
-) {
+export function useForm<
+  T extends Record<string, string | number | boolean | File | undefined>
+>(initialValues: T) {
   const [formData, setFormData] = useState<T>(initialValues);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -35,6 +35,7 @@ export function useForm<T extends Record<string, string | number | boolean>>(
       [name]: newValue,
     }));
 
+    console.log({ formData });
     // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors((prev) => {

@@ -2,6 +2,7 @@ const User = require("../models/userModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const getDataUri = require("../utils/dataUri");
+const { uploadToCloudinary } = require("../utils/cloudinary");
 
 exports.getProfile = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -43,7 +44,6 @@ exports.editProfile = catchAsync(async (req, res, next) => {
     const fileUri = getDataUri(profilePicture);
     cloudResponse = await uploadToCloudinary(fileUri);
   }
-
   const user = await User.findById(userId).select("-password");
   if (!user) {
     return next(new AppError("User not found", 404));

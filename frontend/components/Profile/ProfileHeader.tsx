@@ -14,6 +14,21 @@ const ProfileHeader = ({
   isFollowing,
   userProfile,
 }: ProfileHeaderProps) => {
+  const accountActivity = [
+    {
+      label: "Posts",
+      count: userProfile?.posts.length || 0,
+    },
+    {
+      label: "Followers",
+      count: userProfile?.followers.length || 0,
+    },
+    {
+      label: "Following",
+      count: userProfile?.following.length || 0,
+    },
+  ];
+
   return (
     <div className="mt-16 flex md:flex-row flex-col md:items-center pb-16 border-b-2 md:space-x-20">
       <UserAvatar
@@ -26,8 +41,13 @@ const ProfileHeader = ({
         <div className="flex items-center space-x-8">
           <h1 className="text-2xl font-bold">{userProfile?.username}</h1>
           {isOwnProfile && (
-            <Link href="/edit-profile">
-              <Button variant="secondary">Edit Profile</Button>
+            <Link href="/profile/edit">
+              <Button
+                variant="secondary"
+                className="cursor-pointer hover:bg-gray-300"
+              >
+                Edit Profile
+              </Button>
             </Link>
           )}
           {!isOwnProfile && (
@@ -37,18 +57,18 @@ const ProfileHeader = ({
           )}
         </div>
         <div className="flex items-center space-x-8 mt-6 mb-6">
-          <ActivityInfo count={userProfile?.posts.length || 0} label="Posts" />
-          <ActivityInfo
-            count={userProfile?.followers.length || 0}
-            label="Followers"
-          />
-          <ActivityInfo
-            count={userProfile?.following.length || 0}
-            label="Following"
-          />
+          {accountActivity.map((activity) => (
+            <ActivityInfo
+              key={activity.label}
+              count={activity.count}
+              label={activity.label}
+            />
+          ))}
         </div>
         <p className="w-[80%] font-md">
-          {userProfile?.bio || isOwnProfile
+          {userProfile?.bio
+            ? userProfile.bio
+            : isOwnProfile
             ? "Tell us something about yourself."
             : "This user hasn't added a bio yet."}
         </p>

@@ -97,3 +97,16 @@ export interface UserProfileFormData {
   };
   [key: object]: object; // Index signature for compatibility
 }
+
+export interface EditProfileFormData {
+  bio: string | undefined;
+  file: File | undefined;
+  [key: string]: string | File | undefined; // Index signature for compatibility
+}
+
+export interface ChangePasswordFormData {
+  currentPassword: string;
+  newPassword: string;
+  newPasswordConfirm: string;
+  [key: string]: string; // Index signature for compatibility
+}
