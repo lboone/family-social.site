@@ -184,10 +184,7 @@ export const SettingsPage = () => {
       await logout({
         redirectTo: "/login",
         showToast: true,
-        onSuccess: () => {
-          // Could call an API endpoint to invalidate all sessions
-          console.log("Logged out from all devices");
-        },
+        onSuccess: () => {},
       });
     }
   };

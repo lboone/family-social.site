@@ -4,35 +4,36 @@ const sharp = require("sharp");
 const { uploadToCloudinary, cloudinary } = require("../utils/cloudinary");
 const Post = require("../models/postModel");
 const User = require("../models/userModel");
+const getDataUri = require("../utils/dataUri");
 
 exports.createPost = catchAsync(async (req, res, next) => {
   const { caption } = req.body;
-  const image = req.file;
+  const postImage = req.file;
   const userId = req.user._id;
-  if (!image) {
-    return next(new Error("Please upload an image", 400));
-  }
+  // if (!postImage) {
+  //   return next(new Error("Please upload an image", 400));
+  // }
 
   // optimize our image
-  const optimizedImageBuffer = await sharp(image.buffer)
-    .resize({ width: 800, height: 800, fit: "inside" })
-    .toFormat("jpeg", { quality: 80 })
-    .toBuffer();
-
-  const fileUrl = `data:image/jpeg;base64,${optimizedImageBuffer.toString(
-    "base64"
-  )}`;
-
-  const cloudResponse = await uploadToCloudinary(fileUrl);
-
-  let post = await Post.create({
-    capition,
-    image: {
-      url: cloudResponse.secure_url,
-      publicId: cloudResponse.public_id,
-    },
-    user: userId,
-  });
+  let post;
+  let cloudResponse;
+  if (postImage) {
+    const fileUri = getDataUri(postImage);
+    cloudResponse = await uploadToCloudinary(fileUri);
+    post = await Post.create({
+      caption,
+      image: {
+        url: cloudResponse.secure_url,
+        publicId: cloudResponse.public_id,
+      },
+      user: userId,
+    });
+  } else {
+    post = await Post.create({
+      caption,
+      user: userId,
+    });
+  }
 
   // add post to user's posts
   const user = await User.findById(userId);

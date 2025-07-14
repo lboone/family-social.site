@@ -1,9 +1,9 @@
 // Example: How to use the fixed sidebar constants
 
-import React from 'react';
-import { SidebarLinks, ProfileLink } from '@/utils/constants';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
+import { RootState } from "@/store/store";
+import { ProfileLink, SidebarLinks } from "@/utils/constants";
+import React from "react";
+import { useSelector } from "react-redux";
 
 // Example 1: Simple icon rendering
 export const SimpleIconExample = () => {
@@ -63,7 +63,7 @@ export const HorizontalNav = () => {
           </a>
         );
       })}
-      
+
       {/* Profile link */}
       {user && (
         <a
@@ -72,7 +72,7 @@ export const HorizontalNav = () => {
         >
           <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
             <span className="text-xs font-medium">
-              {user.username?.charAt(0).toUpperCase() || 'U'}
+              {user.username?.charAt(0).toUpperCase() || "U"}
             </span>
           </div>
           <span className="text-xs">{ProfileLink.label}</span>
@@ -102,7 +102,7 @@ export const MobileBottomNav = () => {
             </a>
           );
         })}
-        
+
         {/* Profile icon */}
         {user && (
           <a
@@ -111,7 +111,7 @@ export const MobileBottomNav = () => {
           >
             <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
               <span className="text-xs font-medium text-white">
-                {user.username?.charAt(0).toUpperCase() || 'U'}
+                {user.username?.charAt(0).toUpperCase() || "U"}
               </span>
             </div>
             <span className="text-xs text-gray-600">{ProfileLink.label}</span>
@@ -132,41 +132,45 @@ export const SidebarWithActiveStates = () => {
       <div className="p-6">
         <h1 className="text-xl font-bold">Family Social</h1>
       </div>
-      
+
       <nav className="px-4 space-y-1">
         {SidebarLinks.map((link, index) => {
           const IconComponent = link.icon;
           const isActive = activeIndex === index;
-          
+
           return (
             <button
               key={index}
               onClick={() => setActiveIndex(index)}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                isActive 
-                  ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' 
-                  : 'text-gray-700 hover:bg-gray-100'
+                isActive
+                  ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600"
+                  : "text-gray-700 hover:bg-gray-100"
               }`}
             >
-              <IconComponent className={`w-6 h-6 ${isActive ? 'text-blue-600' : 'text-gray-600'}`} />
+              <IconComponent
+                className={`w-6 h-6 ${
+                  isActive ? "text-blue-600" : "text-gray-600"
+                }`}
+              />
               <span className="font-medium">{link.label}</span>
             </button>
           );
         })}
-        
+
         {/* Profile link */}
         {user && (
           <button
             onClick={() => setActiveIndex(SidebarLinks.length)}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
               activeIndex === SidebarLinks.length
-                ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' 
-                : 'text-gray-700 hover:bg-gray-100'
+                ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600"
+                : "text-gray-700 hover:bg-gray-100"
             }`}
           >
             <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
               <span className="text-xs font-medium">
-                {user.username?.charAt(0).toUpperCase() || 'U'}
+                {user.username?.charAt(0).toUpperCase() || "U"}
               </span>
             </div>
             <span className="font-medium">{ProfileLink.label}</span>

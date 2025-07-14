@@ -110,3 +110,9 @@ export interface ChangePasswordFormData {
   newPasswordConfirm: string;
   [key: string]: string; // Index signature for compatibility
 }
+
+export interface PostFormData {
+  caption: string;
+  file: File | undefined;
+  [key: string]: string | File | undefined; // Index signature for compatibility
+}

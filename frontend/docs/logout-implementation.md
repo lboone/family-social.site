@@ -85,7 +85,6 @@ function CustomLogoutButton() {
       redirectTo: undefined, // Handle redirection manually
       showToast: true,
       onSuccess: () => {
-        console.log("Logout successful");
         router.push("/goodbye");
       },
       onError: (error) => {

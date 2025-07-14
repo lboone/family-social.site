@@ -34,8 +34,6 @@ export function useForm<
       ...prev,
       [name]: newValue,
     }));
-
-    console.log({ formData });
     // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors((prev) => {
@@ -80,7 +78,7 @@ export function useForm<
         if (options?.resetOnSuccess) {
           resetForm();
         }
-        toast.success(result.data.message || "Form submitted successfully");
+        toast.success(result?.data?.message || "Form submitted successfully");
       }
     };
   };

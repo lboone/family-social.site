@@ -11,11 +11,20 @@ const postSchema = new mongoose.Schema(
       ],
     },
     image: {
-      url: { type: String, required: [true, "A post must have an image URL"] },
-      publicId: {
-        type: String,
-        required: [true, "A post must have a public ID for the image"],
+      type: {
+        url: {
+          type: String,
+          required: [true, "Image URL is required when image is provided"],
+        },
+        publicId: {
+          type: String,
+          required: [
+            true,
+            "Image public ID is required when image is provided",
+          ],
+        },
       },
+      required: false,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -41,6 +50,18 @@ const postSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Custom validation to ensure if image is provided, both url and publicId are present
+postSchema.pre("save", function (next) {
+  if (this.image && (!this.image.url || !this.image.publicId)) {
+    const error = new Error(
+      "When image is provided, both url and publicId are required"
+    );
+    error.name = "ValidationError";
+    return next(error);
+  }
+  next();
+});
 
 postSchema.index({ user: 1, createdAt: -1 }); // Index for user posts sorted by creation date
 

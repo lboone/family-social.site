@@ -10,7 +10,6 @@ const path = require("path");
 
 const loadTemplate = (templateName, replacements) => {
   const templatePath = path.join(__dirname, "../emailTemplates", templateName);
-  console.log("Loading template from:", templatePath);
   const source = fs.readFileSync(templatePath, "utf-8");
   const template = hbs.compile(source);
   return template(replacements);
@@ -111,7 +110,6 @@ exports.verifyAccount = catchAsync(async (req, res, next) => {
   }
 
   const user = req.user;
-  console.log({ user });
   if (user.otp !== otp) {
     return next(new AppError("Invalid OTP. Please try again.", 400));
   }
@@ -279,7 +277,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   if (!email || !otp || !password || !passwordConfirm) {
     return next(new AppError("All fields are required", 400));
   }
-  console.log({ email, otp, password, passwordConfirm });
   const user = await User.findOne({
     email,
     resetPasswordOTP: otp,

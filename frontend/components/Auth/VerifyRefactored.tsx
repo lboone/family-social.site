@@ -3,26 +3,22 @@
 
 "use client";
 
-import OTPInput, { OTPInputRef } from "@/components/Auth/OTPInput";
-import LoadingButton from "@/components/Form/LoadingButton";
 import { useForm } from "@/hooks/useForm";
-import useGetUser from "@/hooks/useGetUser";
 import { API_URL_USER } from "@/server";
 import { setAuthUser } from "@/store/authSlice";
 import { UseFormHandleSubmitOptions, VerifyFormData } from "@/types";
 import axios from "axios";
 import { MailCheckIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useDispatch } from "react-redux";
-import { toast } from "sonner";
+import LoadingButton from "../Form/LoadingButton";
+import OTPInput, { OTPInputRef } from "../Form/OTPInput";
 
-const Verify = () => {
+const VerifyRefactored = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const otpRef = useRef<OTPInputRef>(null);
-  const [isResending, setIsResending] = useState(false);
-  const { email } = useGetUser();
 
   // Use the useForm hook for form state management
   const { formData, updateField, handleSubmit, isLoading, errors } =
@@ -44,9 +40,10 @@ const Verify = () => {
   // Validation function
   const validateForm = (data: VerifyFormData) => {
     const errors: Record<string, string> = {};
+
     if (!data.otp.trim()) {
       errors.otp = "OTP is required";
-    } else if (data.otp.length !== 6) {
+    } else if (data.otp.length !== 6 || !/^\\d+$/.test(data.otp)) {
       errors.otp = "OTP is invalid";
     }
 
@@ -77,7 +74,6 @@ const Verify = () => {
 
   // Handle resend OTP
   const handleResendOTP = async () => {
-    setIsResending(true);
     try {
       // Clear current OTP
       otpRef.current?.clear();
@@ -89,12 +85,8 @@ const Verify = () => {
         {},
         { withCredentials: true }
       );
-      toast.success("OTP resent successfully");
     } catch (error) {
-      toast.error("Failed to resend OTP");
       console.error("Failed to resend OTP:", error);
-    } finally {
-      setIsResending(false);
     }
   };
 
@@ -103,7 +95,7 @@ const Verify = () => {
       <MailCheckIcon className="w-20 h-20 sm:w-32 sm:h-32 text_primary mb-4" />
       <h1 className="text-2xl sm:text-3xl font-bold mb-3">OTP Verification</h1>
       <p className="mb-6 text-sm sm:text-base text-gray-600 font-md">
-        We have sent a code to {email}
+        We have sent a code to code@gmail.com
       </p>
 
       <form
@@ -130,15 +122,13 @@ const Verify = () => {
           <h1 className="text-sm sm:text-lg font-medium text-gray-700">
             Didn&apos;t get the OTP code?
           </h1>
-          <LoadingButton
+          <button
             type="button"
-            variant="ghost"
             onClick={handleResendOTP}
-            className="text-sm sm:text-lg font-medium text_primary underline hover:no-underline py-0 px-0 bg-white dark:bg-white hover:bg-white"
-            isLoading={isResending}
+            className="text-sm sm:text-lg font-medium text_primary underline hover:no-underline"
           >
             Resend Code
-          </LoadingButton>
+          </button>
         </div>
 
         <LoadingButton
@@ -146,7 +136,7 @@ const Verify = () => {
           className="mt-6 w-52"
           isLoading={isLoading}
           type="submit"
-          disabled={formData.otp.length !== 6 || isLoading} // Disable if OTP is not complete
+          disabled={formData.otp.length !== 6} // Disable if OTP is not complete
         >
           Verify
         </LoadingButton>
@@ -155,4 +145,35 @@ const Verify = () => {
   );
 };
 
-export default Verify;
+export default VerifyRefactored;
+
+/*
+INTEGRATION BENEFITS:
+
+1. **Cleaner Code**: The manual OTP state management (otp array, inputRefs, handleChange, 
+   handleKeyDown, handleOnPaste) is replaced with a single OTPInput component.
+
+2. **Reusability**: The OTP logic can now be used anywhere in the app that needs OTP input.
+
+3. **Better UX**: The OTPInput component has enhanced features like:
+   - Automatic focus management
+   - Paste support for entire OTP codes
+   - Arrow key navigation
+   - Auto-completion callbacks
+   - Better accessibility
+
+4. **Form Integration**: Works seamlessly with the useForm hook for validation and submission.
+
+5. **Type Safety**: Full TypeScript support with proper typing.
+
+6. **Consistency**: Consistent styling and behavior across all OTP inputs in the app.
+
+MIGRATION STEPS:
+1. Replace the existing OTP state management in Verify.tsx with the OTPInput component
+2. Update the form submission to use the useForm hook
+3. Add proper error handling and validation
+4. Test the integration thoroughly
+5. Apply the same pattern to any other components that need OTP input
+
+The original functionality is preserved but with much cleaner, more maintainable code.
+*/

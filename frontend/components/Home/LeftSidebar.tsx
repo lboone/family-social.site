@@ -11,12 +11,15 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import CreatePostModal from "../Post/CreatePostModal";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const LeftSidebar = () => {
   const { user } = useGetUser();
   const router = useRouter();
   const logout = useLogout();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleSidebar = (label: string) => {
     if (label === "Home") {
@@ -27,6 +30,9 @@ const LeftSidebar = () => {
     }
     if (label === "Logout") {
       handleLogout();
+    }
+    if (label === "Create") {
+      setIsDialogOpen(true);
     }
   };
 
@@ -83,6 +89,10 @@ const LeftSidebar = () => {
   ];
   return (
     <div className="h-full">
+      <CreatePostModal
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+      />
       <div className="lg:p-6 p-3 cursor-pointer">
         <div
           onClick={() => router.push("/")}
@@ -94,6 +104,7 @@ const LeftSidebar = () => {
             width={150}
             height={50}
             className="my-2"
+            priority
           />
         </div>
         <div className="mt-6">

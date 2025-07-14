@@ -48,7 +48,6 @@ const ChangeBioAndImage = () => {
       newFormData.append("profilePicture", fileInputRef.current.files[0]);
     }
 
-    console.log({ newFormData });
     return await axios.post(`${API_URL_USER}/edit-profile`, newFormData, {
       withCredentials: true,
     });

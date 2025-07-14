@@ -19,7 +19,6 @@ export const BasicOTPExample = () => {
 
   const handleOTPChange = (value: string) => {
     setOtpValue(value);
-    console.log("OTP changed:", value);
   };
 
   const handleOTPComplete = (value: string) => {
@@ -90,9 +89,6 @@ export const OTPWithFormExample = () => {
     // Clear current OTP
     otpRef.current?.clear();
     updateField("otp", "");
-
-    // Implement resend logic here
-    console.log("Resending OTP...");
   };
 
   return (

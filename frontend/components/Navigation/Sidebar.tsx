@@ -1,11 +1,11 @@
 "use client";
 
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
-import { SidebarLinks, ProfileLink } from '@/utils/constants';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import Link from 'next/link';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { RootState } from "@/store/store";
+import { ProfileLink, SidebarLinks } from "@/utils/constants";
+import Link from "next/link";
+import React from "react";
+import { useSelector } from "react-redux";
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -15,31 +15,30 @@ interface SidebarItemProps {
   onClick?: () => void;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ 
-  icon, 
-  label, 
-  href, 
-  isActive = false, 
-  onClick 
+const SidebarItem: React.FC<SidebarItemProps> = ({
+  icon,
+  label,
+  href,
+  isActive = false,
+  onClick,
 }) => {
-  const baseClasses = "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200";
-  const activeClasses = isActive 
-    ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600" 
+  const baseClasses =
+    "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200";
+  const activeClasses = isActive
+    ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600"
     : "text-gray-700 hover:bg-gray-100";
 
   const content = (
     <>
-      <div className="w-6 h-6 flex items-center justify-center">
-        {icon}
-      </div>
+      <div className="w-6 h-6 flex items-center justify-center">{icon}</div>
       <span className="font-medium">{label}</span>
     </>
   );
 
   if (href) {
     return (
-      <Link 
-        href={href} 
+      <Link
+        href={href}
         className={`${baseClasses} ${activeClasses}`}
         onClick={onClick}
       >
@@ -49,7 +48,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   }
 
   return (
-    <button 
+    <button
       className={`${baseClasses} ${activeClasses} w-full text-left`}
       onClick={onClick}
     >
@@ -67,15 +66,15 @@ const Sidebar: React.FC<SidebarProps> = ({ className = "" }) => {
 
   const isActive = (href: string) => {
     // Simple active route detection - you might want to make this more sophisticated
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       return window.location.pathname === href;
     }
     return false;
   };
 
   const getUserInitials = () => {
-    if (!user) return 'U';
-    return user.username 
+    if (!user) return "U";
+    return user.username
       ? user.username.substring(0, 2).toUpperCase()
       : user.email.substring(0, 2).toUpperCase();
   };
@@ -85,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className = "" }) => {
       <div className="p-6">
         <h1 className="text-2xl font-bold text-gray-900">Family Social</h1>
       </div>
-      
+
       <nav className="px-4 space-y-2">
         {/* Regular navigation links */}
         {SidebarLinks.map((link, index) => {
@@ -100,7 +99,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className = "" }) => {
             />
           );
         })}
-        
+
         {/* Profile link with avatar */}
         {user && (
           <SidebarItem

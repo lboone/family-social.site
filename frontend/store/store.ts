@@ -10,6 +10,7 @@ import {
 } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import authSlice from "./authSlice";
+import postSlice from "./postSlice";
 
 const persistConfig = {
   key: "root",
@@ -19,7 +20,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   auth: authSlice,
-  // Example: auth: authSlice.reducer,
+  post: postSlice,
 });
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 

@@ -32,8 +32,6 @@ const ForgotPassword = () => {
   // Validation function
   const validateForm = (data: ForgotPasswordFormData) => {
     const errors: Record<string, string> = {};
-
-    console.log("Validating email:", data.email);
     if (!data.email.trim()) {
       errors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(data.email)) {
