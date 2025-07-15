@@ -43,6 +43,13 @@ const postSchema = new mongoose.Schema(
         ref: "Comment",
       },
     ],
+    hashtags: [
+      {
+        type: String,
+        lowercase: true,
+        trim: true,
+      },
+    ],
     createdAt: {
       type: Date,
       default: Date.now,
@@ -59,6 +66,11 @@ postSchema.pre("save", function (next) {
     );
     error.name = "ValidationError";
     return next(error);
+  }
+  if (this.caption) {
+    // Extract hashtags from caption
+    const hashtags = this.caption.match(/#([a-zA-Z0-9_]+)/g) || [];
+    this.hashtags = hashtags.map((tag) => tag.substring(1).toLowerCase());
   }
   next();
 });

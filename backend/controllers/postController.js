@@ -4,6 +4,7 @@ const sharp = require("sharp");
 const { uploadToCloudinary, cloudinary } = require("../utils/cloudinary");
 const Post = require("../models/postModel");
 const User = require("../models/userModel");
+const Comment = require("../models/commentModel");
 const getDataUri = require("../utils/dataUri");
 
 exports.createPost = catchAsync(async (req, res, next) => {
@@ -232,5 +233,21 @@ exports.addComment = catchAsync(async (req, res, next) => {
     data: {
       comment,
     },
+  });
+});
+
+exports.getPostsByHashtag = catchAsync(async (req, res, next) => {
+  const { hashtag } = req.params;
+
+  const posts = await Post.find({
+    hashtags: hashtag.toLowerCase(),
+  })
+    .populate("user", "username profilePicture")
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    status: "success",
+    results: posts.length,
+    data: { posts },
   });
 });

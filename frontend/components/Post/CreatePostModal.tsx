@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import InputField from "../Form/InputField";
 import LoadingButton from "../Form/LoadingButton";
 import { Button } from "../ui/button";
+import HashtagText from "../Form/HashtagText";
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -198,6 +199,12 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
               containerClassName="mt-4 w-full"
               inputClassName="focus:outline-none focus:ring-2 focus:ring-sky-600 rounded-md p-2 w-full"
             />
+            {formData.caption && (
+              <div className="mt-2 p-2 bg-gray-50 rounded">
+                <p className="text-sm text-gray-600 mb-1">Preview:</p>
+                <HashtagText text={formData.caption} />
+              </div>
+            )}
             <div className="flex justify-end space-x-4 mt-4">
               <LoadingButton
                 isLoading={isLoading}

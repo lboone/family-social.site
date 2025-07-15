@@ -46,3 +46,5 @@ export const ProfileLink = {
   label: "Profile",
   href: "/profile",
 };
+
+export const HASHTAG_REGEX = /(?:^|[\s\n])(#[a-zA-Z0-9_]+)(?=[\s\n]|$)/g;
