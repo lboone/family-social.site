@@ -33,25 +33,25 @@ const Comment = ({ user, post }: CommentProps) => {
             View All {post?.comments.length} Comments
           </p>
         </DialogTrigger>
-        <DialogContent className="max-w-5xl p-0 gap-0 flex flex-col">
+        <DialogContent className="max-w-6xl min-w-[90vw] sm:min-w-[80vw] lg:min-w-[70vw] xl:min-w-[60vw] min-h-[80vh] p-0 gap-0 flex flex-col">
           <DialogTitle></DialogTitle>
-          <div className="flex flex-1">
-            <div className="sm:w-1/2 hidden max-h-[80vh] sm:block">
+          <div className="flex flex-1 h-full">
+            <div className="sm:w-1/2 hidden min-h-[70vh] sm:block">
               {post?.image ? (
                 <Image
                   src={`${post?.image?.url}`}
                   alt="Post Image"
-                  width={300}
-                  height={300}
+                  width={600}
+                  height={600}
                   className="w-full h-full object-cover rounded-l-lg"
                 />
               ) : (
-                <div className="w-full h-[300px] bg-gray-200 flex items-center justify-center rounded-l-lg">
+                <div className="w-full h-full min-h-[70vh] bg-gray-200 flex items-center justify-center rounded-l-lg">
                   <CameraOffIcon className="w-20 h-20 text-gray-400" />
                 </div>
               )}
             </div>
-            <div className="w-full sm:w-1/2 flex flex-col justify-between">
+            <div className="w-full sm:w-1/2 flex flex-col justify-between min-h-[70vh]">
               <div className="flex items-center justify-between p-4 mt-4">
                 <div className="flex gap-3 items-center">
                   <UserAvatar user={user!} />
@@ -60,7 +60,7 @@ const Comment = ({ user, post }: CommentProps) => {
                 <DotButton post={post!} user={user!} />
               </div>
               <hr />
-              <div className="flex-1 overflow-y-auto max-h-96 p-4">
+              <div className="flex-1 overflow-y-auto max-h-[50vh] p-4">
                 {post?.comments && post?.comments.length > 0 ? (
                   post.comments.map((comment) => (
                     <div
