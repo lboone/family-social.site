@@ -68,7 +68,10 @@ const Profile = ({ id }: ProfileProps) => {
             isFollowing={isFollowing}
             userProfile={userProfile!}
           />
-          <ProfileBottom userProfile={userProfile!} />
+          <ProfileBottom
+            userProfile={userProfile!}
+            isOwnProfile={isOwnProfile}
+          />
         </div>
       </div>
     </div>

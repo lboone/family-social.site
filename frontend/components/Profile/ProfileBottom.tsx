@@ -8,8 +8,9 @@ import Saved from "./Saved";
 
 interface ProfileBottomProps {
   userProfile: User;
+  isOwnProfile: boolean;
 }
-const ProfileBottom = ({ userProfile }: ProfileBottomProps) => {
+const ProfileBottom = ({ userProfile, isOwnProfile }: ProfileBottomProps) => {
   const [postOrSave, setPostOrSave] = useState<string>("POST");
   return (
     <div className="mt-10">
@@ -35,8 +36,12 @@ const ProfileBottom = ({ userProfile }: ProfileBottomProps) => {
           <span className="font-semibold">Saved</span>
         </div>
       </div>
-      {postOrSave === "POST" && <Posts userProfile={userProfile} />}
-      {postOrSave === "SAVE" && <Saved userProfile={userProfile} />}
+      {postOrSave === "POST" && (
+        <Posts userProfile={userProfile} isOwnProfile={isOwnProfile} />
+      )}
+      {postOrSave === "SAVE" && (
+        <Saved userProfile={userProfile} isOwnProfile={isOwnProfile} />
+      )}
     </div>
   );
 };

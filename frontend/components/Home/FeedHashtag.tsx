@@ -1,20 +1,16 @@
 "use client";
 
-import Comment from "@/components/Form/Comment";
-import DotButton from "@/components/Form/DotButton";
-import HashtagText from "@/components/Form/HashtagText";
 import PageLoader from "@/components/Form/PageLoader";
-import UserAvatar from "@/components/Home/UserAvatar";
 import { handleAuthRequest } from "@/components/utils/apiRequests";
 import useGetUser from "@/hooks/useGetUser";
 import { API_URL_POST } from "@/server";
 import { setPosts } from "@/store/postSlice";
 import { RootState } from "@/store/store";
 import axios from "axios";
-import { BookmarkIcon, HeartIcon, MessageCircle, SendIcon } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import PostItem from "../Form/PostItem";
 
 // This would be your hashtag search/feed page
 interface FeedHashtagProps {
@@ -84,86 +80,7 @@ export default function FeedHashtag({ hashtag }: FeedHashtagProps) {
       </h1>
       <div className="">
         {posts.map((post) => (
-          <div key={post._id} className="mt-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <UserAvatar
-                  user={post.user!}
-                  avatarImageClassName="h-full w-full"
-                />
-                <h1 className="font-semibold text-gray-700">
-                  {post.user?.username}
-                </h1>
-              </div>
-              <DotButton post={post} user={user} />
-            </div>
-            <div className="mt-2">
-              {post.image ? (
-                <Image
-                  src={`${post.image.url}`}
-                  alt="Post Image"
-                  width={400}
-                  height={400}
-                  className="w-full"
-                />
-              ) : (
-                <div className="h-96 w-full px-6 py-10 bg-gray-200/75 flex items-center justify-center">
-                  {/* {post.caption} */}
-                  <HashtagText
-                    text={post.caption}
-                    className="text-center text-lg"
-                  />
-                </div>
-              )}
-            </div>
-            <div className="mt-3 flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <HeartIcon
-                  onClick={() => handleLikeDislike(post._id)}
-                  className="cursor-pointer"
-                />
-                <MessageCircle
-                  onClick={() => handleComment(post._id)}
-                  className="cursor-pointer"
-                />
-                <SendIcon
-                  onClick={() => handleSaveUnsave(post._id)}
-                  className="cursor-pointer"
-                />
-              </div>
-              <BookmarkIcon
-                onClick={() => handleSaveUnsave(post._id)}
-                className="cursor-pointer"
-              />
-            </div>
-            <h1 className="mt-2 text-sm font-semibold">
-              {post.likes.length} likes
-            </h1>
-            {/* {post.image && <p className="mt-2 font-medium">{post.caption}</p>} */}
-            {post.image && (
-              <HashtagText text={post.caption} className="mt-2 font-medium" />
-            )}
-            <Comment user={user} post={post} />
-            <div className="mt-2 flex items-center">
-              <input
-                type="text"
-                placeholder="Add a comment..."
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="flex-1 placeholder:text-gray-800 outline-none"
-              />
-              <p
-                role="button"
-                className="text-sm font-semibold text-sky-700 cursor-pointer"
-                onClick={() => {
-                  handleComment(post._id);
-                }}
-              >
-                Post
-              </p>
-            </div>
-            <div className="pb-6 border-b-2"></div>
-          </div>
+          <PostItem key={post._id} post={post} user={user} showOwner={true} />
         ))}
       </div>
     </div>
