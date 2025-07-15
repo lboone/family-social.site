@@ -142,7 +142,7 @@ exports.deletePost = catchAsync(async (req, res, next) => {
     return next(new AppError("User not found", 404));
   }
 
-  if (!user.isAdmin() || post.user.id.toString() !== userId.toString()) {
+  if (post.user.id.toString() !== userId.toString()) {
     return next(new AppError("You cannot delete this post", 403));
   }
 
@@ -161,7 +161,7 @@ exports.deletePost = catchAsync(async (req, res, next) => {
   await Comment.deleteMany({ post: postId });
 
   // Remove cloudinary image
-  if (post.image.publicId) {
+  if (post.image && post.image.publicId) {
     await cloudinary.uploader.destroy(post.image.publicId);
   }
 

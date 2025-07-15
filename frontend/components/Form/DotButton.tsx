@@ -7,24 +7,53 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useFollowUnfollow } from "@/hooks/useAuth";
+import { API_URL_POST } from "@/server";
+import { deletePost } from "@/store/postSlice";
 import { Post, User } from "@/types";
+import axios from "axios";
 import { EllipsisIcon } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
+import { toast } from "sonner";
 import { Button } from "../ui/button";
+import { handleAuthRequest } from "../utils/apiRequests";
 
 interface DotButtonProps {
   post?: Post | null; // Replace with actual post type
   user?: User | null; // Replace with actual user type
 }
 const DotButton = ({ post, user }: DotButtonProps) => {
-  const isOwnPost = post && user ? post?.user?._id === user?._id : false;
-  const isFollowing = post?.user?._id
-    ? user?.following?.includes(post?.user?._id)
-    : false;
   const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { handleFollowUnfollow } = useFollowUnfollow({
+    setLoading: setIsLoading,
+  });
+  const isOwnPost = post && user ? post?.user?._id === user?._id : false;
+  // const isFollowing = post?.user?._id
+  //   ? user?.following?.includes(post?.user?._id)
+  //   : false;
 
-  const handleDeletePost = async () => {};
+  const isFollowing = post?.user?._id
+    ? user?.following?.some(
+        (followId) => String(followId) === String(post?.user?._id)
+      )
+    : false;
+
+  const handleDeletePost = async () => {
+    const deletePostReq = async () =>
+      await axios.delete(`${API_URL_POST}/delete/${post?._id}`, {
+        withCredentials: true,
+      });
+    const result = await handleAuthRequest(null, deletePostReq, setIsLoading);
+    if (result?.data.status === "success") {
+      if (post?._id) {
+        dispatch(deletePost(post._id));
+        toast.success(result?.data.message);
+      }
+    }
+  };
 
   return (
     <div>
@@ -39,8 +68,14 @@ const DotButton = ({ post, user }: DotButtonProps) => {
               <Button
                 className="w-full cursor-pointer"
                 variant={isFollowing ? "destructive" : "secondary"}
+                onClick={() => handleFollowUnfollow(post?.user?._id as string)}
+                disabled={isLoading}
               >
-                {isFollowing ? "Unfollow" : "Follow"}
+                {isLoading
+                  ? "Updating..."
+                  : isFollowing
+                  ? "Unfollow"
+                  : "Follow"}
               </Button>
             )}
             <Link
@@ -55,7 +90,7 @@ const DotButton = ({ post, user }: DotButtonProps) => {
               <Button
                 className="w-full cursor-pointer"
                 variant="destructive"
-                onClick={handleDeletePost}
+                onClick={() => handleDeletePost()}
               >
                 Delete Post
               </Button>

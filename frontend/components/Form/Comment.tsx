@@ -1,10 +1,14 @@
 "use client";
+import { API_URL_POST } from "@/server";
+import { addComment } from "@/store/postSlice";
 import { Post, User } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import axios from "axios";
 import { CameraOffIcon } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
+import { toast } from "sonner";
 import UserAvatar from "../Home/UserAvatar";
 import { Button } from "../ui/button";
 import {
@@ -13,7 +17,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import { handleAuthRequest } from "../utils/apiRequests";
 import DotButton from "./DotButton";
+import HashtagText from "./HashtagText";
 
 interface CommentProps {
   user: User | null;
@@ -22,9 +28,24 @@ interface CommentProps {
 
 const Comment = ({ user, post }: CommentProps) => {
   const [comment, setComment] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const dispatch = useDispatch();
 
-  const addCommentHandler = async (id: string) => {};
+  const addCommentHandler = async (id: string) => {
+    if (!comment) return;
+    const addCommentReq = async () =>
+      await axios.post(
+        `${API_URL_POST}/comment/${id}`,
+        { text: comment },
+        { withCredentials: true }
+      );
+    const result = await handleAuthRequest(null, addCommentReq, setIsLoading);
+    if (result?.data.status === "success") {
+      dispatch(addComment({ comment: result?.data.data.comment, postId: id }));
+      toast.success("Comment posted");
+      setComment("");
+    }
+  };
   return (
     <div>
       <Dialog>
@@ -52,15 +73,21 @@ const Comment = ({ user, post }: CommentProps) => {
               )}
             </div>
             <div className="w-full sm:w-1/2 flex flex-col justify-between min-h-[70vh]">
-              <div className="flex items-center justify-between p-4 mt-4">
-                <div className="flex gap-3 items-center">
-                  <UserAvatar user={user!} />
-                  <p className="font-semibold text-sm">{user?.username}</p>
+              <div>
+                <div className="flex items-center justify-between px-4 mt-8 mb-4">
+                  <div className="flex gap-3 items-center">
+                    <UserAvatar
+                      user={user!}
+                      avatarImageClassName="w-12 h-12 rounded-full object-cover"
+                      avatarClassName="w-12 h-12"
+                    />
+                    <p className="font-semibold text-sm">{user?.username}</p>
+                  </div>
+                  <DotButton post={post!} user={user!} />
                 </div>
-                <DotButton post={post!} user={user!} />
+                <hr />
               </div>
-              <hr />
-              <div className="flex-1 overflow-y-auto max-h-[50vh] p-4">
+              <div className="flex-1 overflow-y-auto max-h-[50vh] px-4">
                 {post?.comments && post?.comments.length > 0 ? (
                   post.comments.map((comment) => (
                     <div
@@ -71,6 +98,7 @@ const Comment = ({ user, post }: CommentProps) => {
                         <AvatarImage
                           src={comment?.user?.profilePicture}
                           alt={comment?.user?.username}
+                          className="w-12 h-12 rounded-full object-cover"
                         />
                         <AvatarFallback>
                           {comment?.user?.username
@@ -83,7 +111,9 @@ const Comment = ({ user, post }: CommentProps) => {
                         <p className="text-sm font-bold">
                           {comment?.user?.username}
                         </p>
-                        <p className="font-normal text-sm">{comment?.text}</p>
+                        <div className="font-normal text-sm">
+                          <HashtagText text={comment?.text} />
+                        </div>
                       </div>
                     </div>
                   ))
@@ -102,7 +132,18 @@ const Comment = ({ user, post }: CommentProps) => {
                     placeholder="Add a comment..."
                     className="w-full outline-none border text-sm border-gray-300 p-2 rounded"
                   />
-                  <Button variant="outline">Send</Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (post?._id) {
+                        addCommentHandler(post._id);
+                      }
+                    }}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Sending..." : "Send"}
+                  </Button>
                 </div>
               </div>
             </div>

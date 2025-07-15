@@ -4,10 +4,10 @@ import UserAvatar from "@/components/Home/UserAvatar";
 import { cn } from "@/lib/utils";
 import { API_URL_POST } from "@/server";
 import { setAuthUser } from "@/store/authSlice";
-import { likeOrDislikePost } from "@/store/postSlice";
+import { addComment, likeOrDislikePost } from "@/store/postSlice";
 import { Post, User } from "@/types";
 import axios from "axios";
-import { BookmarkIcon, HeartIcon, MessageCircle, SendIcon } from "lucide-react";
+import { BookmarkIcon, HeartIcon, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -62,7 +62,21 @@ const PostItem = ({
       toast.success(result?.data.message);
     }
   };
-  const handleComment = async (id: string) => {};
+  const handleComment = async (id: string) => {
+    if (!comment) return;
+    const addCommentReq = async () =>
+      await axios.post(
+        `${API_URL_POST}/comment/${id}`,
+        { text: comment },
+        { withCredentials: true }
+      );
+    const result = await handleAuthRequest(null, addCommentReq, setIsLoading);
+    if (result?.data.status === "success") {
+      dispatch(addComment({ comment: result?.data.data.comment, postId: id }));
+      toast.success("Comment posted");
+      setComment("");
+    }
+  };
   return (
     <div key={post._id} className={cn("mt-8", postClassName)}>
       {showOwner && (
@@ -104,12 +118,14 @@ const PostItem = ({
             }`}
           />
           <MessageCircle
-            onClick={() => handleComment(post._id)}
-            className="cursor-pointer"
-          />
-          <SendIcon
-            onClick={() => handleSaveUnsave(post._id)}
-            className="cursor-pointer"
+            className={`cursor-pointer ${
+              user?._id &&
+              post.comments.some(
+                (comment) => String(comment.user._id) === String(user._id)
+              )
+                ? "text-red-600"
+                : ""
+            }`}
           />
         </div>
         <BookmarkIcon

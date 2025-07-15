@@ -21,7 +21,10 @@ const Profile = ({ id }: ProfileProps) => {
   const [userProfile, setUserProfile] = useState<User>();
 
   const isOwnProfile = user?._id === id;
-  const isFollowing = user?.following?.includes(id) || false;
+
+  const isFollowing =
+    user?.following?.some((followId) => String(followId) === String(id)) ||
+    false;
 
   const [formData] = useState<UserProfileFormData>({
     data: {

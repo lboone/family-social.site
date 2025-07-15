@@ -1,6 +1,8 @@
 "use client";
+import { useFollowUnfollow } from "@/hooks/useAuth";
 import { User } from "@/types";
 import Link from "next/link";
+import { useState } from "react";
 import UserAvatar from "../Home/UserAvatar";
 import { Button } from "../ui/button";
 
@@ -14,6 +16,11 @@ const ProfileHeader = ({
   isFollowing,
   userProfile,
 }: ProfileHeaderProps) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { handleFollowUnfollow } = useFollowUnfollow({
+    setLoading: setIsLoading,
+  });
+  console.log({ userProfile });
   const accountActivity = [
     {
       label: "Posts",
@@ -51,8 +58,12 @@ const ProfileHeader = ({
             </Link>
           )}
           {!isOwnProfile && (
-            <Button variant={isFollowing ? "destructive" : "primary"}>
-              {isFollowing ? "Unfollow" : "Follow"}
+            <Button
+              variant={isFollowing ? "destructive" : "primary"}
+              onClick={() => handleFollowUnfollow(userProfile._id)}
+              disabled={isLoading}
+            >
+              {isLoading ? "Updating..." : isFollowing ? "Unfollow" : "Follow"}
             </Button>
           )}
         </div>
