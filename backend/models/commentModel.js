@@ -16,10 +16,6 @@ const commentSchema = new mongoose.Schema(
       ref: "User",
       required: [true, "A comment must have a user"],
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
   },
   {
     timestamps: true,

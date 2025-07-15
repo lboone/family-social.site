@@ -69,11 +69,11 @@ const Comment = ({ user, post }: CommentProps) => {
                     >
                       <Avatar>
                         <AvatarImage
-                          src={comment.user.profilePicture}
-                          alt={comment.user.username}
+                          src={comment?.user?.profilePicture}
+                          alt={comment?.user?.username}
                         />
                         <AvatarFallback>
-                          {comment.user.username
+                          {comment?.user?.username
                             ? comment.user.username.charAt(0).toUpperCase() +
                               comment.user.username.charAt(1).toUpperCase()
                             : "UN"}
@@ -81,9 +81,9 @@ const Comment = ({ user, post }: CommentProps) => {
                       </Avatar>
                       <div className="flex items-center space-x-2">
                         <p className="text-sm font-bold">
-                          {comment.user.username}
+                          {comment?.user?.username}
                         </p>
-                        <p className="font-normal text-sm">{comment.text}</p>
+                        <p className="font-normal text-sm">{comment?.text}</p>
                       </div>
                     </div>
                   ))
