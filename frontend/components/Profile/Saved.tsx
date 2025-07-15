@@ -12,7 +12,7 @@ const Saved = ({ userProfile, isOwnProfile }: SavedProps) => {
     return (
       <div className="flex flex-col w-full h-screen items-center ">
         <div className="flex flex-col gap-10 mt-20">
-          <h1 className="text-3xl font-bold text-center">No Posts Yet</h1>
+          <h1 className="text-3xl font-bold text-center">No Saved Posts Yet</h1>
           <p className="text-lg text-gray-600 text-center mb-10">
             {isOwnProfile
               ? "You haven't saved any posts yet."
