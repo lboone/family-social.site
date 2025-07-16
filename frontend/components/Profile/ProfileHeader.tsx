@@ -3,7 +3,7 @@ import { useFollowUnfollow } from "@/hooks/useAuth";
 import useGetUser from "@/hooks/useGetUser";
 import { User } from "@/types";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import UserAvatar from "../Home/UserAvatar";
 import { Button } from "../ui/button";
 
@@ -14,12 +14,38 @@ interface ProfileHeaderProps {
 const ProfileHeader = ({ isOwnProfile, userProfile }: ProfileHeaderProps) => {
   const { user } = useGetUser();
 
+  // Local state to track follower count
+  const [followerCount, setFollowerCount] = useState<number>(
+    userProfile?.followers.length || 0
+  );
+
+  // Update follower count when userProfile changes
+  useEffect(() => {
+    setFollowerCount(userProfile?.followers.length || 0);
+  }, [userProfile]);
+
   // Calculate isFollowing from current Redux state
   const isFollowing =
     user?.following?.some(
       (followId) => String(followId) === String(userProfile._id)
     ) || false;
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Custom follow/unfollow handler that updates local state
+  const handleFollowUnfollowWithUpdate = async (userId: string) => {
+    const wasFollowing = isFollowing;
+
+    // Optimistically update the follower count
+    setFollowerCount((prev) => (wasFollowing ? prev - 1 : prev + 1));
+
+    try {
+      await handleFollowUnfollow(userId);
+    } catch {
+      // Revert the optimistic update if the request failed
+      setFollowerCount((prev) => (wasFollowing ? prev + 1 : prev - 1));
+    }
+  };
+
   const { handleFollowUnfollow } = useFollowUnfollow({
     setLoading: setIsLoading,
   });
@@ -30,7 +56,7 @@ const ProfileHeader = ({ isOwnProfile, userProfile }: ProfileHeaderProps) => {
     },
     {
       label: "Followers",
-      count: userProfile?.followers.length || 0,
+      count: followerCount,
     },
     {
       label: "Following",
@@ -62,7 +88,7 @@ const ProfileHeader = ({ isOwnProfile, userProfile }: ProfileHeaderProps) => {
           {!isOwnProfile && (
             <Button
               variant={isFollowing ? "destructive" : "primary"}
-              onClick={() => handleFollowUnfollow(userProfile._id)}
+              onClick={() => handleFollowUnfollowWithUpdate(userProfile._id)}
               disabled={isLoading}
             >
               {isLoading ? "Updating..." : isFollowing ? "Unfollow" : "Follow"}
