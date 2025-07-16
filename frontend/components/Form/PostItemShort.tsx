@@ -1,13 +1,12 @@
-import { Post, User } from "@/types";
+import { Post } from "@/types";
 import { HeartIcon, MessageCircleIcon } from "lucide-react";
 import Image from "next/image";
 import HashtagText from "./HashtagText";
 
 interface PostItemShortProps {
   post: Post;
-  user: User | null;
 }
-const PostItemShort = ({ post, user }: PostItemShortProps) => {
+const PostItemShort = ({ post }: PostItemShortProps) => {
   return (
     <div className="relative group overflow-hidden">
       {post?.image ? (

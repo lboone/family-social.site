@@ -150,13 +150,11 @@ const Posts = ({ userProfile, isOwnProfile }: PostsProps) => {
           if (posts.length === index + 1) {
             return (
               <div ref={lastPostElementRef} key={post._id}>
-                <PostItemShort post={post} user={userProfile} />
+                <PostItemShort post={post} />
               </div>
             );
           } else {
-            return (
-              <PostItemShort key={post._id} post={post} user={userProfile} />
-            );
+            return <PostItemShort key={post._id} post={post} />;
           }
         })}
       </div>

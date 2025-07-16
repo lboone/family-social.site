@@ -22,10 +22,6 @@ const Profile = ({ id }: ProfileProps) => {
 
   const isOwnProfile = user?._id === id;
 
-  const isFollowing =
-    user?.following?.some((followId) => String(followId) === String(id)) ||
-    false;
-
   const [formData] = useState<UserProfileFormData>({
     data: {
       data: {
@@ -54,7 +50,7 @@ const Profile = ({ id }: ProfileProps) => {
     getUserProfile();
   }, [id, formData, setUserProfile, setIsLoading]);
 
-  if (isLoading) {
+  if (isLoading || !userProfile) {
     return <PageLoader />;
   }
 
@@ -68,11 +64,10 @@ const Profile = ({ id }: ProfileProps) => {
         <div className="w-[90%] sm:w-[80%] mx-auto">
           <ProfileHeader
             isOwnProfile={isOwnProfile}
-            isFollowing={isFollowing}
-            userProfile={userProfile!}
+            userProfile={userProfile}
           />
           <ProfileBottom
-            userProfile={userProfile!}
+            userProfile={userProfile}
             isOwnProfile={isOwnProfile}
           />
         </div>

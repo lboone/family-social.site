@@ -9,7 +9,7 @@ import { Post, User } from "@/types";
 import axios from "axios";
 import { BookmarkIcon, HeartIcon, MessageCircle } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 import Comment from "../Form/Comment";
@@ -29,7 +29,6 @@ interface PostItemProps {
 }
 const PostItem = ({
   post,
-  setIsLoading,
   user,
   postClassName,
   showOwner = true,
@@ -39,44 +38,72 @@ const PostItem = ({
 }: PostItemProps) => {
   const dispatch = useDispatch();
   const [comment, setComment] = useState<string>("");
+  const [isLikeLoading, setIsLikeLoading] = useState<boolean>(false);
+  const [isSaveLoading, setIsSaveLoading] = useState<boolean>(false);
+  const [isCommentLoading, setIsCommentLoading] = useState<boolean>(false);
 
-  const handleLikeDislike = async (id: string) => {
-    const likeDislikeReq = async () =>
-      await axios.post(`${API_URL_POST}/like-unlike/${id}`, null, {
-        withCredentials: true,
-      });
-    const result = await handleAuthRequest(null, likeDislikeReq, setIsLoading);
-    if (result?.data.status === "success") {
-      dispatch(likeOrDislikePost({ postId: id, userId: user!._id }));
-      toast.success(result?.data.message);
-    }
-  };
-  const handleSaveUnsave = async (id: string) => {
-    const saveUnsaveReq = async () =>
-      await axios.post(`${API_URL_POST}/save-unsave/${id}`, null, {
-        withCredentials: true,
-      });
-    const result = await handleAuthRequest(null, saveUnsaveReq, setIsLoading);
-    if (result?.data.status === "success") {
-      dispatch(setAuthUser(result?.data.data.user));
-      toast.success(result?.data.message);
-    }
-  };
-  const handleComment = async (id: string) => {
-    if (!comment) return;
-    const addCommentReq = async () =>
-      await axios.post(
-        `${API_URL_POST}/comment/${id}`,
-        { text: comment },
-        { withCredentials: true }
+  const handleLikeDislike = useCallback(
+    async (id: string) => {
+      const likeDislikeReq = async () =>
+        await axios.post(`${API_URL_POST}/like-unlike/${id}`, null, {
+          withCredentials: true,
+        });
+      const result = await handleAuthRequest(
+        null,
+        likeDislikeReq,
+        setIsLikeLoading
       );
-    const result = await handleAuthRequest(null, addCommentReq, setIsLoading);
-    if (result?.data.status === "success") {
-      dispatch(addComment({ comment: result?.data.data.comment, postId: id }));
-      toast.success("Comment posted");
-      setComment("");
-    }
-  };
+      if (result?.data.status === "success") {
+        dispatch(likeOrDislikePost({ postId: id, userId: user!._id }));
+        toast.success(result?.data.message);
+      }
+    },
+    [dispatch, user]
+  );
+
+  const handleSaveUnsave = useCallback(
+    async (id: string) => {
+      const saveUnsaveReq = async () =>
+        await axios.post(`${API_URL_POST}/save-unsave/${id}`, null, {
+          withCredentials: true,
+        });
+      const result = await handleAuthRequest(
+        null,
+        saveUnsaveReq,
+        setIsSaveLoading
+      );
+      if (result?.data.status === "success") {
+        dispatch(setAuthUser(result?.data.data.user));
+        toast.success(result?.data.message);
+      }
+    },
+    [dispatch]
+  );
+
+  const handleComment = useCallback(
+    async (id: string) => {
+      if (!comment) return;
+      const addCommentReq = async () =>
+        await axios.post(
+          `${API_URL_POST}/comment/${id}`,
+          { text: comment },
+          { withCredentials: true }
+        );
+      const result = await handleAuthRequest(
+        null,
+        addCommentReq,
+        setIsCommentLoading
+      );
+      if (result?.data.status === "success") {
+        dispatch(
+          addComment({ comment: result?.data.data.comment, postId: id })
+        );
+        toast.success("Comment posted");
+        setComment("");
+      }
+    },
+    [comment, dispatch]
+  );
   return (
     <div key={post._id} className={cn("mt-8", postClassName)}>
       {showOwner && (
@@ -112,8 +139,16 @@ const PostItem = ({
       <div className="mt-3 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <HeartIcon
-            onClick={() => handleLikeDislike(post._id)}
-            className={`cursor-pointer ${
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!isLikeLoading) {
+                handleLikeDislike(post._id);
+              }
+            }}
+            className={`cursor-pointer transition-colors ${
+              isLikeLoading ? "opacity-50 cursor-not-allowed" : ""
+            } ${
               user?._id && post.likes.includes(user?._id) ? "text-red-600" : ""
             }`}
           />
@@ -129,8 +164,16 @@ const PostItem = ({
           />
         </div>
         <BookmarkIcon
-          onClick={() => handleSaveUnsave(post._id)}
-          className={`cursor-pointer ${
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!isSaveLoading) {
+              handleSaveUnsave(post._id);
+            }
+          }}
+          className={`cursor-pointer transition-colors ${
+            isSaveLoading ? "opacity-50 cursor-not-allowed" : ""
+          } ${
             (user?.savedPosts as string[])?.some(
               (savedPostId: string) => savedPostId === post._id
             )
@@ -155,12 +198,18 @@ const PostItem = ({
         />
         <p
           role="button"
-          className="text-sm font-semibold text-sky-700 cursor-pointer"
+          className={`text-sm font-semibold cursor-pointer transition-colors ${
+            isCommentLoading
+              ? "opacity-50 cursor-not-allowed text-gray-400"
+              : "text-sky-700"
+          }`}
           onClick={() => {
-            handleComment(post._id);
+            if (!isCommentLoading) {
+              handleComment(post._id);
+            }
           }}
         >
-          Post
+          {isCommentLoading ? "Posting..." : "Post"}
         </p>
       </div>
       <div className="pb-6 border-b-2"></div>
@@ -168,4 +217,74 @@ const PostItem = ({
   );
 };
 
-export default PostItem;
+// Custom comparison function for memo to prevent unnecessary re-renders
+const areEqual = (prevProps: PostItemProps, nextProps: PostItemProps) => {
+  // Compare basic props (ignore setIsLoading as it's a function that changes on every render)
+  if (
+    prevProps.postClassName !== nextProps.postClassName ||
+    prevProps.showOwner !== nextProps.showOwner ||
+    prevProps.imageWidth !== nextProps.imageWidth ||
+    prevProps.imageHeight !== nextProps.imageHeight ||
+    prevProps.imageClassName !== nextProps.imageClassName
+  ) {
+    return false;
+  }
+
+  // Compare user
+  if (prevProps.user?._id !== nextProps.user?._id) {
+    return false;
+  }
+
+  // Compare post - check the fields that matter for rendering
+  if (
+    prevProps.post._id !== nextProps.post._id ||
+    prevProps.post.caption !== nextProps.post.caption ||
+    prevProps.post.image?.url !== nextProps.post.image?.url ||
+    prevProps.post.likes.length !== nextProps.post.likes.length ||
+    prevProps.post.comments.length !== nextProps.post.comments.length
+  ) {
+    return false;
+  }
+
+  // Check if current user's like status changed
+  const prevLiked = prevProps.user?._id
+    ? prevProps.post.likes.includes(prevProps.user._id)
+    : false;
+  const nextLiked = nextProps.user?._id
+    ? nextProps.post.likes.includes(nextProps.user._id)
+    : false;
+  if (prevLiked !== nextLiked) {
+    return false;
+  }
+
+  // Check if current user's save status changed
+  const prevSavedPosts = prevProps.user?.savedPosts || [];
+  const nextSavedPosts = nextProps.user?.savedPosts || [];
+
+  const prevSaved = Array.isArray(prevSavedPosts)
+    ? prevSavedPosts.some((savedPost) =>
+        typeof savedPost === "string"
+          ? savedPost === prevProps.post._id
+          : savedPost._id === prevProps.post._id
+      )
+    : false;
+
+  const nextSaved = Array.isArray(nextSavedPosts)
+    ? nextSavedPosts.some((savedPost) =>
+        typeof savedPost === "string"
+          ? savedPost === nextProps.post._id
+          : savedPost._id === nextProps.post._id
+      )
+    : false;
+
+  if (prevSaved !== nextSaved) {
+    return false;
+  }
+
+  // NOTE: We intentionally ignore setIsLoading function comparison
+  // as it's recreated on every parent render but doesn't affect the component's output
+
+  return true;
+};
+
+export default memo(PostItem, areEqual);

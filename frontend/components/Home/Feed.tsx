@@ -117,18 +117,11 @@ const Feed = () => {
         if (posts.length === index + 1) {
           return (
             <div ref={lastPostElementRef} key={post._id}>
-              <PostItem post={post} user={user} setIsLoading={setIsLoading} />
+              <PostItem post={post} user={user} />
             </div>
           );
         } else {
-          return (
-            <PostItem
-              post={post}
-              user={user}
-              setIsLoading={setIsLoading}
-              key={post._id}
-            />
-          );
+          return <PostItem post={post} user={user} key={post._id} />;
         }
       })}
 

@@ -13,7 +13,7 @@ import LoadingButton from "../../Form/LoadingButton";
 
 const ChangePassword = () => {
   const logout = useLogout();
-  const { formData, handleChange, handleSubmit, isLoading, resetForm } =
+  const { formData, handleChange, handleSubmit, isLoading } =
     useForm<ChangePasswordFormData>({
       currentPassword: "",
       newPassword: "",

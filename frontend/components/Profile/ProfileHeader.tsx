@@ -1,5 +1,6 @@
 "use client";
 import { useFollowUnfollow } from "@/hooks/useAuth";
+import useGetUser from "@/hooks/useGetUser";
 import { User } from "@/types";
 import Link from "next/link";
 import { useState } from "react";
@@ -8,19 +9,20 @@ import { Button } from "../ui/button";
 
 interface ProfileHeaderProps {
   isOwnProfile: boolean;
-  isFollowing: boolean;
   userProfile: User;
 }
-const ProfileHeader = ({
-  isOwnProfile,
-  isFollowing,
-  userProfile,
-}: ProfileHeaderProps) => {
+const ProfileHeader = ({ isOwnProfile, userProfile }: ProfileHeaderProps) => {
+  const { user } = useGetUser();
+
+  // Calculate isFollowing from current Redux state
+  const isFollowing =
+    user?.following?.some(
+      (followId) => String(followId) === String(userProfile._id)
+    ) || false;
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { handleFollowUnfollow } = useFollowUnfollow({
     setLoading: setIsLoading,
   });
-  console.log({ userProfile });
   const accountActivity = [
     {
       label: "Posts",
@@ -39,7 +41,7 @@ const ProfileHeader = ({
   return (
     <div className="mt-16 flex md:flex-row flex-col md:items-center pb-16 border-b-2 md:space-x-20">
       <UserAvatar
-        user={userProfile!}
+        user={userProfile}
         avatarClassName="w-[10rem] h-[10rem] mb-8 md:mb-0"
         avatarImageClassName="w-[10rem] h-[10rem]"
         avatarFallbackClassName="text-xl"

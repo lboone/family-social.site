@@ -2,7 +2,6 @@ import { handleAuthRequest } from "@/components/utils/apiRequests";
 import { API_URL_USER } from "@/server";
 import { setAuthUser } from "@/store/authSlice";
 import axios from "axios";
-import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 
@@ -11,7 +10,6 @@ interface FollowUnfollowResponse {
 }
 export const useFollowUnfollow = ({ setLoading }: FollowUnfollowResponse) => {
   const dispatch = useDispatch();
-  const router = useRouter();
 
   const handleFollowUnfollow = async (userId: string) => {
     const followUnfollowReq = async () =>
@@ -25,8 +23,8 @@ export const useFollowUnfollow = ({ setLoading }: FollowUnfollowResponse) => {
     if (result?.data.status === "success") {
       dispatch(setAuthUser(result?.data.data.user));
       toast.success(result?.data.message);
-      router.refresh();
-      router.push(`/`);
+      // Remove router.refresh() and router.push('/') to prevent navigation
+      // The Redux state update will automatically update the UI
     }
   };
   return {
