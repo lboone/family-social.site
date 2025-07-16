@@ -114,8 +114,23 @@ const UsersIcon = () => {
                   onSelect={() => {
                     router.push(`/profile/${user._id}`);
                   }}
+                  className="flex flex-col items-start gap-1 p-3"
                 >
-                  {user.username.toUpperCase()} - {user.postCount} posts
+                  <div className="flex items-center justify-between w-full">
+                    <div className="font-semibold">
+                      {user.username.toUpperCase()}
+                    </div>
+                    <div className="text-sm text-muted-foreground flex-shrink-0 font-semibold">
+                      {user.postCount} {user.postCount === 1 ? "post" : "posts"}
+                    </div>
+                  </div>
+                  {user.bio && (
+                    <div className="text-sm text-muted-foreground break-words w-full">
+                      {user.bio.length > 60
+                        ? user.bio.substring(0, 60) + "..."
+                        : user.bio}
+                    </div>
+                  )}
                 </CommandItem>
               ))}
             </CommandGroup>

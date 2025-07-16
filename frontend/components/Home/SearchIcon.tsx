@@ -115,8 +115,14 @@ const SearchIcon = () => {
                     router.push(`/hashtags/${hashtag.hashtag}`);
                     console.log("Current value:", currentValue);
                   }}
+                  className="flex items-center justify-between"
                 >
-                  {hashtag.hashtag} - {hashtag.count} posts
+                  <div className="font-semibold">
+                    #{hashtag.hashtag.toUpperCase()}
+                  </div>
+                  <div className="text-sm text-muted-foreground font-semibold">
+                    {hashtag.count} {hashtag.count === 1 ? "post" : "posts"}
+                  </div>
                 </CommandItem>
               ))}
             </CommandGroup>
