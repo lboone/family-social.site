@@ -55,7 +55,35 @@ exports.createPost = catchAsync(async (req, res, next) => {
   });
 });
 
+// exports.getAllPost = catchAsync(async (req, res, next) => {
+//   const posts = await Post.find()
+//     .populate({
+//       path: "user",
+//       select: "username bio profilePicture",
+//     })
+//     .populate({
+//       path: "comments",
+//       select: "text user",
+//       populate: {
+//         path: "user",
+//         select: "username profilePicture",
+//       },
+//     })
+//     .sort({ createdAt: -1 });
+
+//   return res.status(200).json({
+//     status: "success",
+//     message: "Posts retrieved successfully",
+//     data: { posts },
+//   });
+// });
+
+// In postController.js - update getAllPost function
 exports.getAllPost = catchAsync(async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
   const posts = await Post.find()
     .populate({
       path: "user",
@@ -69,15 +97,27 @@ exports.getAllPost = catchAsync(async (req, res, next) => {
         select: "username profilePicture",
       },
     })
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const totalPosts = await Post.countDocuments();
+  const hasMore = skip + posts.length < totalPosts;
 
   return res.status(200).json({
     status: "success",
     message: "Posts retrieved successfully",
-    data: { posts },
+    data: {
+      posts,
+      pagination: {
+        currentPage: page,
+        totalPosts,
+        hasMore,
+        totalPages: Math.ceil(totalPosts / limit),
+      },
+    },
   });
 });
-
 exports.getUserPosts = catchAsync(async (req, res, next) => {
   const userId = req.params.id;
 

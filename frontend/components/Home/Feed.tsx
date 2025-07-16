@@ -2,11 +2,11 @@
 
 import useGetUser from "@/hooks/useGetUser";
 import { API_URL_POST } from "@/server";
-import { setPosts } from "@/store/postSlice";
+import { appendPosts, setPosts } from "@/store/postSlice";
 import { RootState } from "@/store/store";
 import axios from "axios";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import PageLoader from "../Form/PageLoader";
 import PostItem from "../Form/PostItem";
@@ -17,18 +17,69 @@ const Feed = () => {
   const { user } = useGetUser();
   const posts = useSelector((state: RootState) => state.post.posts);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const observer = useRef<IntersectionObserver | null>(null);
 
+  // Load initial posts
   useEffect(() => {
     const getAllPost = async () => {
       const getAllPostReq = async () =>
-        await axios.get(`${API_URL_POST}/all`, { withCredentials: true });
+        await axios.get(`${API_URL_POST}/all?page=1&limit=10`, {
+          withCredentials: true,
+        });
       const result = await handleAuthRequest(null, getAllPostReq, setIsLoading);
       if (result) {
         dispatch(setPosts(result.data.data.posts));
+        setHasMore(result.data.data.pagination?.hasMore || false);
+        setPage(2); // Next page to load
       }
     };
     getAllPost();
   }, [dispatch]);
+
+  // Load more posts
+  const loadMorePosts = useCallback(async () => {
+    if (isLoadingMore || !hasMore) return;
+
+    setIsLoadingMore(true);
+    try {
+      const getAllPostReq = async () =>
+        await axios.get(`${API_URL_POST}/all?page=${page}&limit=10`, {
+          withCredentials: true,
+        });
+      const result = await handleAuthRequest(null, getAllPostReq);
+      if (result && result.data.data.posts.length > 0) {
+        // Append new posts to existing ones
+        dispatch(appendPosts(result.data.data.posts));
+        setHasMore(result.data.data.pagination?.hasMore || false);
+        setPage((prev) => prev + 1);
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error("Error loading more posts:", error);
+      setHasMore(false);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [dispatch, page, hasMore, isLoadingMore]);
+
+  // Intersection Observer callback
+  const lastPostElementRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (isLoadingMore) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadMorePosts();
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [isLoadingMore, hasMore, loadMorePosts]
+  );
 
   if (isLoading) {
     return (
@@ -58,16 +109,43 @@ const Feed = () => {
       </div>
     );
   }
+
   return (
     <div className="mt-20 pl-2 w-full md:w-[70%] md:p1-0 mx-auto">
-      {posts.map((post) => (
-        <PostItem
-          post={post}
-          user={user}
-          setIsLoading={setIsLoading}
-          key={post._id}
-        />
-      ))}
+      {posts.map((post, index) => {
+        // Attach ref to the last post for infinite scrolling
+        if (posts.length === index + 1) {
+          return (
+            <div ref={lastPostElementRef} key={post._id}>
+              <PostItem post={post} user={user} setIsLoading={setIsLoading} />
+            </div>
+          );
+        } else {
+          return (
+            <PostItem
+              post={post}
+              user={user}
+              setIsLoading={setIsLoading}
+              key={post._id}
+            />
+          );
+        }
+      })}
+
+      {/* Loading indicator for more posts */}
+      {isLoadingMore && (
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <span className="ml-2 text-gray-600">Loading more posts...</span>
+        </div>
+      )}
+
+      {/* End message when no more posts */}
+      {!hasMore && posts.length > 10 && (
+        <div className="flex justify-center items-center py-8">
+          <p className="text-gray-500">You&apos;ve reached the end of posts</p>
+        </div>
+      )}
     </div>
   );
 };

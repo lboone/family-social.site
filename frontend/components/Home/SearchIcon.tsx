@@ -12,7 +12,7 @@ import axios from "axios";
 import { SearchIcon as SearchIconOriginal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import PageLoader from "../Form/PageLoader";
 import { handleAuthRequest } from "../utils/apiRequests";
 
 interface Hashtag {
@@ -20,7 +20,6 @@ interface Hashtag {
   hashtag: string;
 }
 const SearchIcon = () => {
-  const dispatch = useDispatch();
   const router = useRouter();
   const [hashtags, setHashtags] = useState<Hashtag[]>([]);
   const [hashtagCount, setHashtagCount] = useState<number>(0);
@@ -28,46 +27,68 @@ const SearchIcon = () => {
 
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    const getAllHashtags = async () => {
-      const getAllHashtagsReq = async () =>
-        await axios.get(`${API_URL_POST}/hashtags`, {
-          withCredentials: true,
-        });
-      const result = await handleAuthRequest(
-        null,
-        getAllHashtagsReq,
-        setIsLoading
-      );
-      if (result) {
-        console.log({ result });
-        setHashtags(result.data.data.hashtags);
-        setHashtagCount(result.data.results);
-      }
-    };
-    getAllHashtags();
-  }, [dispatch, setIsLoading]);
+  const handleClickSearch = () => {
+    if (open === false) {
+      const getAllHashtags = async () => {
+        const getAllHashtagsReq = async () =>
+          await axios.get(`${API_URL_POST}/hashtags`, {
+            withCredentials: true,
+          });
+        const result = await handleAuthRequest(
+          null,
+          getAllHashtagsReq,
+          setIsLoading
+        );
+        if (result) {
+          console.log({ result });
+          setHashtags(result.data.data.hashtags);
+          setHashtagCount(result.data.results);
+        }
+      };
+      getAllHashtags();
+    }
+    setOpen(!open);
+  };
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "j" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        if (open === false) {
+          const getAllHashtags = async () => {
+            const getAllHashtagsReq = async () =>
+              await axios.get(`${API_URL_POST}/hashtags`, {
+                withCredentials: true,
+              });
+            const result = await handleAuthRequest(
+              null,
+              getAllHashtagsReq,
+              setIsLoading
+            );
+            if (result) {
+              console.log({ result });
+              setHashtags(result.data.data.hashtags);
+              setHashtagCount(result.data.results);
+            }
+          };
+          getAllHashtags();
+        }
+        setOpen((prev) => !prev);
       }
     };
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, []);
+  }, [open, setOpen, setIsLoading]);
   return (
     <>
       <div
-        onClick={() => setOpen(!open)}
+        onClick={handleClickSearch}
         className="flex items-center mb-2 rounded-lg p-3 cursor-pointer group transition-all duration-200 hover:bg-gray-100 space-x-2"
       >
         <div className="group-hover:scale-110 transition-all duration-200">
           <SearchIconOriginal />
         </div>
-        <p className="lg:text-lg text-base flex items-center gap-3">
+        <div className="lg:text-lg text-base flex items-center gap-3">
           <p>Search</p>
           <p className="text-muted-foreground text-sm">
             <span className="inline-block md:hidden lg:inline-block  mr-1">
@@ -77,27 +98,31 @@ const SearchIcon = () => {
               <span className="text-xs">⌘</span>J
             </kbd>
           </p>
-        </p>
+        </div>
       </div>
-      <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Search for a hashtag..." />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Hashtags">
-            {hashtags.map((hashtag) => (
-              <CommandItem
-                key={hashtag.hashtag}
-                onSelect={(currentValue) => {
-                  router.push(`/hashtags/${hashtag.hashtag}`);
-                  console.log("Current value:", currentValue);
-                }}
-              >
-                {hashtag.hashtag} - {hashtag.count} posts
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
+      {isLoading ? (
+        <PageLoader />
+      ) : (
+        <CommandDialog open={open} onOpenChange={setOpen}>
+          <CommandInput placeholder="Search for a hashtag..." />
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup heading={`${hashtagCount} Hashtags`}>
+              {hashtags.map((hashtag) => (
+                <CommandItem
+                  key={hashtag.hashtag}
+                  onSelect={(currentValue) => {
+                    router.push(`/hashtags/${hashtag.hashtag}`);
+                    console.log("Current value:", currentValue);
+                  }}
+                >
+                  {hashtag.hashtag} - {hashtag.count} posts
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
+      )}
     </>
   );
 };
