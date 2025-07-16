@@ -90,7 +90,7 @@ const FeedAllUsers = () => {
   }
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">Unauthorized Users</h2>
+      <h2 className="text-2xl font-bold mb-6">All Users</h2>
       {allUsers.length > 0 ? (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow">
@@ -211,10 +211,10 @@ const FeedAllUsers = () => {
         <div className="text-center py-8">
           <CogIcon className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">
-            No unauthorized users
+            No users found
           </h3>
           <p className="mt-1 text-sm text-gray-500">
-            All users are verified and active.
+            Once people sign up, they will appear here.
           </p>
         </div>
       )}
