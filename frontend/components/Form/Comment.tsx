@@ -89,9 +89,9 @@ const Comment = ({ user, post }: CommentProps) => {
               </div>
               <div className="flex-1 overflow-y-auto max-h-[50vh] px-4">
                 {post?.comments && post?.comments.length > 0 ? (
-                  post.comments.map((comment) => (
+                  post.comments.map((comment, index) => (
                     <div
-                      key={comment._id}
+                      key={comment._id || index}
                       className="flex mb-4 gap-3 items-center"
                     >
                       <Avatar>

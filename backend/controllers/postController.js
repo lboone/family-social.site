@@ -279,6 +279,7 @@ exports.addComment = catchAsync(async (req, res, next) => {
   const comment = await Comment.create({
     text,
     user: userId,
+    post: postId,
   });
   post.comments.push(comment);
   await post.save({ validateBeforeSave: false });
