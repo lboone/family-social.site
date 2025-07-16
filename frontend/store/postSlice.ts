@@ -5,12 +5,14 @@ interface PostState {
   posts: Post[];
   hashtagPosts: Post[];
   userPosts: Post[];
+  savedPosts: Post[];
 }
 
 const initialState: PostState = {
   posts: [],
   hashtagPosts: [],
   userPosts: [],
+  savedPosts: [],
 };
 
 const postSlice = createSlice({
@@ -65,6 +67,12 @@ const postSlice = createSlice({
     appendUserPosts: (state, action: PayloadAction<Post[]>) => {
       state.userPosts = [...(state.userPosts || []), ...action.payload];
     },
+    setSavedPosts: (state, action: PayloadAction<Post[]>) => {
+      state.savedPosts = action.payload;
+    },
+    appendSavedPosts: (state, action: PayloadAction<Post[]>) => {
+      state.savedPosts = [...(state.savedPosts || []), ...action.payload];
+    },
   },
 });
 
@@ -79,6 +87,8 @@ export const {
   appendHashtagPosts,
   setUserPosts,
   appendUserPosts,
+  setSavedPosts,
+  appendSavedPosts,
 } = postSlice.actions;
 
 export default postSlice.reducer;

@@ -5,6 +5,7 @@ const {
   createPost,
   getAllPost,
   getUserPosts,
+  getSavedPosts,
   saveOrUnsavePost,
   deletePost,
   likeOrUnlikePost,
@@ -20,6 +21,7 @@ const upload = require("../middleware/multer");
 router.post("/create", isAllowedUser, upload.single("postImage"), createPost);
 router.get("/all", isAllowedUser, getAllPost);
 router.get("/user/:id", isAllowedUser, getUserPosts);
+router.get("/saved/:id", isAllowedUser, getSavedPosts);
 router.post("/save-unsave/:postId", isAllowedUser, saveOrUnsavePost);
 router.post("/like-unlike/:postId", isAllowedUser, likeOrUnlikePost);
 router.post("/comment/:postId", isAllowedUser, addComment);

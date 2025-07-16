@@ -375,3 +375,48 @@ exports.getAllHashtags = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.getSavedPosts = catchAsync(async (req, res, next) => {
+  const userId = req.params.id;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 12; // 12 for grid layout
+  const skip = (page - 1) * limit;
+
+  // Find the user and populate saved posts with pagination
+  const user = await User.findById(userId).populate({
+    path: "savedPosts",
+    populate: {
+      path: "user",
+      select: "username bio profilePicture",
+    },
+    options: {
+      sort: { createdAt: -1 },
+      skip: skip,
+      limit: limit,
+    },
+  });
+
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  // Get total count of saved posts for pagination info
+  const totalSavedPosts = user.savedPosts.length;
+  const totalPages = Math.ceil(totalSavedPosts / limit);
+  const hasMore = page < totalPages;
+
+  return res.status(200).json({
+    status: "success",
+    results: user.savedPosts.length,
+    data: {
+      posts: user.savedPosts,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalPosts: totalSavedPosts,
+        hasMore,
+        limit,
+      },
+    },
+  });
+});

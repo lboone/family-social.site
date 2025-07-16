@@ -47,3 +47,18 @@ export const useUserPostsSelector = () => {
     }
   });
 };
+
+export const useSavedPostsSelector = () => {
+  return useSelector((state: RootState) => {
+    try {
+      // Handle cases where state or state.post might be undefined during rehydration
+      if (!state || !state.post || !state.post.savedPosts) {
+        return [];
+      }
+      return Array.isArray(state.post.savedPosts) ? state.post.savedPosts : [];
+    } catch (error) {
+      console.warn("Error accessing saved posts from Redux state:", error);
+      return [];
+    }
+  });
+};
