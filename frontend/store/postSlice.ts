@@ -3,10 +3,12 @@ import { Comment, Post } from "../types";
 
 interface PostState {
   posts: Post[];
+  hashtagPosts: Post[];
 }
 
 const initialState: PostState = {
   posts: [],
+  hashtagPosts: [],
 };
 
 const postSlice = createSlice({
@@ -27,7 +29,7 @@ const postSlice = createSlice({
       action: PayloadAction<{ postId: string; userId: string }>
     ) => {
       const { postId, userId } = action.payload;
-      const post = state.posts.find((post) => post._id === postId);
+      const post = state.posts?.find((post) => post._id === postId);
       if (post) {
         if (post.likes.includes(userId)) {
           post.likes = post.likes.filter((like) => like !== userId);
@@ -41,13 +43,19 @@ const postSlice = createSlice({
       action: PayloadAction<{ postId: string; comment: Comment }>
     ) => {
       const { postId, comment } = action.payload;
-      const post = state.posts.find((post) => post._id === postId);
+      const post = state.posts?.find((post) => post._id === postId);
       if (post) {
         post.comments.push(comment);
       }
     },
     appendPosts: (state, action: PayloadAction<Post[]>) => {
-      state.posts = [...state.posts, ...action.payload];
+      state.posts = [...(state.posts || []), ...action.payload];
+    },
+    setHashtagPosts: (state, action: PayloadAction<Post[]>) => {
+      state.hashtagPosts = action.payload;
+    },
+    appendHashtagPosts: (state, action: PayloadAction<Post[]>) => {
+      state.hashtagPosts = [...(state.hashtagPosts || []), ...action.payload];
     },
   },
 });
@@ -59,6 +67,8 @@ export const {
   likeOrDislikePost,
   addComment,
   appendPosts,
+  setHashtagPosts,
+  appendHashtagPosts,
 } = postSlice.actions;
 
 export default postSlice.reducer;

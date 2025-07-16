@@ -278,17 +278,38 @@ exports.addComment = catchAsync(async (req, res, next) => {
 
 exports.getPostsByHashtag = catchAsync(async (req, res, next) => {
   const { hashtag } = req.params;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
 
   const posts = await Post.find({
     hashtags: hashtag.toLowerCase(),
   })
     .populate("user", "username profilePicture")
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  // Get total count for pagination info
+  const totalPosts = await Post.countDocuments({
+    hashtags: hashtag.toLowerCase(),
+  });
+  const totalPages = Math.ceil(totalPosts / limit);
+  const hasMore = page < totalPages;
 
   res.status(200).json({
     status: "success",
     results: posts.length,
-    data: { posts },
+    data: {
+      posts,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalPosts,
+        hasMore,
+        limit,
+      },
+    },
   });
 });
 

@@ -1,13 +1,13 @@
 "use client";
 
 import useGetUser from "@/hooks/useGetUser";
+import { usePostsSelector } from "@/hooks/usePostsSelector";
 import { API_URL_POST } from "@/server";
 import { appendPosts, setPosts } from "@/store/postSlice";
-import { RootState } from "@/store/store";
 import axios from "axios";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import PageLoader from "../Form/PageLoader";
 import PostItem from "../Form/PostItem";
 import { handleAuthRequest } from "../utils/apiRequests";
@@ -15,7 +15,7 @@ import { handleAuthRequest } from "../utils/apiRequests";
 const Feed = () => {
   const dispatch = useDispatch();
   const { user } = useGetUser();
-  const posts = useSelector((state: RootState) => state.post.posts);
+  const posts = usePostsSelector();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
