@@ -16,7 +16,7 @@ const ProfileBottom = ({ userProfile, isOwnProfile }: ProfileBottomProps) => {
   const [activeTab, setActiveTab] = useState<string>("POST");
   return (
     <div className="mt-10">
-      <div className="flex items-center justify-center space-x-8 border-b border-gray-200 pb-2">
+      <div className="flex items-center justify-center space-x-1 md:space-x-4 lg:space-x-8 border-b border-gray-200 pb-2">
         <div
           className={cn(
             "flex items-center space-x-2 cursor-pointer transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50",

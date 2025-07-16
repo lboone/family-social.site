@@ -149,6 +149,15 @@
   .dark .hashtag-link {
     @apply text-blue-400 hover:text-blue-300;
   }
+
+  /* Force cursor pointer utility */
+  .force-cursor-pointer {
+    cursor: pointer !important;
+  }
+
+  .force-cursor-pointer:hover {
+    cursor: pointer !important;
+  }
 }
 @layer base {
   * {

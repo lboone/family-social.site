@@ -14,7 +14,6 @@ const UserProfileCard = ({ user }: UserProfileCardProps) => {
           <p className="text-gray-500">{user.bio || "My Profile Bio Here"}</p>
         </div>
       </div>
-      <h1 className="font-medium text-sky-600 cursor-pointer">Switch</h1>
     </div>
   );
 };
