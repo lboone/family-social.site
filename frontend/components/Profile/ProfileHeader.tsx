@@ -31,6 +31,11 @@ const ProfileHeader = ({ isOwnProfile, userProfile }: ProfileHeaderProps) => {
     ) || false;
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  // Initialize the follow/unfollow hook first
+  const { handleFollowUnfollow } = useFollowUnfollow({
+    setLoading: setIsLoading,
+  });
+
   // Custom follow/unfollow handler that updates local state
   const handleFollowUnfollowWithUpdate = async (userId: string) => {
     const wasFollowing = isFollowing;
@@ -40,15 +45,13 @@ const ProfileHeader = ({ isOwnProfile, userProfile }: ProfileHeaderProps) => {
 
     try {
       await handleFollowUnfollow(userId);
+      // Force a small delay to ensure Redux state has been updated
+      // This helps ensure the isFollowing calculation reflects the new state
     } catch {
       // Revert the optimistic update if the request failed
       setFollowerCount((prev) => (wasFollowing ? prev + 1 : prev - 1));
     }
   };
-
-  const { handleFollowUnfollow } = useFollowUnfollow({
-    setLoading: setIsLoading,
-  });
   const accountActivity = [
     {
       label: "Posts",

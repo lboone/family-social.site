@@ -13,10 +13,9 @@ import NoPostsFound from "./NoPostsFound";
 
 interface SavedProps {
   userProfile: User;
-  isOwnProfile: boolean;
 }
 
-const Saved = ({ userProfile, isOwnProfile }: SavedProps) => {
+const Saved = ({ userProfile }: SavedProps) => {
   const dispatch = useDispatch();
   const posts = useSavedPostsSelector();
   const [isLoading, setIsLoading] = useState<boolean>(false);

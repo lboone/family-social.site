@@ -73,12 +73,8 @@ const ProfileBottom = ({ userProfile, isOwnProfile }: ProfileBottomProps) => {
       {activeTab === "POST" && (
         <Posts userProfile={userProfile} isOwnProfile={isOwnProfile} />
       )}
-      {activeTab === "SAVE" && (
-        <Saved userProfile={userProfile} isOwnProfile={isOwnProfile} />
-      )}
-      {activeTab === "LIKED" && (
-        <Liked userProfile={userProfile} isOwnProfile={isOwnProfile} />
-      )}
+      {activeTab === "SAVE" && <Saved userProfile={userProfile} />}
+      {activeTab === "LIKED" && <Liked userProfile={userProfile} />}
       {activeTab === "FOLLOWING" && (
         <Following userProfile={userProfile} isOwnProfile={isOwnProfile} />
       )}

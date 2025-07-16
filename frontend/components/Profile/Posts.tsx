@@ -13,7 +13,7 @@ import NoPostsFound from "./NoPostsFound";
 
 interface PostsProps {
   userProfile: User;
-  isOwnProfile: boolean;
+  isOwnProfile?: boolean;
 }
 
 const Posts = ({ userProfile, isOwnProfile }: PostsProps) => {
@@ -112,7 +112,7 @@ const Posts = ({ userProfile, isOwnProfile }: PostsProps) => {
   }
 
   if (posts.length < 1) {
-    return <NoPostsFound postType="posts" />;
+    return <NoPostsFound postType="posts" isOwnProfile={isOwnProfile} />;
   }
 
   return (

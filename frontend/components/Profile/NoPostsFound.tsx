@@ -1,17 +1,24 @@
 import Image from "next/image";
 interface NoPostsFoundProps {
   postType?: "posts" | "saved" | "liked" | "following" | "followers";
+  isOwnProfile?: boolean;
 }
-const NoPostsFound = ({ postType }: NoPostsFoundProps) => {
-  let titleMessage = "No Posts Yet";
-  let descriptionMessage = "Posts you create will appear here.";
-  let directionMessage = "Start your first post now!";
+const NoPostsFound = ({ postType, isOwnProfile }: NoPostsFoundProps) => {
+  let titleMessage;
+  let descriptionMessage;
+  let directionMessage;
 
   switch (postType) {
     case "posts":
       titleMessage = "No Posts Yet";
-      descriptionMessage = "Posts you create will appear here.";
-      directionMessage = "Start your first post now!";
+      descriptionMessage = `Posts ${
+        isOwnProfile ? "you create" : "they create"
+      } will appear here.`;
+      directionMessage = `${
+        isOwnProfile
+          ? "Start your first post now"
+          : "Looks like they haven't created any posts yet"
+      }`;
       break;
     case "saved":
       titleMessage = "No Saved Posts Yet";

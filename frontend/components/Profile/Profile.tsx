@@ -21,7 +21,7 @@ const Profile = ({ id }: ProfileProps) => {
   const [userProfile, setUserProfile] = useState<User>();
 
   const isOwnProfile = user?._id === id;
-
+  console.log("isOwnProfile", isOwnProfile);
   const [formData] = useState<UserProfileFormData>({
     data: {
       data: {

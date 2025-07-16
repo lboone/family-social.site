@@ -13,10 +13,9 @@ import NoPostsFound from "./NoPostsFound";
 
 interface LikedProps {
   userProfile: User;
-  isOwnProfile: boolean;
 }
 
-const Liked = ({ userProfile, isOwnProfile }: LikedProps) => {
+const Liked = ({ userProfile }: LikedProps) => {
   const dispatch = useDispatch();
   const posts = useLikedPostsSelector();
   const [isLoading, setIsLoading] = useState<boolean>(false);
