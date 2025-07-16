@@ -44,18 +44,28 @@ const PostItem = ({
 
   const handleLikeDislike = useCallback(
     async (id: string) => {
-      const likeDislikeReq = async () =>
-        await axios.post(`${API_URL_POST}/like-unlike/${id}`, null, {
-          withCredentials: true,
-        });
-      const result = await handleAuthRequest(
-        null,
-        likeDislikeReq,
-        setIsLikeLoading
-      );
-      if (result?.data.status === "success") {
-        dispatch(likeOrDislikePost({ postId: id, userId: user!._id }));
-        toast.success(result?.data.message);
+      try {
+        if (!user?._id) {
+          console.warn("Cannot like/dislike: User not authenticated");
+          return;
+        }
+
+        const likeDislikeReq = async () =>
+          await axios.post(`${API_URL_POST}/like-unlike/${id}`, null, {
+            withCredentials: true,
+          });
+        const result = await handleAuthRequest(
+          null,
+          likeDislikeReq,
+          setIsLikeLoading
+        );
+        if (result?.data.status === "success") {
+          dispatch(likeOrDislikePost({ postId: id, userId: user._id }));
+          toast.success(result?.data.message);
+        }
+      } catch (error) {
+        console.error("Error in handleLikeDislike:", error);
+        toast.error("Failed to update like status");
       }
     },
     [dispatch, user]
@@ -63,56 +73,80 @@ const PostItem = ({
 
   const handleSaveUnsave = useCallback(
     async (id: string) => {
-      const saveUnsaveReq = async () =>
-        await axios.post(`${API_URL_POST}/save-unsave/${id}`, null, {
-          withCredentials: true,
-        });
-      const result = await handleAuthRequest(
-        null,
-        saveUnsaveReq,
-        setIsSaveLoading
-      );
-      if (result?.data.status === "success") {
-        dispatch(setAuthUser(result?.data.data.user));
-        toast.success(result?.data.message);
+      try {
+        if (!user) {
+          console.warn("Cannot save/unsave: User not authenticated");
+          return;
+        }
+
+        const saveUnsaveReq = async () =>
+          await axios.post(`${API_URL_POST}/save-unsave/${id}`, null, {
+            withCredentials: true,
+          });
+        const result = await handleAuthRequest(
+          null,
+          saveUnsaveReq,
+          setIsSaveLoading
+        );
+        if (result?.data.status === "success") {
+          dispatch(setAuthUser(result?.data.data.user));
+          toast.success(result?.data.message);
+        }
+      } catch (error) {
+        console.error("Error in handleSaveUnsave:", error);
+        toast.error("Failed to update save status");
       }
     },
-    [dispatch]
+    [dispatch, user]
   );
 
   const handleComment = useCallback(
     async (id: string) => {
-      if (!comment) return;
-      const addCommentReq = async () =>
-        await axios.post(
-          `${API_URL_POST}/comment/${id}`,
-          { text: comment },
-          { withCredentials: true }
+      try {
+        if (!comment) return;
+        if (!user) {
+          console.warn("Cannot comment: User not authenticated");
+          return;
+        }
+
+        const addCommentReq = async () =>
+          await axios.post(
+            `${API_URL_POST}/comment/${id}`,
+            { text: comment },
+            { withCredentials: true }
+          );
+        const result = await handleAuthRequest(
+          null,
+          addCommentReq,
+          setIsCommentLoading
         );
-      const result = await handleAuthRequest(
-        null,
-        addCommentReq,
-        setIsCommentLoading
-      );
-      if (result?.data.status === "success") {
-        dispatch(
-          addComment({ comment: result?.data.data.comment, postId: id })
-        );
-        toast.success("Comment posted");
-        setComment("");
+        if (result?.data.status === "success") {
+          dispatch(
+            addComment({ comment: result?.data.data.comment, postId: id })
+          );
+          toast.success("Comment posted");
+          setComment("");
+        }
+      } catch (error) {
+        console.error("Error in handleComment:", error);
+        toast.error("Failed to post comment");
       }
     },
-    [comment, dispatch]
+    [comment, dispatch, user]
   );
+
+  // Early return if post is invalid
+  if (!post || !post._id) {
+    console.warn("PostItem: Invalid post data", { post });
+    return null;
+  }
+
   return (
     <div key={post._id} className={cn("mt-8", postClassName)}>
-      {showOwner && (
+      {showOwner && post.user && (
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <UserAvatar
-              user={post.user!}
-              avatarImageClassName="h-full w-full"
-            />
+            <UserAvatar user={post.user} avatarImageClassName="h-full w-full" />
             <h1 className="font-semibold text-gray-700">
               {post.user?.username}
             </h1>
@@ -142,7 +176,7 @@ const PostItem = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              if (!isLikeLoading) {
+              if (!isLikeLoading && user) {
                 handleLikeDislike(post._id);
               }
             }}
@@ -156,7 +190,7 @@ const PostItem = ({
             className={`cursor-pointer ${
               user?._id &&
               post.comments.some(
-                (comment) => String(comment.user._id) === String(user._id)
+                (comment) => String(comment.user?._id) === String(user._id)
               )
                 ? "text-red-600"
                 : ""
@@ -167,7 +201,7 @@ const PostItem = ({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (!isSaveLoading) {
+            if (!isSaveLoading && user) {
               handleSaveUnsave(post._id);
             }
           }}
@@ -187,7 +221,7 @@ const PostItem = ({
       {post.image && (
         <HashtagText text={post.caption} className="mt-2 font-medium" />
       )}
-      <Comment user={post.user!} post={post} />
+      {post.user && <Comment user={post.user} post={post} />}
       <div className="mt-2 flex items-center">
         <input
           type="text"
@@ -204,7 +238,7 @@ const PostItem = ({
               : "text-sky-700"
           }`}
           onClick={() => {
-            if (!isCommentLoading) {
+            if (!isCommentLoading && user) {
               handleComment(post._id);
             }
           }}
@@ -219,6 +253,11 @@ const PostItem = ({
 
 // Custom comparison function for memo to prevent unnecessary re-renders
 const areEqual = (prevProps: PostItemProps, nextProps: PostItemProps) => {
+  // Early return if either post is null/undefined
+  if (!prevProps.post || !nextProps.post) {
+    return prevProps.post === nextProps.post;
+  }
+
   // Compare basic props (ignore setIsLoading as it's a function that changes on every render)
   if (
     prevProps.postClassName !== nextProps.postClassName ||
@@ -265,7 +304,7 @@ const areEqual = (prevProps: PostItemProps, nextProps: PostItemProps) => {
     ? prevSavedPosts.some((savedPost) =>
         typeof savedPost === "string"
           ? savedPost === prevProps.post._id
-          : savedPost._id === prevProps.post._id
+          : savedPost?._id === prevProps.post._id
       )
     : false;
 
@@ -273,7 +312,7 @@ const areEqual = (prevProps: PostItemProps, nextProps: PostItemProps) => {
     ? nextSavedPosts.some((savedPost) =>
         typeof savedPost === "string"
           ? savedPost === nextProps.post._id
-          : savedPost._id === nextProps.post._id
+          : savedPost?._id === nextProps.post._id
       )
     : false;
 
