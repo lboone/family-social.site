@@ -1,8 +1,9 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { User } from "@/types";
-import { BookmarkIcon, GridIcon, HeartIcon } from "lucide-react";
+import { BookmarkIcon, GridIcon, HeartIcon, UsersIcon } from "lucide-react";
 import { useState } from "react";
+import Following from "./Following";
 import Liked from "./Liked";
 import Posts from "./Posts";
 import Saved from "./Saved";
@@ -28,30 +29,46 @@ const ProfileBottom = ({ userProfile, isOwnProfile }: ProfileBottomProps) => {
           <GridIcon size={20} />
           <span className="font-semibold">Posts</span>
         </div>
-        <div
-          className={cn(
-            "flex items-center space-x-2 cursor-pointer transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50",
-            activeTab === "SAVE"
-              ? "text-sky-600 bg-sky-50"
-              : "text-gray-600 hover:text-gray-800"
-          )}
-          onClick={() => setActiveTab("SAVE")}
-        >
-          <BookmarkIcon size={20} />
-          <span className="font-semibold">Saved</span>
-        </div>
-        <div
-          className={cn(
-            "flex items-center space-x-2 cursor-pointer transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50",
-            activeTab === "LIKED"
-              ? "text-sky-600 bg-sky-50"
-              : "text-gray-600 hover:text-gray-800"
-          )}
-          onClick={() => setActiveTab("LIKED")}
-        >
-          <HeartIcon size={20} />
-          <span className="font-semibold">Liked</span>
-        </div>
+        {isOwnProfile && (
+          <>
+            <div
+              className={cn(
+                "flex items-center space-x-2 cursor-pointer transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50",
+                activeTab === "SAVE"
+                  ? "text-sky-600 bg-sky-50"
+                  : "text-gray-600 hover:text-gray-800"
+              )}
+              onClick={() => setActiveTab("SAVE")}
+            >
+              <BookmarkIcon size={20} />
+              <span className="font-semibold">Saved</span>
+            </div>
+            <div
+              className={cn(
+                "flex items-center space-x-2 cursor-pointer transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50",
+                activeTab === "LIKED"
+                  ? "text-sky-600 bg-sky-50"
+                  : "text-gray-600 hover:text-gray-800"
+              )}
+              onClick={() => setActiveTab("LIKED")}
+            >
+              <HeartIcon size={20} />
+              <span className="font-semibold">Liked</span>
+            </div>
+            <div
+              className={cn(
+                "flex items-center space-x-2 cursor-pointer transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50",
+                activeTab === "FOLLOWING"
+                  ? "text-sky-600 bg-sky-50"
+                  : "text-gray-600 hover:text-gray-800"
+              )}
+              onClick={() => setActiveTab("FOLLOWING")}
+            >
+              <UsersIcon size={20} />
+              <span className="font-semibold">Following</span>
+            </div>
+          </>
+        )}
       </div>
       {activeTab === "POST" && (
         <Posts userProfile={userProfile} isOwnProfile={isOwnProfile} />
@@ -61,6 +78,9 @@ const ProfileBottom = ({ userProfile, isOwnProfile }: ProfileBottomProps) => {
       )}
       {activeTab === "LIKED" && (
         <Liked userProfile={userProfile} isOwnProfile={isOwnProfile} />
+      )}
+      {activeTab === "FOLLOWING" && (
+        <Following userProfile={userProfile} isOwnProfile={isOwnProfile} />
       )}
     </div>
   );

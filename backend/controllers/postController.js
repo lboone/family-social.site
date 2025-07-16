@@ -470,3 +470,71 @@ exports.getLikedPosts = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.getFollowingPosts = catchAsync(async (req, res, next) => {
+  const userId = req.params.id;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  // First, get the user to access their following list
+  const user = await User.findById(userId).select("following");
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  // If user is not following anyone, return empty results
+  if (!user.following || user.following.length === 0) {
+    return res.status(200).json({
+      status: "success",
+      results: 0,
+      data: {
+        posts: [],
+        pagination: {
+          currentPage: page,
+          totalPages: 0,
+          totalPosts: 0,
+          hasMore: false,
+          limit,
+        },
+      },
+    });
+  }
+
+  // Get posts from users that this user follows
+  const posts = await Post.find({ user: { $in: user.following } })
+    .populate({ path: "user", select: "username bio profilePicture" })
+    .populate({
+      path: "comments",
+      select: "text user",
+      populate: {
+        path: "user",
+        select: "username profilePicture",
+      },
+    })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  // Get total count of posts from followed users for pagination info
+  const totalFollowingPosts = await Post.countDocuments({
+    user: { $in: user.following },
+  });
+  const totalPages = Math.ceil(totalFollowingPosts / limit);
+  const hasMore = page < totalPages;
+
+  return res.status(200).json({
+    status: "success",
+    results: posts.length,
+    data: {
+      posts,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalPosts: totalFollowingPosts,
+        hasMore,
+        limit,
+      },
+    },
+  });
+});

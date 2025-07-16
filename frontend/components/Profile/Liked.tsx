@@ -112,20 +112,20 @@ const Liked = ({ userProfile, isOwnProfile }: LikedProps) => {
   }
 
   if (posts.length < 1) {
-    return <NoPostsFound isOwnProfile={isOwnProfile} postType="liked" />;
+    return <NoPostsFound postType="liked" />;
   }
 
   return (
-    <div className="mt-10">
-      {/* Liked post count display */}
+    <div className="w-full">
       <div className="mb-4">
-        <p className="text-gray-600 text-sm">
-          {totalPosts === 1 ? "1 liked post" : `${totalPosts} liked posts`}
-        </p>
+        <h2 className="text-lg font-semibold text-gray-700">
+          Liked Posts ({totalPosts})
+        </h2>
+        <p className="text-sm text-gray-500">Posts you have liked</p>
       </div>
 
       {/* Liked posts grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
         {posts.map((post: Post, index: number) => {
           // Skip if post is just a string (shouldn't happen with new API)
           if (typeof post === "string") return null;

@@ -77,3 +77,20 @@ export const useLikedPostsSelector = () => {
     }
   });
 };
+
+export const useFollowingPostsSelector = () => {
+  return useSelector((state: RootState) => {
+    try {
+      // Handle cases where state or state.post might be undefined during rehydration
+      if (!state || !state.post || !state.post.followingPosts) {
+        return [];
+      }
+      return Array.isArray(state.post.followingPosts)
+        ? state.post.followingPosts
+        : [];
+    } catch (error) {
+      console.warn("Error accessing following posts from Redux state:", error);
+      return [];
+    }
+  });
+};

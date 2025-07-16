@@ -7,6 +7,7 @@ interface PostState {
   userPosts: Post[];
   savedPosts: Post[];
   likedPosts: Post[];
+  followingPosts: Post[];
 }
 
 const initialState: PostState = {
@@ -15,6 +16,7 @@ const initialState: PostState = {
   userPosts: [],
   savedPosts: [],
   likedPosts: [],
+  followingPosts: [],
 };
 
 const postSlice = createSlice({
@@ -58,6 +60,7 @@ const postSlice = createSlice({
       updatePostInArray(state.userPosts);
       updatePostInArray(state.savedPosts);
       updatePostInArray(state.likedPosts);
+      updatePostInArray(state.followingPosts);
     },
     addComment: (
       state,
@@ -78,6 +81,7 @@ const postSlice = createSlice({
       updatePostInArray(state.userPosts);
       updatePostInArray(state.savedPosts);
       updatePostInArray(state.likedPosts);
+      updatePostInArray(state.followingPosts);
     },
     appendPosts: (state, action: PayloadAction<Post[]>) => {
       state.posts = [...(state.posts || []), ...action.payload];
@@ -106,6 +110,15 @@ const postSlice = createSlice({
     appendLikedPosts: (state, action: PayloadAction<Post[]>) => {
       state.likedPosts = [...(state.likedPosts || []), ...action.payload];
     },
+    setFollowingPosts: (state, action: PayloadAction<Post[]>) => {
+      state.followingPosts = action.payload;
+    },
+    appendFollowingPosts: (state, action: PayloadAction<Post[]>) => {
+      state.followingPosts = [
+        ...(state.followingPosts || []),
+        ...action.payload,
+      ];
+    },
   },
 });
 
@@ -124,6 +137,8 @@ export const {
   appendSavedPosts,
   setLikedPosts,
   appendLikedPosts,
+  setFollowingPosts,
+  appendFollowingPosts,
 } = postSlice.actions;
 
 export default postSlice.reducer;

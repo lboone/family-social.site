@@ -1,24 +1,25 @@
 "use client";
 
+import PageLoader from "@/components/Form/PageLoader";
+import PostItemShort from "@/components/Form/PostItemShort";
 import { handleAuthRequest } from "@/components/utils/apiRequests";
-import { useUserPostsSelector } from "@/hooks/usePostsSelector";
+import { useFollowingPostsSelector } from "@/hooks/usePostsSelector";
 import { API_URL_POST } from "@/server";
-import { appendUserPosts, setUserPosts } from "@/store/postSlice";
-import { Post, User } from "@/types";
+import { appendFollowingPosts, setFollowingPosts } from "@/store/postSlice";
+import { User } from "@/types";
 import axios from "axios";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
-import PostItemShort from "../Form/PostItemShort";
 import NoPostsFound from "./NoPostsFound";
 
-interface PostsProps {
+interface FollowingProps {
   userProfile: User;
   isOwnProfile: boolean;
 }
 
-const Posts = ({ userProfile, isOwnProfile }: PostsProps) => {
+const Following = ({ userProfile, isOwnProfile }: FollowingProps) => {
   const dispatch = useDispatch();
-  const posts = useUserPostsSelector();
+  const posts = useFollowingPostsSelector();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
@@ -26,67 +27,66 @@ const Posts = ({ userProfile, isOwnProfile }: PostsProps) => {
   const [totalPosts, setTotalPosts] = useState<number>(0);
   const observer = useRef<IntersectionObserver | null>(null);
 
-  // Load initial user posts
+  // Load initial following posts
   useEffect(() => {
-    if (!userProfile?._id) return;
-
-    // Reset pagination state when user changes
-    setPage(1);
-    setHasMore(true);
-    setIsLoadingMore(false);
-
-    const getUserPosts = async () => {
-      const getUserPostsReq = async () =>
+    const getFollowingPosts = async () => {
+      const getFollowingPostsReq = async () =>
         await axios.get(
-          `${API_URL_POST}/user/${userProfile._id}?page=1&limit=12`,
+          `${API_URL_POST}/following/${userProfile._id}?page=1&limit=12`,
           {
             withCredentials: true,
           }
         );
       const result = await handleAuthRequest(
         null,
-        getUserPostsReq,
+        getFollowingPostsReq,
         setIsLoading
       );
       if (result) {
-        dispatch(setUserPosts(result.data.data.posts));
+        dispatch(setFollowingPosts(result.data.data.posts));
         setHasMore(result.data.data.pagination?.hasMore || false);
         setTotalPosts(result.data.data.pagination?.totalPosts || 0);
-        setPage(2); // Next page to load
+        setPage(1);
       }
     };
-    getUserPosts();
-  }, [userProfile?._id, dispatch]);
+    if (userProfile?._id) {
+      getFollowingPosts();
+    }
+  }, [userProfile._id, dispatch]);
 
-  // Load more user posts
+  // Load more posts function
   const loadMorePosts = useCallback(async () => {
-    if (isLoadingMore || !hasMore || !userProfile?._id) return;
+    if (isLoadingMore || !hasMore) return;
 
     setIsLoadingMore(true);
     try {
-      const getUserPostsReq = async () =>
+      const nextPage = page + 1;
+      const getMoreFollowingPostsReq = async () =>
         await axios.get(
-          `${API_URL_POST}/user/${userProfile._id}?page=${page}&limit=12`,
+          `${API_URL_POST}/following/${userProfile._id}?page=${nextPage}&limit=12`,
           {
             withCredentials: true,
           }
         );
-      const result = await handleAuthRequest(null, getUserPostsReq);
+      const result = await handleAuthRequest(
+        null,
+        getMoreFollowingPostsReq,
+        setIsLoadingMore
+      );
       if (result && result.data.data.posts.length > 0) {
-        // Append new posts to existing ones
-        dispatch(appendUserPosts(result.data.data.posts));
+        dispatch(appendFollowingPosts(result.data.data.posts));
+        setPage(nextPage);
         setHasMore(result.data.data.pagination?.hasMore || false);
-        setPage((prev) => prev + 1);
       } else {
         setHasMore(false);
       }
     } catch (error) {
-      console.error("Error loading more user posts:", error);
+      console.error("Error loading more following posts:", error);
       setHasMore(false);
     } finally {
       setIsLoadingMore(false);
     }
-  }, [dispatch, page, hasMore, isLoadingMore, userProfile?._id]);
+  }, [dispatch, page, hasMore, isLoadingMore, userProfile._id]);
 
   // Intersection Observer callback
   const lastPostElementRef = useCallback(
@@ -105,28 +105,42 @@ const Posts = ({ userProfile, isOwnProfile }: PostsProps) => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="w-full h-[200px] flex items-center justify-center">
+        <PageLoader />
       </div>
     );
   }
 
+  // Show message if not own profile
+  if (!isOwnProfile) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[200px] text-center">
+        <h2 className="text-lg font-semibold text-gray-600 mb-2">
+          Following Posts
+        </h2>
+        <p className="text-gray-500">
+          You can only view your own following posts.
+        </p>
+      </div>
+    );
+  }
+
+  // Show empty state if no posts
   if (posts.length < 1) {
-    return <NoPostsFound postType="posts" />;
+    return <NoPostsFound postType="following" />;
   }
 
   return (
     <div className="w-full">
       <div className="mb-4">
         <h2 className="text-lg font-semibold text-gray-700">
-          Your Posts ({totalPosts})
+          Following Posts ({totalPosts})
         </h2>
-        <p className="text-sm text-gray-500">Posts you have created</p>
+        <p className="text-sm text-gray-500">Posts from people you follow</p>
       </div>
 
-      {/* Posts grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-        {posts.map((post: Post, index: number) => {
+        {posts.map((post, index) => {
           // Attach ref to the last post for infinite scrolling
           if (posts.length === index + 1) {
             return (
@@ -152,11 +166,12 @@ const Posts = ({ userProfile, isOwnProfile }: PostsProps) => {
       {!hasMore && posts.length > 12 && (
         <div className="flex justify-center items-center py-8">
           <p className="text-gray-500">
-            You&apos;ve reached the end of all posts
+            You&apos;ve reached the end of following posts
           </p>
         </div>
       )}
     </div>
   );
 };
-export default Posts;
+
+export default Following;
