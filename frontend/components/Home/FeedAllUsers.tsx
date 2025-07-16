@@ -15,11 +15,11 @@ import { handleAuthRequest } from "../utils/apiRequests";
 
 // Extended user interface for admin view with OTP fields
 
-const FeedUnauthorizedUsers = () => {
+const FeedAllUsers = () => {
   const dispatch = useDispatch();
   const router = useRouter();
 
-  const [unauthorizedUsers, setUnauthorizedUsers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleActivateUser = async (
@@ -59,7 +59,7 @@ const FeedUnauthorizedUsers = () => {
             setIsLoading
           );
           if (result && result.data.status === "success") {
-            setUnauthorizedUsers(result.data.data.users);
+            setAllUsers(result.data.data.users);
           }
         };
         getAllPost();
@@ -80,7 +80,7 @@ const FeedUnauthorizedUsers = () => {
         });
       const result = await handleAuthRequest(null, getAllPostReq, setIsLoading);
       if (result && result.data.status === "success") {
-        setUnauthorizedUsers(result.data.data.users);
+        setAllUsers(result.data.data.users);
       }
     };
     getAllPost();
@@ -91,7 +91,7 @@ const FeedUnauthorizedUsers = () => {
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-6">Unauthorized Users</h2>
-      {unauthorizedUsers.length > 0 ? (
+      {allUsers.length > 0 ? (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow">
             <thead className="bg-gray-50">
@@ -114,7 +114,7 @@ const FeedUnauthorizedUsers = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {unauthorizedUsers.map((user) => (
+              {allUsers.map((user) => (
                 <tr key={user._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -142,15 +142,15 @@ const FeedUnauthorizedUsers = () => {
                     <div className="text-sm text-gray-900">{user.email}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex flex-col space-y-1">
+                    <div className="flex items-center space-x-2">
                       <Badge
-                        variant={user.isVerified ? "default" : "destructive"}
+                        variant={user.isVerified ? "primary" : "destructive"}
                         className="text-xs"
                       >
                         {user.isVerified ? "Verified" : "Unverified"}
                       </Badge>
                       <Badge
-                        variant={user.isActive ? "default" : "secondary"}
+                        variant={user.isActive ? "primary" : "destructive"}
                         className="text-xs"
                         onClick={() =>
                           handleActivateUser(
@@ -221,4 +221,4 @@ const FeedUnauthorizedUsers = () => {
     </div>
   );
 };
-export default FeedUnauthorizedUsers;
+export default FeedAllUsers;

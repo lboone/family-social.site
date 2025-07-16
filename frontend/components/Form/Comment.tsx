@@ -4,7 +4,6 @@ import { addComment } from "@/store/postSlice";
 import { Post, User } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import axios from "axios";
-import { CameraOffIcon } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -67,8 +66,12 @@ const Comment = ({ user, post }: CommentProps) => {
                   className="w-full h-full object-cover rounded-l-lg"
                 />
               ) : (
-                <div className="w-full h-full min-h-[70vh] bg-gray-200 flex items-center justify-center rounded-l-lg">
-                  <CameraOffIcon className="w-20 h-20 text-gray-400" />
+                <div className="h-full w-full px-6 py-10 bg-gray-200/75 flex items-center justify-center">
+                  {/* {post.caption} */}
+                  <HashtagText
+                    text={post?.caption as string}
+                    className="text-center text-lg"
+                  />
                 </div>
               )}
             </div>

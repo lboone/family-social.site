@@ -2,7 +2,7 @@
 import useGetUser from "@/hooks/useGetUser";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import FeedUnauthorizedUsers from "./FeedUnauthorizedUsers";
+import FeedAllUsers from "./FeedAllUsers";
 import LeftSidebar from "./LeftSidebar";
 import SidebarMobile from "./SidebarMobile";
 
@@ -31,7 +31,7 @@ const Admin = () => {
       </div>
       <div className="flex-1 md:ml-[20%] overflow-y-auto">
         <SidebarMobile />
-        <FeedUnauthorizedUsers />
+        <FeedAllUsers />
       </div>
     </div>
   );
