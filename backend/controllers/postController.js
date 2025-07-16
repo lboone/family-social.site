@@ -251,3 +251,47 @@ exports.getPostsByHashtag = catchAsync(async (req, res, next) => {
     data: { posts },
   });
 });
+
+exports.getAllHashtags = catchAsync(async (req, res, next) => {
+  // Aggregate hashtags from all posts
+  const hashtagStats = await Post.aggregate([
+    // Only include posts that have hashtags
+    { $match: { hashtags: { $exists: true, $ne: [] } } },
+
+    // Unwind the hashtags array to create separate documents for each hashtag
+    { $unwind: "$hashtags" },
+
+    // Group by hashtag and count occurrences
+    {
+      $group: {
+        _id: "$hashtags",
+        count: { $sum: 1 },
+      },
+    },
+
+    // Sort by count in descending order (most popular first)
+    { $sort: { count: -1 } },
+
+    // Rename _id to hashtag for clearer response
+    {
+      $project: {
+        _id: 0,
+        hashtag: "$_id",
+        count: 1,
+      },
+    },
+  ]);
+
+  // Get total unique hashtags count
+  const totalHashtags = hashtagStats.length;
+
+  return res.status(200).json({
+    status: "success",
+    message: "Hashtags retrieved successfully",
+    results: totalHashtags,
+    data: {
+      hashtags: hashtagStats,
+      totalHashtags: totalHashtags,
+    },
+  });
+});

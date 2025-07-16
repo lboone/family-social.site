@@ -1,13 +1,14 @@
 "use client";
 import useGetUser from "@/hooks/useGetUser";
 import { useLogout } from "@/utils/auth";
-import { HomeIcon, LogOutIcon, SearchIcon, SquarePlusIcon } from "lucide-react";
+import { HomeIcon, LogOutIcon, SquarePlusIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import CreatePostModal from "../Post/CreatePostModal";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import AdminIcon from "./AdminIcon";
+import SearchIcon from "./SearchIcon";
 
 const LeftSidebar = () => {
   const { user, isAdmin } = useGetUser();
@@ -105,6 +106,9 @@ const LeftSidebar = () => {
           {SidebarLinks.map((link, index) => {
             if (link.label === "Admin" && !isAdmin) {
               return null; // Skip rendering Admin link if user is not an admin
+            }
+            if (link.label === "Search") {
+              return <SearchIcon key={index} />;
             }
             return (
               <div

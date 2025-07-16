@@ -10,6 +10,7 @@ const {
   likeOrUnlikePost,
   addComment,
   getPostsByHashtag,
+  getAllHashtags,
 } = require("../controllers/postController");
 const isAllowedUser = require("../middleware/isAllowedUser");
 const upload = require("../middleware/multer");
@@ -23,6 +24,7 @@ router.post("/save-unsave/:postId", isAllowedUser, saveOrUnsavePost);
 router.post("/like-unlike/:postId", isAllowedUser, likeOrUnlikePost);
 router.post("/comment/:postId", isAllowedUser, addComment);
 router.delete("/delete/:postId", isAllowedUser, deletePost);
-router.get("/by-hashtag/:hashtag", isAllowedUser, getPostsByHashtag); // Reusing getAllPost for hashtag search
+router.get("/by-hashtag/:hashtag", isAllowedUser, getPostsByHashtag);
+router.get("/hashtags", isAllowedUser, getAllHashtags);
 
 module.exports = router;
