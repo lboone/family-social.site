@@ -6,10 +6,10 @@ import { API_URL_POST } from "@/server";
 import { appendUserPosts, setUserPosts } from "@/store/postSlice";
 import { Post, User } from "@/types";
 import axios from "axios";
-import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import PostItemShort from "../Form/PostItemShort";
+import NoPostsFound from "./NoPostsFound";
 
 interface PostsProps {
   userProfile: User;
@@ -112,26 +112,7 @@ const Posts = ({ userProfile, isOwnProfile }: PostsProps) => {
   }
 
   if (posts.length < 1) {
-    return (
-      <div className="flex flex-col w-full h-screen items-center ">
-        <div className="flex flex-col gap-10 mt-20">
-          <h1 className="text-3xl font-bold text-center">No Posts Yet</h1>
-          <p className="text-lg text-gray-600 text-center mb-10">
-            {isOwnProfile
-              ? "You haven't posted any posts yet."
-              : "This user hasn't posted any posts yet."}
-          </p>
-          <Image
-            src="/images/no-posts-yet.png"
-            alt="No Posts Yet"
-            width={500}
-            height={500}
-            className="w-full h-full object-cover"
-            priority
-          />
-        </div>
-      </div>
-    );
+    return <NoPostsFound isOwnProfile={isOwnProfile} postType="posts" />;
   }
 
   return (

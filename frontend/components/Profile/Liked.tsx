@@ -6,11 +6,10 @@ import { API_URL_POST } from "@/server";
 import { appendLikedPosts, setLikedPosts } from "@/store/postSlice";
 import { Post, User } from "@/types";
 import axios from "axios";
-import { HeartIcon } from "lucide-react";
-import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import PostItemShort from "../Form/PostItemShort";
+import NoPostsFound from "./NoPostsFound";
 
 interface LikedProps {
   userProfile: User;
@@ -113,31 +112,7 @@ const Liked = ({ userProfile, isOwnProfile }: LikedProps) => {
   }
 
   if (posts.length < 1) {
-    return (
-      <div className="flex flex-col w-full h-screen items-center ">
-        <div className="flex flex-col gap-10 mt-20">
-          <div className="flex items-center justify-center mb-4">
-            <div className="p-4 bg-red-50 rounded-full">
-              <HeartIcon size={48} className="text-red-400" />
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold text-center">No Liked Posts Yet</h1>
-          <p className="text-lg text-gray-600 text-center mb-10">
-            {isOwnProfile
-              ? "You haven't liked any posts yet. Start exploring and like posts you enjoy!"
-              : "This user hasn't liked any posts yet."}
-          </p>
-          <Image
-            src="/images/no-posts-yet.png"
-            alt="No Posts Yet"
-            width={500}
-            height={500}
-            className="w-full h-full object-cover"
-            priority
-          />
-        </div>
-      </div>
-    );
+    return <NoPostsFound isOwnProfile={isOwnProfile} postType="liked" />;
   }
 
   return (
