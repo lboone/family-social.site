@@ -9,6 +9,7 @@ import CreatePostModal from "../Post/CreatePostModal";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import AdminIcon from "./AdminIcon";
 import SearchIcon from "./SearchIcon";
+import UsersIcon from "./UsersIcon";
 
 const LeftSidebar = () => {
   const { user, isAdmin } = useGetUser();
@@ -49,6 +50,10 @@ const LeftSidebar = () => {
     {
       icon: <SearchIcon />,
       label: "Search",
+    },
+    {
+      icon: <UsersIcon />,
+      label: "Users",
     },
     {
       icon: <SquarePlusIcon />,
@@ -109,6 +114,9 @@ const LeftSidebar = () => {
             }
             if (link.label === "Search") {
               return <SearchIcon key={index} />;
+            }
+            if (link.label === "Users") {
+              return <UsersIcon key={index} />;
             }
             return (
               <div

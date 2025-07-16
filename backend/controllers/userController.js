@@ -3,6 +3,7 @@ const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const getDataUri = require("../utils/dataUri");
 const { uploadToCloudinary } = require("../utils/cloudinary");
+const mongoose = require("mongoose");
 
 exports.getProfile = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -150,7 +151,7 @@ exports.getMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getUnAuthrizedUsers = catchAsync(async (req, res, next) => {
+exports.getUnauthorizedUsers = catchAsync(async (req, res, next) => {
   const users = await User.find({
     $or: [{ isVerified: false }, { isActive: false }],
   })
@@ -171,6 +172,50 @@ exports.allUsers = catchAsync(async (req, res, next) => {
   })
     .select("-password")
     .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      users,
+    },
+  });
+});
+
+exports.getAllUsersGeneral = catchAsync(async (req, res, next) => {
+  const loginUserId = mongoose.Types.ObjectId.createFromHexString(req.user.id);
+  const users = await User.aggregate([
+    // Match users excluding the logged-in user
+    {
+      $match: {
+        _id: { $ne: loginUserId },
+        isVerified: true,
+        isActive: true,
+      },
+    },
+    // Add post count field
+    {
+      $addFields: {
+        postCount: { $size: "$posts" },
+      },
+    },
+    // Sort by post count (descending) then by username (ascending)
+    {
+      $sort: {
+        postCount: -1,
+        username: 1,
+      },
+    },
+    // Remove sensitive fields
+    {
+      $project: {
+        password: 0,
+        otp: 0,
+        otpExpires: 0,
+        resetPasswordOTP: 0,
+        resetPasswordOTPExpires: 0,
+      },
+    },
+  ]);
 
   res.status(200).json({
     status: "success",
