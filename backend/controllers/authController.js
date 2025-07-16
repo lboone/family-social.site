@@ -336,7 +336,7 @@ exports.changePassword = catchAsync(async (req, res, next) => {
 
 exports.setActive = catchAsync(async (req, res, next) => {
   const { email, isActive } = req.body;
-  if (!email || !isActive) {
+  if (!email) {
     return next(new AppError("Email and isActive are required", 400));
   }
 
@@ -344,11 +344,12 @@ exports.setActive = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError("User not found", 404));
   }
-
   const tmpIsActive = isActive === "true" || isActive === true; // Ensure boolean value
   user.isActive = tmpIsActive;
+
   await user.save({ validateBeforeSave: false });
 
+  console.log({ user });
   if (user.isActive) {
     const htmlTemplate = loadTemplate("activeAccountTemplate.hbs", {
       title: "Account Activation",
@@ -377,6 +378,12 @@ exports.setActive = catchAsync(async (req, res, next) => {
       );
     }
   }
+  res.status(200).json({
+    status: "success",
+    message: `User account updated to ${
+      user.isActive ? "active" : "inactive"
+    }.`,
+  });
 });
 
 exports.setAdmin = catchAsync(async (req, res, next) => {

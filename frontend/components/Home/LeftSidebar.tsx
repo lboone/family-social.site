@@ -1,22 +1,16 @@
 "use client";
 import useGetUser from "@/hooks/useGetUser";
 import { useLogout } from "@/utils/auth";
-import {
-  HeartIcon,
-  HomeIcon,
-  LogOutIcon,
-  MessageCircleIcon,
-  SearchIcon,
-  SquarePlusIcon,
-} from "lucide-react";
+import { HomeIcon, LogOutIcon, SearchIcon, SquarePlusIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import CreatePostModal from "../Post/CreatePostModal";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import AdminIcon from "./AdminIcon";
 
 const LeftSidebar = () => {
-  const { user } = useGetUser();
+  const { user, isAdmin } = useGetUser();
   const router = useRouter();
   const logout = useLogout();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -33,6 +27,9 @@ const LeftSidebar = () => {
     }
     if (label === "Create") {
       setIsDialogOpen(true);
+    }
+    if (label === "Admin") {
+      router.push("/admin");
     }
   };
 
@@ -53,16 +50,12 @@ const LeftSidebar = () => {
       label: "Search",
     },
     {
-      icon: <MessageCircleIcon />,
-      label: "Messages",
-    },
-    {
-      icon: <HeartIcon />,
-      label: "Notifications",
-    },
-    {
       icon: <SquarePlusIcon />,
       label: "Create",
+    },
+    {
+      icon: <AdminIcon />,
+      label: "Admin",
     },
     {
       icon: (
@@ -82,6 +75,7 @@ const LeftSidebar = () => {
       ),
       label: "Profile",
     },
+
     {
       icon: <LogOutIcon />,
       label: "Logout",
@@ -109,6 +103,9 @@ const LeftSidebar = () => {
         </div>
         <div className="mt-6">
           {SidebarLinks.map((link, index) => {
+            if (link.label === "Admin" && !isAdmin) {
+              return null; // Skip rendering Admin link if user is not an admin
+            }
             return (
               <div
                 key={index}

@@ -72,6 +72,7 @@ exports.suggestedUser = catchAsync(async (req, res, next) => {
   const users = await User.find({
     _id: { $ne: loginUserId },
     isVerified: true,
+    isActive: true,
   })
     .select(
       "-password -otp -otpExpires -resetPasswordOTP -resetPasswordOTPExpires"
@@ -145,6 +146,36 @@ exports.getMe = catchAsync(async (req, res, next) => {
     message: "Authenticated User",
     data: {
       user,
+    },
+  });
+});
+
+exports.getUnAuthrizedUsers = catchAsync(async (req, res, next) => {
+  const users = await User.find({
+    $or: [{ isVerified: false }, { isActive: false }],
+  })
+    .select("-password ")
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    status: "success",
+    results: users.length,
+    data: { users },
+  });
+});
+
+exports.allUsers = catchAsync(async (req, res, next) => {
+  const loginUserId = req.user.id;
+  const users = await User.find({
+    _id: { $ne: loginUserId },
+  })
+    .select("-password")
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      users,
     },
   });
 });

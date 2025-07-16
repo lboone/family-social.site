@@ -17,6 +17,8 @@ const {
   suggestedUser,
   followUnfollow,
   getMe,
+  getUnAuthrizedUsers,
+  allUsers,
 } = require("../controllers/userController");
 const isSignedUp = require("../middleware/isSignedUp");
 const isAllowedUser = require("../middleware/isAllowedUser");
@@ -35,6 +37,7 @@ router.post("/reset-password", resetPassword);
 router.post("/change-password", isAllowedUser, changePassword);
 router.post("/set-active", isAdmin, setActive);
 router.post("/set-admin", isAdmin, setAdmin);
+router.get("/all", isAdmin, allUsers);
 
 // User Routes
 router.get("/profile/:id", isAllowedUser, getProfile);
@@ -47,5 +50,6 @@ router.post(
 router.get("/suggested-users", isAllowedUser, suggestedUser);
 router.post("/follow-unfollow/:id", isAllowedUser, followUnfollow);
 router.get("/me", isAllowedUser, getMe);
+router.get("/unauthorized-users", isAdmin, getUnAuthrizedUsers);
 
 module.exports = router;

@@ -21,6 +21,10 @@ export interface User {
   savedPosts: string[] | Post[];
   isVerified: boolean;
   isActive: boolean;
+  otpExpires?: Date;
+  otp?: string;
+  resetPasswordOTP?: string;
+  resetPasswordOTPExpires?: Date;
   role: "user" | "admin";
 }
 
