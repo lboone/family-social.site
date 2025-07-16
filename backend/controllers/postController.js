@@ -120,6 +120,9 @@ exports.getAllPost = catchAsync(async (req, res, next) => {
 });
 exports.getUserPosts = catchAsync(async (req, res, next) => {
   const userId = req.params.id;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 12; // 12 for grid layout
+  const skip = (page - 1) * limit;
 
   const posts = await Post.find({ user: userId })
     .populate({ path: "user", select: "username bio profilePicture" })
@@ -131,12 +134,28 @@ exports.getUserPosts = catchAsync(async (req, res, next) => {
         select: "username profilePicture",
       },
     })
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  // Get total count for pagination info
+  const totalPosts = await Post.countDocuments({ user: userId });
+  const totalPages = Math.ceil(totalPosts / limit);
+  const hasMore = page < totalPages;
 
   return res.status(200).json({
     status: "success",
     results: posts.length,
-    data: { posts },
+    data: {
+      posts,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalPosts,
+        hasMore,
+        limit,
+      },
+    },
   });
 });
 

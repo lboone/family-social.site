@@ -4,11 +4,13 @@ import { Comment, Post } from "../types";
 interface PostState {
   posts: Post[];
   hashtagPosts: Post[];
+  userPosts: Post[];
 }
 
 const initialState: PostState = {
   posts: [],
   hashtagPosts: [],
+  userPosts: [],
 };
 
 const postSlice = createSlice({
@@ -57,6 +59,12 @@ const postSlice = createSlice({
     appendHashtagPosts: (state, action: PayloadAction<Post[]>) => {
       state.hashtagPosts = [...(state.hashtagPosts || []), ...action.payload];
     },
+    setUserPosts: (state, action: PayloadAction<Post[]>) => {
+      state.userPosts = action.payload;
+    },
+    appendUserPosts: (state, action: PayloadAction<Post[]>) => {
+      state.userPosts = [...(state.userPosts || []), ...action.payload];
+    },
   },
 });
 
@@ -69,6 +77,8 @@ export const {
   appendPosts,
   setHashtagPosts,
   appendHashtagPosts,
+  setUserPosts,
+  appendUserPosts,
 } = postSlice.actions;
 
 export default postSlice.reducer;

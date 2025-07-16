@@ -32,3 +32,18 @@ export const useHashtagPostsSelector = () => {
     }
   });
 };
+
+export const useUserPostsSelector = () => {
+  return useSelector((state: RootState) => {
+    try {
+      // Handle cases where state or state.post might be undefined during rehydration
+      if (!state || !state.post || !state.post.userPosts) {
+        return [];
+      }
+      return Array.isArray(state.post.userPosts) ? state.post.userPosts : [];
+    } catch (error) {
+      console.warn("Error accessing user posts from Redux state:", error);
+      return [];
+    }
+  });
+};
