@@ -6,6 +6,7 @@ const {
   getAllPost,
   getUserPosts,
   getSavedPosts,
+  getLikedPosts,
   saveOrUnsavePost,
   deletePost,
   likeOrUnlikePost,
@@ -22,6 +23,7 @@ router.post("/create", isAllowedUser, upload.single("postImage"), createPost);
 router.get("/all", isAllowedUser, getAllPost);
 router.get("/user/:id", isAllowedUser, getUserPosts);
 router.get("/saved/:id", isAllowedUser, getSavedPosts);
+router.get("/liked/:id", isAllowedUser, getLikedPosts);
 router.post("/save-unsave/:postId", isAllowedUser, saveOrUnsavePost);
 router.post("/like-unlike/:postId", isAllowedUser, likeOrUnlikePost);
 router.post("/comment/:postId", isAllowedUser, addComment);

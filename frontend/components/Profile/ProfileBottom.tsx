@@ -1,8 +1,9 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { User } from "@/types";
-import { BookmarkIcon, GridIcon } from "lucide-react";
+import { BookmarkIcon, GridIcon, HeartIcon } from "lucide-react";
 import { useState } from "react";
+import Liked from "./Liked";
 import Posts from "./Posts";
 import Saved from "./Saved";
 
@@ -11,36 +12,55 @@ interface ProfileBottomProps {
   isOwnProfile: boolean;
 }
 const ProfileBottom = ({ userProfile, isOwnProfile }: ProfileBottomProps) => {
-  const [postOrSave, setPostOrSave] = useState<string>("POST");
+  const [activeTab, setActiveTab] = useState<string>("POST");
   return (
     <div className="mt-10">
-      <div className="flex items-center justify-center space-x-14">
+      <div className="flex items-center justify-center space-x-8 border-b border-gray-200 pb-2">
         <div
           className={cn(
-            "flex items-center space-x-2 cursor-pointer",
-            postOrSave === "POST" && "text-sky-600"
+            "flex items-center space-x-2 cursor-pointer transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50",
+            activeTab === "POST"
+              ? "text-sky-600 bg-sky-50"
+              : "text-gray-600 hover:text-gray-800"
           )}
-          onClick={() => setPostOrSave("POST")}
+          onClick={() => setActiveTab("POST")}
         >
-          <GridIcon />
-          <span className="font-semibold">Post</span>
+          <GridIcon size={20} />
+          <span className="font-semibold">Posts</span>
         </div>
         <div
           className={cn(
-            "flex items-center space-x-2 cursor-pointer",
-            postOrSave === "SAVE" && "text-sky-500"
+            "flex items-center space-x-2 cursor-pointer transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50",
+            activeTab === "SAVE"
+              ? "text-sky-600 bg-sky-50"
+              : "text-gray-600 hover:text-gray-800"
           )}
-          onClick={() => setPostOrSave("SAVE")}
+          onClick={() => setActiveTab("SAVE")}
         >
-          <BookmarkIcon />
+          <BookmarkIcon size={20} />
           <span className="font-semibold">Saved</span>
         </div>
+        <div
+          className={cn(
+            "flex items-center space-x-2 cursor-pointer transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50",
+            activeTab === "LIKED"
+              ? "text-sky-600 bg-sky-50"
+              : "text-gray-600 hover:text-gray-800"
+          )}
+          onClick={() => setActiveTab("LIKED")}
+        >
+          <HeartIcon size={20} />
+          <span className="font-semibold">Liked</span>
+        </div>
       </div>
-      {postOrSave === "POST" && (
+      {activeTab === "POST" && (
         <Posts userProfile={userProfile} isOwnProfile={isOwnProfile} />
       )}
-      {postOrSave === "SAVE" && (
+      {activeTab === "SAVE" && (
         <Saved userProfile={userProfile} isOwnProfile={isOwnProfile} />
+      )}
+      {activeTab === "LIKED" && (
+        <Liked userProfile={userProfile} isOwnProfile={isOwnProfile} />
       )}
     </div>
   );

@@ -6,6 +6,7 @@ interface PostState {
   hashtagPosts: Post[];
   userPosts: Post[];
   savedPosts: Post[];
+  likedPosts: Post[];
 }
 
 const initialState: PostState = {
@@ -13,6 +14,7 @@ const initialState: PostState = {
   hashtagPosts: [],
   userPosts: [],
   savedPosts: [],
+  likedPosts: [],
 };
 
 const postSlice = createSlice({
@@ -73,6 +75,12 @@ const postSlice = createSlice({
     appendSavedPosts: (state, action: PayloadAction<Post[]>) => {
       state.savedPosts = [...(state.savedPosts || []), ...action.payload];
     },
+    setLikedPosts: (state, action: PayloadAction<Post[]>) => {
+      state.likedPosts = action.payload;
+    },
+    appendLikedPosts: (state, action: PayloadAction<Post[]>) => {
+      state.likedPosts = [...(state.likedPosts || []), ...action.payload];
+    },
   },
 });
 
@@ -89,6 +97,8 @@ export const {
   appendUserPosts,
   setSavedPosts,
   appendSavedPosts,
+  setLikedPosts,
+  appendLikedPosts,
 } = postSlice.actions;
 
 export default postSlice.reducer;

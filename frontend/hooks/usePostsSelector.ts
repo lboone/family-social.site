@@ -62,3 +62,18 @@ export const useSavedPostsSelector = () => {
     }
   });
 };
+
+export const useLikedPostsSelector = () => {
+  return useSelector((state: RootState) => {
+    try {
+      // Handle cases where state or state.post might be undefined during rehydration
+      if (!state || !state.post || !state.post.likedPosts) {
+        return [];
+      }
+      return Array.isArray(state.post.likedPosts) ? state.post.likedPosts : [];
+    } catch (error) {
+      console.warn("Error accessing liked posts from Redux state:", error);
+      return [];
+    }
+  });
+};

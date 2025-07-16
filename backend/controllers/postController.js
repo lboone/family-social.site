@@ -420,3 +420,52 @@ exports.getSavedPosts = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.getLikedPosts = catchAsync(async (req, res, next) => {
+  const userId = req.params.id;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 12; // 12 for grid layout
+  const skip = (page - 1) * limit;
+
+  // Find posts that the user has liked with pagination
+  const posts = await Post.find({
+    likes: userId,
+  })
+    .populate({
+      path: "user",
+      select: "username bio profilePicture",
+    })
+    .populate({
+      path: "comments",
+      select: "text user",
+      populate: {
+        path: "user",
+        select: "username profilePicture",
+      },
+    })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  // Get total count of liked posts for pagination info
+  const totalLikedPosts = await Post.countDocuments({
+    likes: userId,
+  });
+  const totalPages = Math.ceil(totalLikedPosts / limit);
+  const hasMore = page < totalPages;
+
+  return res.status(200).json({
+    status: "success",
+    results: posts.length,
+    data: {
+      posts,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalPosts: totalLikedPosts,
+        hasMore,
+        limit,
+      },
+    },
+  });
+});
