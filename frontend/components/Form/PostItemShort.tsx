@@ -22,8 +22,11 @@ const PostItemShort = ({ post }: PostItemShortProps) => {
             priority
           />
         ) : (
-          <div className="h-[300px] w-full px-6 py-10 bg-gray-200/75 flex items-center justify-center aspect-square">
-            <HashtagText text={post.caption} className="text-center text-lg" />
+          <div className="h-full w-full px-6 py-10 bg-gray-200/75 flex items-center justify-center aspect-square">
+            <HashtagText
+              text={post.caption}
+              className="text-center text-lg line-clamp-none sm:line-clamp-5 xl:line-clamp-none"
+            />
           </div>
         )}
 
