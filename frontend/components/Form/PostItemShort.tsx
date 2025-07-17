@@ -10,37 +10,58 @@ interface PostItemShortProps {
 const PostItemShort = ({ post }: PostItemShortProps) => {
   return (
     <div className="relative group overflow-hidden">
-      {post?.image ? (
-        <Image
-          src={`${post?.image?.url}`}
-          alt="Post"
-          width={300}
-          height={300}
-          className="w-full h-full object-cover aspect-square"
-          priority
-        />
-      ) : (
-        <div className="h-[100%] w-full px-6 py-10 bg-gray-200/75 flex items-center justify-center">
-          <HashtagText text={post.caption} className="text-center text-lg" />
-        </div>
-      )}
+      {/* Image/Content Container */}
+      <div className="relative">
+        {post?.image ? (
+          <Image
+            src={`${post?.image?.url}`}
+            alt="Post"
+            width={300}
+            height={300}
+            className="w-full h-full object-cover aspect-square"
+            priority
+          />
+        ) : (
+          <div className="h-[300px] w-full px-6 py-10 bg-gray-200/75 flex items-center justify-center aspect-square">
+            <HashtagText text={post.caption} className="text-center text-lg" />
+          </div>
+        )}
 
-      <div className="absolute inset-0 bg-black flex items-center justify-center opacity-0 group-hover:opacity-75 transition-opacity duration-300">
-        <div className="flex space-x-6">
-          <button className="p-2 rounded-full text-white space-x-2 flex items-center font-bold">
-            <HeartIcon className="w-7 h-7" />
-            <span>{post?.likes.length}</span>
-          </button>
-          <button className="p-2 rounded-full text-white space-x-2 flex items-center font-bold">
-            <MessageCircleIcon className="w-7 h-7" />
-            <span>{post?.comments.length}</span>
-          </button>
-          <Link href={`/post/${post._id}`} className="cursor-pointer">
+        {/* Desktop/Mouse Hover effect - Only on devices that can hover */}
+        <div className="hover:flex absolute inset-0 bg-black items-center justify-center opacity-0 group-hover:opacity-75 transition-opacity duration-300 [@media(hover:none)]:hidden">
+          <div className="flex space-x-6">
             <button className="p-2 rounded-full text-white space-x-2 flex items-center font-bold">
-              <LinkIcon className="w-7 h-7" />
+              <HeartIcon className="w-7 h-7" />
+              <span>{post?.likes.length}</span>
             </button>
-          </Link>
+            <button className="p-2 rounded-full text-white space-x-2 flex items-center font-bold">
+              <MessageCircleIcon className="w-7 h-7" />
+              <span>{post?.comments.length}</span>
+            </button>
+            <Link href={`/post/${post._id}`} className="cursor-pointer">
+              <button className="p-2 rounded-full text-white space-x-2 flex items-center font-bold">
+                <LinkIcon className="w-7 h-7" />
+              </button>
+            </Link>
+          </div>
         </div>
+      </div>
+
+      {/* Touch Device Stats - Always visible on touch devices, hidden on hover-capable devices */}
+      <div className="[@media(hover:hover)]:hidden flex items-center justify-between p-3 bg-white">
+        <div className="flex space-x-4">
+          <div className="flex items-center space-x-1 text-gray-700">
+            <HeartIcon className="w-5 h-5" />
+            <span className="text-sm font-medium">{post?.likes.length}</span>
+          </div>
+          <div className="flex items-center space-x-1 text-gray-700">
+            <MessageCircleIcon className="w-5 h-5" />
+            <span className="text-sm font-medium">{post?.comments.length}</span>
+          </div>
+        </div>
+        <Link href={`/post/${post._id}`} className="cursor-pointer">
+          <LinkIcon className="w-5 h-5 text-gray-700" />
+        </Link>
       </div>
     </div>
   );

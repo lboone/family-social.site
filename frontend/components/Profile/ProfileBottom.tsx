@@ -2,6 +2,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useGetUser from "@/hooks/useGetUser";
 
+import { cn } from "@/lib/utils";
 import { User } from "@/types";
 import {
   BookmarkIcon,
@@ -10,6 +11,7 @@ import {
   Users2Icon,
   UsersIcon,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import FollowersFollowingUsers from "./FollowersFollowingUsers";
 import Following from "./Following";
 import Liked from "./Liked";
@@ -22,10 +24,31 @@ interface ProfileBottomProps {
 }
 const ProfileBottom2 = ({ userProfile, isOwnProfile }: ProfileBottomProps) => {
   const { user } = useGetUser();
+  const [isMobile, setIsMobile] = useState(false);
+
   const isFollowing =
     user?.following?.some(
       (followId) => String(followId) === String(userProfile?._id)
     ) || false;
+
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 576);
+    };
+
+    // Check on mount
+    checkIsMobile();
+
+    // Add resize listener
+    window.addEventListener("resize", checkIsMobile);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkIsMobile);
+  }, []); // Empty dependency array - only run on mount/unmount
+
+  const getLabelStyle = () => {
+    return isMobile && isOwnProfile ? "hidden" : "";
+  };
 
   return (
     <div className="mt-10">
@@ -34,17 +57,23 @@ const ProfileBottom2 = ({ userProfile, isOwnProfile }: ProfileBottomProps) => {
           <TabsList className="flex items-center justify-between w-full! bg-white">
             <TabsTrigger value="POST">
               <GridIcon size={20} />
-              <span className="font-semibold">Posts</span>
+              <span className={cn("font-semibold", getLabelStyle())}>
+                Posts
+              </span>
             </TabsTrigger>
             {(isOwnProfile || isFollowing) && (
               <>
                 <TabsTrigger value="SAVE">
                   <BookmarkIcon size={20} />
-                  <span className="font-semibold">Saved</span>
+                  <span className={cn("font-semibold", getLabelStyle())}>
+                    Saved
+                  </span>
                 </TabsTrigger>
                 <TabsTrigger value="LIKED">
                   <HeartIcon size={20} />
-                  <span className="font-semibold">Liked</span>
+                  <span className={cn("font-semibold", getLabelStyle())}>
+                    Liked
+                  </span>
                 </TabsTrigger>
               </>
             )}
@@ -52,11 +81,15 @@ const ProfileBottom2 = ({ userProfile, isOwnProfile }: ProfileBottomProps) => {
               <>
                 <TabsTrigger value="FOLLOWING">
                   <UsersIcon size={20} />
-                  <span className="font-semibold">Following</span>
+                  <span className={cn("font-semibold", getLabelStyle())}>
+                    Following
+                  </span>
                 </TabsTrigger>
                 <TabsTrigger value="FOLLOWERS">
                   <Users2Icon size={20} />
-                  <span className="font-semibold">Followers</span>
+                  <span className={cn("font-semibold", getLabelStyle())}>
+                    Followers
+                  </span>
                 </TabsTrigger>
               </>
             )}
@@ -81,11 +114,25 @@ const ProfileBottom2 = ({ userProfile, isOwnProfile }: ProfileBottomProps) => {
                   <TabsList className="flex items-center justify-between w-full! md:w-1/2! bg-white">
                     <TabsTrigger value="FOLLOWINGPOSTS">
                       <GridIcon size={20} />
-                      <span className="font-semibold">Posts</span>
+                      <span
+                        className={cn("font-semibold", {
+                          isMobile,
+                          hidden: "",
+                        })}
+                      >
+                        Posts
+                      </span>
                     </TabsTrigger>
                     <TabsTrigger value="FOLLOWINGUSERS">
                       <UsersIcon size={20} />
-                      <span className="font-semibold">Users</span>
+                      <span
+                        className={cn("font-semibold", {
+                          isMobile,
+                          hidden: "",
+                        })}
+                      >
+                        Users
+                      </span>
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent value="FOLLOWINGPOSTS" className="mt-2 pt-2">

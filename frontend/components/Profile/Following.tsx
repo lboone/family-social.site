@@ -139,7 +139,7 @@ const Following = ({ userProfile, isOwnProfile }: FollowingProps) => {
         <p className="text-sm text-gray-500">Posts from people you follow</p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  gap-2">
         {posts.map((post, index) => {
           // Attach ref to the last post for infinite scrolling
           if (posts.length === index + 1) {

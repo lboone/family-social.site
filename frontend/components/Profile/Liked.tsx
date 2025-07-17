@@ -124,7 +124,7 @@ const Liked = ({ userProfile }: LikedProps) => {
       </div>
 
       {/* Liked posts grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  gap-2">
         {posts.map((post: Post, index: number) => {
           // Skip if post is just a string (shouldn't happen with new API)
           if (typeof post === "string") return null;
