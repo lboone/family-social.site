@@ -264,7 +264,7 @@ const PostView = ({ postId, user }: PostViewProps) => {
   }
 
   return (
-    <div className="mt-20 pl-2 w-full md:w-[70%] md:pl-0 mx-auto">
+    <div className="mt-20 px-5 w-full md:w-[70%] md:px-0 mx-auto">
       <div className="mt-8 mb-8">
         {/* Post Header */}
         {post.user && (

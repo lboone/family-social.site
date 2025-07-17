@@ -111,7 +111,7 @@ const Feed = () => {
   }
 
   return (
-    <div className="mt-20 pl-2 w-full md:w-[70%] md:p1-0 mx-auto">
+    <div className="mt-20 px-5 w-full md:w-[70%] md:px-0 mx-auto">
       {posts.map((post, index) => {
         // Attach ref to the last post for infinite scrolling
         if (posts.length === index + 1) {
