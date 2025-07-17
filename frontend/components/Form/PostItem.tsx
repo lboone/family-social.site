@@ -7,9 +7,10 @@ import { setAuthUser } from "@/store/authSlice";
 import { addComment, likeOrDislikePost } from "@/store/postSlice";
 import { Post, User } from "@/types";
 import axios from "axios";
-import { BookmarkIcon, HeartIcon, MessageCircle } from "lucide-react";
+import { BookmarkIcon, HeartIcon, LinkIcon, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { memo, useCallback, useState } from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
@@ -44,6 +45,7 @@ const PostItem = ({
   const [isLikeLoading, setIsLikeLoading] = useState<boolean>(false);
   const [isSaveLoading, setIsSaveLoading] = useState<boolean>(false);
   const [isCommentLoading, setIsCommentLoading] = useState<boolean>(false);
+  const router = useRouter();
 
   const handleLikeDislike = useCallback(
     async (id: string) => {
@@ -168,6 +170,7 @@ const PostItem = ({
                 width={imageWidth || 400}
                 height={imageHeight || 400}
                 className={cn("w-full", imageClassName)}
+                priority
               />
             </Link>
           ) : (
@@ -177,6 +180,7 @@ const PostItem = ({
               width={imageWidth || 400}
               height={imageHeight || 400}
               className={cn("w-full", imageClassName)}
+              priority
             />
           )
         ) : (
@@ -212,6 +216,14 @@ const PostItem = ({
                 : ""
             }`}
           />
+          {!post.image && (
+            <LinkIcon
+              className="cursor-pointer"
+              onClick={() => {
+                router.push(`/post/${post._id}`);
+              }}
+            />
+          )}
         </div>
         <BookmarkIcon
           onClick={(e) => {

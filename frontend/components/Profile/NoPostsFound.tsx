@@ -1,6 +1,12 @@
 import Image from "next/image";
 interface NoPostsFoundProps {
-  postType?: "posts" | "saved" | "liked" | "following" | "followers";
+  postType?:
+    | "posts"
+    | "saved"
+    | "liked"
+    | "following"
+    | "followersUsers"
+    | "followingUsers";
   isOwnProfile?: boolean;
 }
 const NoPostsFound = ({ postType, isOwnProfile }: NoPostsFoundProps) => {
@@ -35,10 +41,16 @@ const NoPostsFound = ({ postType, isOwnProfile }: NoPostsFoundProps) => {
       descriptionMessage = "Posts from people you follow will appear here.";
       directionMessage = "Follow someone to see their posts!";
       break;
-    case "followers":
-      titleMessage = "No Followers Yet";
-      descriptionMessage = "People who follow you will appear here.";
-      directionMessage = "Start following people to see their posts!";
+    case "followingUsers":
+      titleMessage = "You are not following anyone yet";
+      descriptionMessage = "Users who you are following will appear here.";
+      directionMessage = "Start following users to see them listed here!";
+      break;
+    case "followersUsers":
+      titleMessage = "You have no followers yet";
+      descriptionMessage = "Users who follow you will appear here.";
+      directionMessage =
+        "Make sure you have a profile image and good bio to let people know who you are!";
       break;
     default:
       titleMessage = "No Posts Yet";

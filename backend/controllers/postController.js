@@ -202,8 +202,10 @@ exports.deletePost = catchAsync(async (req, res, next) => {
     return next(new AppError("User not found", 404));
   }
 
-  if (post.user.id.toString() !== userId.toString()) {
-    return next(new AppError("You cannot delete this post", 403));
+  if (user.role !== "admin") {
+    if (post.user.id.toString() !== userId.toString()) {
+      return next(new AppError("You cannot delete this post", 403));
+    }
   }
 
   await User.updateOne({ _id: userId }, { $pull: { posts: postId } });

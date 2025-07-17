@@ -17,9 +17,10 @@ const PostItemShort = ({ post }: PostItemShortProps) => {
           width={300}
           height={300}
           className="w-full h-full object-cover aspect-square"
+          priority
         />
       ) : (
-        <div className="h-96 w-full px-6 py-10 bg-gray-200/75 flex items-center justify-center">
+        <div className="h-[100%] w-full px-6 py-10 bg-gray-200/75 flex items-center justify-center">
           <HashtagText text={post.caption} className="text-center text-lg" />
         </div>
       )}

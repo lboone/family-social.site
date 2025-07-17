@@ -291,6 +291,7 @@ const PostView = ({ postId, user }: PostViewProps) => {
               width={600}
               height={600}
               className="w-full max-w-2xl mx-auto rounded-lg"
+              priority
             />
           ) : (
             <div className="h-96 w-full px-6 py-10 bg-gray-200/75 flex items-center justify-center rounded-lg">

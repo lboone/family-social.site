@@ -167,3 +167,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+.data-\[state\=active\]\:bg-background {
+  &[data-state="active"] {
+    @apply bg-sky-50;
+  }
+}

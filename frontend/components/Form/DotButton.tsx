@@ -8,6 +8,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useFollowUnfollow } from "@/hooks/useAuth";
+import useGetUser from "@/hooks/useGetUser";
 import { API_URL_POST } from "@/server";
 import { deletePost } from "@/store/postSlice";
 import { Post, User } from "@/types";
@@ -30,6 +31,7 @@ const DotButton = ({ post, user }: DotButtonProps) => {
   const { handleFollowUnfollow } = useFollowUnfollow({
     setLoading: setIsLoading,
   });
+  const { isAdmin } = useGetUser();
   const isOwnPost = post && user ? post?.user?._id === user?._id : false;
   // const isFollowing = post?.user?._id
   //   ? user?.following?.includes(post?.user?._id)
@@ -86,7 +88,7 @@ const DotButton = ({ post, user }: DotButtonProps) => {
                 About This Account
               </Button>
             </Link>
-            {isOwnPost && (
+            {(isOwnPost || isAdmin) && (
               <Button
                 className="w-full cursor-pointer"
                 variant="destructive"

@@ -1,8 +1,16 @@
 "use client";
-import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import useGetUser from "@/hooks/useGetUser";
+
 import { User } from "@/types";
-import { BookmarkIcon, GridIcon, HeartIcon, UsersIcon } from "lucide-react";
-import { useState } from "react";
+import {
+  BookmarkIcon,
+  GridIcon,
+  HeartIcon,
+  Users2Icon,
+  UsersIcon,
+} from "lucide-react";
+import FollowersFollowingUsers from "./FollowersFollowingUsers";
 import Following from "./Following";
 import Liked from "./Liked";
 import Posts from "./Posts";
@@ -12,73 +20,101 @@ interface ProfileBottomProps {
   userProfile: User;
   isOwnProfile: boolean;
 }
-const ProfileBottom = ({ userProfile, isOwnProfile }: ProfileBottomProps) => {
-  const [activeTab, setActiveTab] = useState<string>("POST");
+const ProfileBottom2 = ({ userProfile, isOwnProfile }: ProfileBottomProps) => {
+  const { user } = useGetUser();
+  const isFollowing =
+    user?.following?.some(
+      (followId) => String(followId) === String(userProfile?._id)
+    ) || false;
+
   return (
     <div className="mt-10">
-      <div className="flex items-center justify-center space-x-1 md:space-x-4 lg:space-x-8 border-b border-gray-200 pb-2">
-        <div
-          className={cn(
-            "flex items-center space-x-2 cursor-pointer transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50",
-            activeTab === "POST"
-              ? "text-sky-600 bg-sky-50"
-              : "text-gray-600 hover:text-gray-800"
+      <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 lg:gap-8 border-gray-200 pb-2">
+        <Tabs defaultValue="POST" className="w-full">
+          <TabsList className="flex items-center justify-between w-full! bg-white">
+            <TabsTrigger value="POST">
+              <GridIcon size={20} />
+              <span className="font-semibold">Posts</span>
+            </TabsTrigger>
+            {(isOwnProfile || isFollowing) && (
+              <>
+                <TabsTrigger value="SAVE">
+                  <BookmarkIcon size={20} />
+                  <span className="font-semibold">Saved</span>
+                </TabsTrigger>
+                <TabsTrigger value="LIKED">
+                  <HeartIcon size={20} />
+                  <span className="font-semibold">Liked</span>
+                </TabsTrigger>
+              </>
+            )}
+            {isOwnProfile && (
+              <>
+                <TabsTrigger value="FOLLOWING">
+                  <UsersIcon size={20} />
+                  <span className="font-semibold">Following</span>
+                </TabsTrigger>
+                <TabsTrigger value="FOLLOWERS">
+                  <Users2Icon size={20} />
+                  <span className="font-semibold">Followers</span>
+                </TabsTrigger>
+              </>
+            )}
+          </TabsList>
+          <TabsContent value="POST" className="border-y mt-2 py-2">
+            <Posts userProfile={userProfile} isOwnProfile={isOwnProfile} />
+          </TabsContent>
+          {(isOwnProfile || isFollowing) && (
+            <>
+              <TabsContent value="SAVE" className="border-y mt-2 py-2">
+                <Saved userProfile={userProfile} />
+              </TabsContent>
+              <TabsContent value="LIKED" className="border-y mt-2 py-2">
+                <Liked userProfile={userProfile} />
+              </TabsContent>
+            </>
           )}
-          onClick={() => setActiveTab("POST")}
-        >
-          <GridIcon size={20} />
-          <span className="font-semibold">Posts</span>
-        </div>
-        {isOwnProfile && (
-          <>
-            <div
-              className={cn(
-                "flex items-center space-x-2 cursor-pointer transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50",
-                activeTab === "SAVE"
-                  ? "text-sky-600 bg-sky-50"
-                  : "text-gray-600 hover:text-gray-800"
-              )}
-              onClick={() => setActiveTab("SAVE")}
-            >
-              <BookmarkIcon size={20} />
-              <span className="font-semibold">Saved</span>
-            </div>
-            <div
-              className={cn(
-                "flex items-center space-x-2 cursor-pointer transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50",
-                activeTab === "LIKED"
-                  ? "text-sky-600 bg-sky-50"
-                  : "text-gray-600 hover:text-gray-800"
-              )}
-              onClick={() => setActiveTab("LIKED")}
-            >
-              <HeartIcon size={20} />
-              <span className="font-semibold">Liked</span>
-            </div>
-            <div
-              className={cn(
-                "flex items-center space-x-2 cursor-pointer transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50",
-                activeTab === "FOLLOWING"
-                  ? "text-sky-600 bg-sky-50"
-                  : "text-gray-600 hover:text-gray-800"
-              )}
-              onClick={() => setActiveTab("FOLLOWING")}
-            >
-              <UsersIcon size={20} />
-              <span className="font-semibold">Following</span>
-            </div>
-          </>
-        )}
+          {isOwnProfile && (
+            <>
+              <TabsContent value="FOLLOWING" className="border-y mt-2 py-2">
+                <Tabs defaultValue="FOLLOWINGPOSTS">
+                  <TabsList className="flex items-center justify-between w-full! md:w-1/2! bg-white">
+                    <TabsTrigger value="FOLLOWINGPOSTS">
+                      <GridIcon size={20} />
+                      <span className="font-semibold">Posts</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="FOLLOWINGUSERS">
+                      <UsersIcon size={20} />
+                      <span className="font-semibold">Users</span>
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="FOLLOWINGPOSTS" className="mt-2 pt-2">
+                    <Following
+                      userProfile={userProfile}
+                      isOwnProfile={isOwnProfile}
+                    />
+                  </TabsContent>
+                  <TabsContent value="FOLLOWINGUSERS" className="mt-2 pt-2">
+                    <FollowersFollowingUsers
+                      users={userProfile.following as unknown as User[]}
+                      postType="followingUsers"
+                      isOwnProfile={isOwnProfile}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </TabsContent>
+              <TabsContent value="FOLLOWERS" className="border-y mt-2 py-2">
+                <FollowersFollowingUsers
+                  users={userProfile.followers as unknown as User[]}
+                  postType="followersUsers"
+                  isOwnProfile={isOwnProfile}
+                />
+              </TabsContent>
+            </>
+          )}
+        </Tabs>
       </div>
-      {activeTab === "POST" && (
-        <Posts userProfile={userProfile} isOwnProfile={isOwnProfile} />
-      )}
-      {activeTab === "SAVE" && <Saved userProfile={userProfile} />}
-      {activeTab === "LIKED" && <Liked userProfile={userProfile} />}
-      {activeTab === "FOLLOWING" && (
-        <Following userProfile={userProfile} isOwnProfile={isOwnProfile} />
-      )}
     </div>
   );
 };
-export default ProfileBottom;
+export default ProfileBottom2;
