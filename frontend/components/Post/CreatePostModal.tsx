@@ -2,7 +2,7 @@
 
 import useForm from "@/hooks/useForm";
 import { API_URL_POST } from "@/server";
-import { PostFormData, UseFormHandleSubmitOptions } from "@/types";
+import { CreatePostFormData, UseFormHandleSubmitOptions } from "@/types";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -18,10 +18,10 @@ import { ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import HashtagText from "../Form/HashtagText";
 import InputField from "../Form/InputField";
 import LoadingButton from "../Form/LoadingButton";
 import { Button } from "../ui/button";
-import HashtagText from "../Form/HashtagText";
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -31,7 +31,7 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { formData, handleChange, handleSubmit, isLoading, resetForm, errors } =
-    useForm<PostFormData>({
+    useForm<CreatePostFormData>({
       caption: "",
       file: undefined,
     });
@@ -93,7 +93,7 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
     setPreviewImage(imageUrl);
   };
 
-  const onSubmit = async (data: PostFormData) => {
+  const onSubmit = async (data: CreatePostFormData) => {
     const newFormData = new FormData();
     newFormData.append("caption", data.caption || "");
 
@@ -106,7 +106,7 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
     });
   };
 
-  const validateForm = (data: PostFormData) => {
+  const validateForm = (data: CreatePostFormData) => {
     const errors: Record<string, string> = {};
 
     // Since image is now optional, we need either caption or image
