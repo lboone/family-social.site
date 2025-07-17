@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import Comment from "../Form/Comment";
 import DotButton from "../Form/DotButton";
 import HashtagText from "../Form/HashtagText";
+import SpeechBubble from "../Form/SpeechBubble";
 import { handleAuthRequest } from "../utils/apiRequests";
 
 interface PostItemProps {
@@ -184,10 +185,12 @@ const PostItem = ({
             />
           )
         ) : (
-          <div className="h-96 w-full px-6 py-10 bg-gray-200/75 flex items-center justify-center">
-            {/* {post.caption} */}
-            <HashtagText text={post.caption} className="text-center text-lg" />
-          </div>
+          <SpeechBubble>
+            <HashtagText
+              text={post.caption}
+              className="text-center text-lg leading-relaxed"
+            />
+          </SpeechBubble>
         )}
       </div>
       <div className="mt-3 flex items-center justify-between">

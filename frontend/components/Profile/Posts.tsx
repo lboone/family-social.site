@@ -125,7 +125,7 @@ const Posts = ({ userProfile, isOwnProfile }: PostsProps) => {
       </div>
 
       {/* Posts grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  gap-2">
         {posts.map((post: Post, index: number) => {
           // Attach ref to the last post for infinite scrolling
           if (posts.length === index + 1) {

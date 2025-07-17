@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import DotButton from "../Form/DotButton";
 import HashtagText from "../Form/HashtagText";
 import PageLoader from "../Form/PageLoader";
+import SpeechBubble from "../Form/SpeechBubble";
 import { Button } from "../ui/button";
 import { handleAuthRequest } from "../utils/apiRequests";
 
@@ -294,12 +295,12 @@ const PostView = ({ postId, user }: PostViewProps) => {
               priority
             />
           ) : (
-            <div className="h-96 w-full px-6 py-10 bg-gray-200/75 flex items-center justify-center rounded-lg">
+            <SpeechBubble>
               <HashtagText
                 text={post.caption}
-                className="text-center text-lg"
+                className="text-lg text-center"
               />
-            </div>
+            </SpeechBubble>
           )}
         </div>
 
