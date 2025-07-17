@@ -6,6 +6,7 @@ import { API_URL_POST } from "@/server";
 import { setAuthUser } from "@/store/authSlice";
 import { addComment, likeOrDislikePost } from "@/store/postSlice";
 import { Post, User } from "@/types";
+import { formatRelativeTime } from "@/utils/functions"; // Adjust the import path as necessary
 import axios from "axios";
 import { BookmarkIcon, HeartIcon, LinkIcon, MessageCircle } from "lucide-react";
 import Image from "next/image";
@@ -19,6 +20,8 @@ import DotButton from "../Form/DotButton";
 import HashtagText from "../Form/HashtagText";
 import SpeechBubble from "../Form/SpeechBubble";
 import { handleAuthRequest } from "../utils/apiRequests";
+
+// Utility function to format relative time
 
 interface PostItemProps {
   post: Post;
@@ -247,7 +250,12 @@ const PostItem = ({
           }`}
         />
       </div>
-      <h1 className="mt-2 text-sm font-semibold">{post.likes.length} likes</h1>
+      <div className="mt-2 flex items-center justify-between">
+        <h1 className="text-sm font-semibold">{post.likes.length} likes</h1>
+        <span className="text-xs text-gray-500">
+          {formatRelativeTime(post.createdAt)}
+        </span>
+      </div>
       {/* {post.image && <p className="mt-2 font-medium">{post.caption}</p>} */}
       {post.image && (
         <HashtagText text={post.caption} className="mt-2 font-medium" />

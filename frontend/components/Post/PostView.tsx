@@ -19,6 +19,7 @@ import PageLoader from "../Form/PageLoader";
 import SpeechBubble from "../Form/SpeechBubble";
 import { Button } from "../ui/button";
 import { handleAuthRequest } from "../utils/apiRequests";
+import { formatRelativeTime } from "@/utils/functions";
 
 interface PostViewProps {
   postId: string;
@@ -355,9 +356,12 @@ const PostView = ({ postId, user }: PostViewProps) => {
         </div>
 
         {/* Post Stats */}
-        <h1 className="mt-2 text-sm font-semibold">
-          {post.likes.length} likes
-        </h1>
+        <div className="mt-2 flex items-center justify-between">
+          <h1 className="text-sm font-semibold">{post.likes.length} likes</h1>
+          <span className="text-xs text-gray-500">
+            {formatRelativeTime(post.createdAt)}
+          </span>
+        </div>
 
         {/* Post Caption */}
         {post.image && (
