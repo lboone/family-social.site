@@ -118,6 +118,7 @@ exports.getAllPost = catchAsync(async (req, res, next) => {
     },
   });
 });
+
 exports.getUserPosts = catchAsync(async (req, res, next) => {
   const userId = req.params.id;
   const page = parseInt(req.query.page) || 1;
@@ -536,5 +537,32 @@ exports.getFollowingPosts = catchAsync(async (req, res, next) => {
         limit,
       },
     },
+  });
+});
+
+exports.getPostById = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const post = await Post.findById(id)
+    .populate({
+      path: "user",
+      select: "username bio profilePicture",
+    })
+    .populate({
+      path: "comments",
+      select: "text user",
+      populate: {
+        path: "user",
+        select: "username profilePicture",
+      },
+    });
+
+  if (!post) {
+    return next(new AppError("Post not found", 404));
+  }
+
+  res.status(200).json({
+    status: "success",
+    message: "Post retrieved successfully",
+    data: { post }, // Return the post with populated user
   });
 });

@@ -1,6 +1,7 @@
 import { Post } from "@/types";
-import { HeartIcon, MessageCircleIcon } from "lucide-react";
+import { HeartIcon, LinkIcon, MessageCircleIcon } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import HashtagText from "./HashtagText";
 
 interface PostItemShortProps {
@@ -22,6 +23,7 @@ const PostItemShort = ({ post }: PostItemShortProps) => {
           <HashtagText text={post.caption} className="text-center text-lg" />
         </div>
       )}
+
       <div className="absolute inset-0 bg-black flex items-center justify-center opacity-0 group-hover:opacity-75 transition-opacity duration-300">
         <div className="flex space-x-6">
           <button className="p-2 rounded-full text-white space-x-2 flex items-center font-bold">
@@ -32,6 +34,11 @@ const PostItemShort = ({ post }: PostItemShortProps) => {
             <MessageCircleIcon className="w-7 h-7" />
             <span>{post?.comments.length}</span>
           </button>
+          <Link href={`/post/${post._id}`} className="cursor-pointer">
+            <button className="p-2 rounded-full text-white space-x-2 flex items-center font-bold">
+              <LinkIcon className="w-7 h-7" />
+            </button>
+          </Link>
         </div>
       </div>
     </div>

@@ -14,6 +14,7 @@ const {
   addComment,
   getPostsByHashtag,
   getAllHashtags,
+  getPostById,
 } = require("../controllers/postController");
 const isAllowedUser = require("../middleware/isAllowedUser");
 const upload = require("../middleware/multer");
@@ -32,5 +33,6 @@ router.post("/comment/:postId", isAllowedUser, addComment);
 router.delete("/delete/:postId", isAllowedUser, deletePost);
 router.get("/by-hashtag/:hashtag", isAllowedUser, getPostsByHashtag);
 router.get("/hashtags", isAllowedUser, getAllHashtags);
+router.get("/post/:id", isAllowedUser, getPostById);
 
 module.exports = router;

@@ -49,7 +49,9 @@ export interface Post {
   user: User | undefined;
   likes: string[];
   comments: Comment[];
+  hashtags: string[];
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface SignUpFormData {
@@ -97,6 +99,15 @@ export interface UserProfileFormData {
   data: {
     data: {
       user: User | undefined;
+    };
+  };
+  [key: object]: object; // Index signature for compatibility
+}
+
+export interface PostFormData {
+  data: {
+    data: {
+      post: Post | undefined;
     };
   };
   [key: object]: object; // Index signature for compatibility

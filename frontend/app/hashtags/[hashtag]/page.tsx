@@ -1,11 +1,11 @@
 import Hashtag from "@/components/Home/Hashtag";
-import NeedsVerificationProvider from "@/HOC/NeedsVerificationProvider";
+import AuthenticatedProvider from "@/HOC/AuthenticatedProvider";
 
 const HashtagPage = () => {
   return (
-    <NeedsVerificationProvider>
+    <AuthenticatedProvider>
       <Hashtag />
-    </NeedsVerificationProvider>
+    </AuthenticatedProvider>
   );
 };
 export default HashtagPage;

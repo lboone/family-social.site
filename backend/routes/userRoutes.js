@@ -25,6 +25,7 @@ const isSignedUp = require("../middleware/isSignedUp");
 const isAllowedUser = require("../middleware/isAllowedUser");
 const isAdmin = require("../middleware/isAdmin");
 const upload = require("../middleware/multer");
+const { getPostById } = require("../controllers/postController");
 
 const router = express.Router();
 // Auth Routes

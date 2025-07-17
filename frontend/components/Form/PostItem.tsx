@@ -9,6 +9,7 @@ import { Post, User } from "@/types";
 import axios from "axios";
 import { BookmarkIcon, HeartIcon, MessageCircle } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { memo, useCallback, useState } from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
@@ -26,6 +27,7 @@ interface PostItemProps {
   imageWidth?: number;
   imageHeight?: number;
   imageClassName?: string;
+  showLink?: boolean;
 }
 const PostItem = ({
   post,
@@ -35,6 +37,7 @@ const PostItem = ({
   imageWidth,
   imageHeight,
   imageClassName,
+  showLink = true,
 }: PostItemProps) => {
   const dispatch = useDispatch();
   const [comment, setComment] = useState<string>("");
@@ -141,6 +144,7 @@ const PostItem = ({
     return null;
   }
 
+  console.log({ user, post });
   return (
     <div key={post._id} className={cn("mt-8", postClassName)}>
       {showOwner && post.user && (
@@ -156,13 +160,25 @@ const PostItem = ({
       )}
       <div className="mt-2">
         {post.image ? (
-          <Image
-            src={`${post.image.url}`}
-            alt="Post Image"
-            width={imageWidth || 400}
-            height={imageHeight || 400}
-            className={cn("w-full", imageClassName)}
-          />
+          showLink ? (
+            <Link href={`/post/${post._id}`}>
+              <Image
+                src={`${post.image.url}`}
+                alt="Post Image"
+                width={imageWidth || 400}
+                height={imageHeight || 400}
+                className={cn("w-full", imageClassName)}
+              />
+            </Link>
+          ) : (
+            <Image
+              src={`${post.image.url}`}
+              alt="Post Image"
+              width={imageWidth || 400}
+              height={imageHeight || 400}
+              className={cn("w-full", imageClassName)}
+            />
+          )
         ) : (
           <div className="h-96 w-full px-6 py-10 bg-gray-200/75 flex items-center justify-center">
             {/* {post.caption} */}

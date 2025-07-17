@@ -128,7 +128,7 @@ const UsersIcon = () => {
                     <div className="text-sm text-muted-foreground break-words w-full">
                       {user.bio.length > 60
                         ? user.bio.substring(0, 60) + "..."
-                        : user.bio}
+                        : user.bio || "User has no bio at this time."}
                     </div>
                   )}
                 </CommandItem>
