@@ -91,7 +91,8 @@ exports.getAllPost = catchAsync(async (req, res, next) => {
     })
     .populate({
       path: "comments",
-      select: "text user",
+      select: "text user createdAt",
+      options: { sort: { createdAt: -1 } },
       populate: {
         path: "user",
         select: "username profilePicture",
@@ -129,7 +130,8 @@ exports.getUserPosts = catchAsync(async (req, res, next) => {
     .populate({ path: "user", select: "username bio profilePicture" })
     .populate({
       path: "comments",
-      select: "text user",
+      select: "text user createdAt",
+      options: { sort: { createdAt: -1 } },
       populate: {
         path: "user",
         select: "username profilePicture",
@@ -441,7 +443,8 @@ exports.getLikedPosts = catchAsync(async (req, res, next) => {
     })
     .populate({
       path: "comments",
-      select: "text user",
+      select: "text user createdAt",
+      options: { sort: { createdAt: -1 } },
       populate: {
         path: "user",
         select: "username profilePicture",
@@ -509,7 +512,8 @@ exports.getFollowingPosts = catchAsync(async (req, res, next) => {
     .populate({ path: "user", select: "username bio profilePicture" })
     .populate({
       path: "comments",
-      select: "text user",
+      select: "text user createdAt",
+      options: { sort: { createdAt: -1 } },
       populate: {
         path: "user",
         select: "username profilePicture",
@@ -551,7 +555,8 @@ exports.getPostById = catchAsync(async (req, res, next) => {
     })
     .populate({
       path: "comments",
-      select: "text user",
+      select: "text user createdAt",
+      options: { sort: { createdAt: -1 } },
       populate: {
         path: "user",
         select: "username profilePicture",

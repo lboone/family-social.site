@@ -1,7 +1,23 @@
 export const formatRelativeTime = (dateString: string) => {
+  // Add validation for the input
+  if (!dateString) {
+    return "Unknown";
+  }
+
   const now = new Date();
   const postDate = new Date(dateString);
+  
+  // Check if the date is valid
+  if (isNaN(postDate.getTime())) {
+    return "Unknown";
+  }
+
   const diffInSeconds = Math.floor((now.getTime() - postDate.getTime()) / 1000);
+
+  // Handle negative time differences (future dates)
+  if (diffInSeconds < 0) {
+    return "Just now";
+  }
 
   if (diffInSeconds < 60) {
     return "Just now";

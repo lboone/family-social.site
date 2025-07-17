@@ -6,6 +6,7 @@ import { API_URL_POST } from "@/server";
 import { setAuthUser } from "@/store/authSlice";
 import { addComment, likeOrDislikePost } from "@/store/postSlice";
 import { Comment, Post, User } from "@/types";
+import { formatRelativeTime } from "@/utils/functions";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import axios from "axios";
 import { BookmarkIcon, HeartIcon, MessageCircle } from "lucide-react";
@@ -19,7 +20,6 @@ import PageLoader from "../Form/PageLoader";
 import SpeechBubble from "../Form/SpeechBubble";
 import { Button } from "../ui/button";
 import { handleAuthRequest } from "../utils/apiRequests";
-import { formatRelativeTime } from "@/utils/functions";
 
 interface PostViewProps {
   postId: string;
@@ -51,11 +51,16 @@ const PostView = ({ postId, user }: PostViewProps) => {
       const result = await handleAuthRequest(null, getPostReq, setIsLoading);
       if (result?.data.status === "success") {
         setPost(result.data.data.post);
-        // Set initial comments (first 10)
-        const initialComments = result.data.data.post.comments.slice(0, 10);
+        // Set initial comments (first 10) - ensure they're sorted newest first
+        const allComments = result.data.data.post.comments || [];
+        const sortedComments = [...allComments].sort(
+          (a: Comment, b: Comment) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        const initialComments = sortedComments.slice(0, 10);
         setComments(initialComments);
-        setTotalComments(result.data.data.post.comments.length);
-        setHasMoreComments(result.data.data.post.comments.length > 10);
+        setTotalComments(allComments.length);
+        setHasMoreComments(allComments.length > 10);
       }
     } catch (error) {
       console.error("Error fetching post:", error);
@@ -69,13 +74,19 @@ const PostView = ({ postId, user }: PostViewProps) => {
 
     try {
       setIsLoadingMoreComments(true);
+      const allComments = post.comments || [];
+      // Ensure comments are sorted newest first - create a copy before sorting
+      const sortedComments = [...allComments].sort(
+        (a: Comment, b: Comment) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
       const startIndex = commentsPage * 10;
-      const newComments = post.comments.slice(startIndex, startIndex + 10);
+      const newComments = sortedComments.slice(startIndex, startIndex + 10);
 
       if (newComments.length > 0) {
         setComments((prev) => [...prev, ...newComments]);
         setCommentsPage((prev) => prev + 1);
-        setHasMoreComments(startIndex + 10 < post.comments.length);
+        setHasMoreComments(startIndex + 10 < sortedComments.length);
       } else {
         setHasMoreComments(false);
       }
@@ -437,6 +448,11 @@ const PostView = ({ postId, user }: PostViewProps) => {
                       <p className="text-sm font-bold">
                         {comment?.user?.username}
                       </p>
+                      <span className="text-xs text-gray-500">
+                        {comment?.createdAt
+                          ? formatRelativeTime(comment.createdAt)
+                          : "Unknown"}
+                      </span>
                     </div>
                     <div className="text-sm">
                       <HashtagText text={comment?.text} />

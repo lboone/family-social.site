@@ -19,6 +19,7 @@ import {
 import { handleAuthRequest } from "../utils/apiRequests";
 import DotButton from "./DotButton";
 import HashtagText from "./HashtagText";
+import { formatRelativeTime } from "@/utils/functions";
 
 interface CommentProps {
   user: User | null;
@@ -92,34 +93,43 @@ const Comment = ({ user, post }: CommentProps) => {
               </div>
               <div className="flex-1 overflow-y-auto max-h-[50vh] px-4">
                 {post?.comments && post?.comments.length > 0 ? (
-                  post.comments.map((comment, index) => (
-                    <div
-                      key={comment._id || index}
-                      className="flex mb-4 gap-3 items-center"
-                    >
-                      <Avatar>
-                        <AvatarImage
-                          src={comment?.user?.profilePicture}
-                          alt={comment?.user?.username}
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
-                        <AvatarFallback>
-                          {comment?.user?.username
-                            ? comment.user.username.charAt(0).toUpperCase() +
-                              comment.user.username.charAt(1).toUpperCase()
-                            : "UN"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex items-center space-x-2">
-                        <p className="text-sm font-bold">
-                          {comment?.user?.username}
-                        </p>
-                        <div className="font-normal text-sm">
-                          <HashtagText text={comment?.text} />
+                  [...post.comments]
+                    .sort(
+                      (a, b) =>
+                        new Date(b.createdAt).getTime() -
+                        new Date(a.createdAt).getTime()
+                    )
+                    .map((comment, index) => (
+                      <div
+                        key={comment._id || index}
+                        className="flex mb-4 gap-3 items-center"
+                      >
+                        <Avatar>
+                          <AvatarImage
+                            src={comment?.user?.profilePicture}
+                            alt={comment?.user?.username}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                          <AvatarFallback>
+                            {comment?.user?.username
+                              ? comment.user.username.charAt(0).toUpperCase() +
+                                comment.user.username.charAt(1).toUpperCase()
+                              : "UN"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex items-center space-x-2">
+                          <p className="text-sm font-bold">
+                            {comment?.user?.username}
+                          </p>
+                          <span className="text-xs text-gray-500">
+                            {comment?.createdAt ? formatRelativeTime(comment.createdAt) : "Unknown"}
+                          </span>
+                          <div className="font-normal text-sm">
+                            <HashtagText text={comment?.text} />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    ))
                 ) : (
                   <div className="flex items-center justify-center h-full">
                     <p className="text-gray-500">No comments yet</p>
