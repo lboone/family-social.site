@@ -47,7 +47,7 @@ const RightSidebar = () => {
     return <PageLoader />;
   }
   return (
-    <div className="flex flex-col gap-2">
+    <div className="sticky top-8 flex flex-col gap-2 h-fit">
       <UserProfileCard
         user={user!}
         avatarClassName="h-12 w-12"

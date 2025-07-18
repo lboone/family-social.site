@@ -27,7 +27,7 @@ const Home = () => {
 
   return (
     <div className="flex">
-      <div className="hidden md:block border-r-2 h-screen fixed w-[20%]">
+      <div className="hidden md:block border-r-2 h-screen fixed w-[20%] z-10">
         <LeftSidebar />
       </div>
       <div className="flex-1 md:ml-[20%] overflow-y-auto">
