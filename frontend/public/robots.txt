@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Sitemap location (update with your actual domain)
+Sitemap: https://family-social.site/sitemap.xml
+
+# Disallow crawling of API routes
+Disallow: /api/
+
+# Disallow crawling of admin areas
+Disallow: /admin/
+
+# Disallow crawling of private user content
+Disallow: /profile/private/
+Disallow: /dashboard/private/
