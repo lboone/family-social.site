@@ -97,7 +97,7 @@ export default function MyPage() {
         title="My Custom Page - Family Social"
         description="This is a custom page with unique sharing content"
         image="/web-app-manifest-512x512.png"
-        url="https://your-domain.com/my-page"
+        url="https://family-social.site/my-page"
         type="article"
       />
       {/* Your page content */}
@@ -110,7 +110,7 @@ export default function MyPage() {
 
 Replace these placeholders with your actual domain:
 
-- In `layout.tsx`: Update `https://your-domain.com`
+- In `layout.tsx`: Update `https://family-social.site`
 - In `components/SocialMeta.tsx`: Update default URL
 - In `robots.txt`: Update sitemap URL
 

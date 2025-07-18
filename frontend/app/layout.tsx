@@ -150,7 +150,7 @@ export default function RootLayout({
         <meta name="robots" content="index, follow" />
 
         {/* Canonical URL - Update this with your actual domain */}
-        <link rel="canonical" href="https://your-domain.com" />
+        <link rel="canonical" href="https://faimily-social.site" />
       </head>
       <body className={`${font.className} antialiased`}>
         <ClientProvider>
