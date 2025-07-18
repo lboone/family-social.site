@@ -65,18 +65,7 @@ export const metadata: Metadata = {
   category: "social",
   // Icons and manifest
   icons: {
-    icon: [
-      {
-        url: "/web-app-manifest-192x192.png",
-        sizes: "192x192",
-        type: "image/png",
-      },
-      {
-        url: "/web-app-manifest-512x512.png",
-        sizes: "512x512",
-        type: "image/png",
-      },
-    ],
+    icon: "/favicon.ico", // Use the favicon.ico file
     apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
     other: [
       {
@@ -104,20 +93,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Additional favicon sizes for better compatibility */}
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="32x32"
-          href="/web-app-manifest-192x192.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="16x16"
-          href="/web-app-manifest-192x192.png"
-        />
-
         {/* Apple Touch Icons */}
         <link rel="apple-touch-icon" href="/apple-icon.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon.png" />
