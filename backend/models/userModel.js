@@ -39,6 +39,16 @@ const userSchema = new mongoose.Schema(
     profilePicture: {
       type: String,
     },
+    profileBackground: {
+      type: String,
+    },
+    profileBackgroundPosition: {
+      x: { type: Number, default: 0 },
+      y: { type: Number, default: 0 },
+      scale: { type: Number, default: 1 },
+      width: { type: Number, default: 0 },
+      height: { type: Number, default: 0 },
+    },
     bio: {
       type: String,
       maxlength: [150, "A bio must have less or equal than 150 characters"],

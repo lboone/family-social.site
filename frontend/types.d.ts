@@ -14,6 +14,14 @@ export interface User {
   email: string;
   password?: string;
   profilePicture?: string;
+  profileBackground?: string;
+  profileBackgroundPosition?: {
+    x: number;
+    y: number;
+    scale: number;
+    width: number;
+    height: number;
+  };
   bio?: string;
   followers: string[];
   following: string[];

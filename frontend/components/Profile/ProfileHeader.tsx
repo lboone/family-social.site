@@ -2,6 +2,7 @@
 import { useFollowUnfollow } from "@/hooks/useAuth";
 import useGetUser from "@/hooks/useGetUser";
 import { User } from "@/types";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import UserAvatar from "../Home/UserAvatar";
@@ -67,53 +68,93 @@ const ProfileHeader = ({ isOwnProfile, userProfile }: ProfileHeaderProps) => {
     },
   ];
 
+  console.log("ProfileHeader userProfile:", userProfile);
   return (
-    <div className="mt-16 flex md:flex-row flex-col md:items-center pb-16 border-b-2 md:space-x-20">
-      <UserAvatar
-        user={userProfile}
-        avatarClassName="w-[10rem] h-[10rem] mb-8 md:mb-0"
-        avatarImageClassName="w-[10rem] h-[10rem]"
-        avatarFallbackClassName="text-xl"
-      />
-      <div>
-        <div className="flex items-center space-x-8">
-          <h1 className="text-2xl font-bold">{userProfile?.username}</h1>
-          {isOwnProfile && (
-            <Link href="/profile/edit">
-              <Button
-                variant="secondary"
-                className="cursor-pointer hover:bg-gray-300"
-              >
-                Edit Profile
-              </Button>
-            </Link>
-          )}
-          {!isOwnProfile && (
-            <Button
-              variant={isFollowing ? "destructive" : "primary"}
-              onClick={() => handleFollowUnfollowWithUpdate(userProfile._id)}
-              disabled={isLoading}
-            >
-              {isLoading ? "Updating..." : isFollowing ? "Unfollow" : "Follow"}
-            </Button>
-          )}
+    <div className="relative">
+      {/* Background Image Section */}
+      <div className="relative w-full h-[200px] bg-gradient-to-r from-blue-400 to-purple-500 overflow-hidden">
+        <div
+          className="absolute inset-0"
+          style={{
+            transform: userProfile?.profileBackgroundPosition
+              ? `translate(${userProfile.profileBackgroundPosition.x}px, ${userProfile.profileBackgroundPosition.y}px) scale(${userProfile.profileBackgroundPosition.scale})`
+              : "none",
+            transformOrigin: "center",
+          }}
+        >
+          <Image
+            src={
+              userProfile?.profileBackground ||
+              "/images/profile-default-background.webp"
+            }
+            alt="Profile background"
+            fill
+            className="object-cover"
+            priority
+          />
         </div>
-        <div className="flex items-center space-x-8 mt-6 mb-6">
-          {accountActivity.map((activity) => (
-            <ActivityInfo
-              key={activity.label}
-              count={activity.count}
-              label={activity.label}
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/20"></div>
+      </div>
+
+      {/* Profile Content */}
+      <div className="relative -mt-20 md:-mt-15 lg:-mt-15 xl:-mt-20 px-6">
+        <div className="flex md:flex-row flex-col md:items-end pb-16 border-b-2 md:space-x-20">
+          <div className="flex-shrink-0">
+            <UserAvatar
+              user={userProfile}
+              avatarClassName="w-[10rem] h-[10rem] mb-8 md:mb-0 border-4 border-white shadow-lg"
+              avatarImageClassName="w-[10rem] h-[10rem]"
+              avatarFallbackClassName="text-xl"
             />
-          ))}
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center space-x-8">
+              <h1 className="text-2xl font-bold">{userProfile?.username}</h1>
+              {isOwnProfile && (
+                <Link href="/profile/edit">
+                  <Button
+                    variant="secondary"
+                    className="cursor-pointer hover:bg-gray-300"
+                  >
+                    Edit Profile
+                  </Button>
+                </Link>
+              )}
+              {!isOwnProfile && (
+                <Button
+                  variant={isFollowing ? "destructive" : "primary"}
+                  onClick={() =>
+                    handleFollowUnfollowWithUpdate(userProfile._id)
+                  }
+                  disabled={isLoading}
+                >
+                  {isLoading
+                    ? "Updating..."
+                    : isFollowing
+                    ? "Unfollow"
+                    : "Follow"}
+                </Button>
+              )}
+            </div>
+            <div className="flex items-center space-x-8 mt-6 mb-6">
+              {accountActivity.map((activity) => (
+                <ActivityInfo
+                  key={activity.label}
+                  count={activity.count}
+                  label={activity.label}
+                />
+              ))}
+            </div>
+            <p className="w-[80%] font-md">
+              {userProfile?.bio
+                ? userProfile.bio
+                : isOwnProfile
+                ? "Tell us something about yourself."
+                : "This user hasn't added a bio yet."}
+            </p>
+          </div>
         </div>
-        <p className="w-[80%] font-md">
-          {userProfile?.bio
-            ? userProfile.bio
-            : isOwnProfile
-            ? "Tell us something about yourself."
-            : "This user hasn't added a bio yet."}
-        </p>
       </div>
     </div>
   );

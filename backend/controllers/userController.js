@@ -227,3 +227,45 @@ exports.getAllUsersGeneral = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.updateProfileBackground = catchAsync(async (req, res, next) => {
+  const userId = req.user.id;
+  const profileBackground = req.file;
+  const { x, y, scale, width, height } = req.body;
+
+  if (!profileBackground) {
+    return next(new AppError("Please provide a background image", 400));
+  }
+
+  let cloudResponse;
+  const fileUri = getDataUri(profileBackground);
+  cloudResponse = await uploadToCloudinary(fileUri);
+
+  const user = await User.findById(userId).select("-password");
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  user.profileBackground = cloudResponse.secure_url;
+
+  // Store positioning data if provided
+  if (x !== undefined && y !== undefined && scale !== undefined) {
+    user.profileBackgroundPosition = {
+      x: parseFloat(x) || 0,
+      y: parseFloat(y) || 0,
+      scale: parseFloat(scale) || 1,
+      width: parseFloat(width) || 0,
+      height: parseFloat(height) || 0,
+    };
+  }
+
+  await user.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    message: "Profile background updated successfully",
+    status: "success",
+    data: {
+      user,
+    },
+  });
+});

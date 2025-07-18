@@ -7,8 +7,10 @@ import { API_URL_USER } from "@/server";
 import { setAuthUser } from "@/store/authSlice";
 import { EditProfileFormData, UseFormHandleSubmitOptions } from "@/types";
 import axios from "axios";
+import Image from "next/image";
 import { useRef, useState } from "react";
 import { useDispatch } from "react-redux";
+import BackgroundImageEditor from "./BackgroundImageEditor";
 
 const ChangeBioAndImage = () => {
   const dispatch = useDispatch();
@@ -21,20 +23,54 @@ const ChangeBioAndImage = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(
     user?.profilePicture || null
   );
+  const [selectedBackground, setSelectedBackground] = useState<string | null>(
+    user?.profileBackground || null
+  );
+  const [showBackgroundEditor, setShowBackgroundEditor] = useState(false);
+  const [backgroundPositionData, setBackgroundPositionData] = useState<{
+    x: number;
+    y: number;
+    scale: number;
+    width: number;
+    height: number;
+  } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const backgroundInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleAvatarClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
+
+  const handleBackgroundClick = () => {
+    if (backgroundInputRef.current) {
+      backgroundInputRef.current.click();
+    }
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
         setSelectedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleBackgroundChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const imageUrl = reader.result as string;
+        setSelectedBackground(imageUrl);
+        setShowBackgroundEditor(true);
       };
       reader.readAsDataURL(file);
     }
@@ -52,6 +88,28 @@ const ChangeBioAndImage = () => {
       withCredentials: true,
     });
   };
+
+  const onBackgroundSubmit = async () => {
+    if (!backgroundInputRef.current?.files?.[0]) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("profileBackground", backgroundInputRef.current.files[0]);
+
+    // Add positioning data if available
+    if (backgroundPositionData) {
+      formData.append("x", backgroundPositionData.x.toString());
+      formData.append("y", backgroundPositionData.y.toString());
+      formData.append("scale", backgroundPositionData.scale.toString());
+      formData.append("width", backgroundPositionData.width.toString());
+      formData.append("height", backgroundPositionData.height.toString());
+    }
+
+    return await axios.post(`${API_URL_USER}/update-background`, formData, {
+      withCredentials: true,
+    });
+  };
   const validateForm = (data: EditProfileFormData) => {
     const errors: Record<string, string> = {};
 
@@ -66,6 +124,27 @@ const ChangeBioAndImage = () => {
       dispatch(setAuthUser(result.data.data.user));
     },
   };
+
+  const handleBackgroundEditorSave = (imageData: {
+    x: number;
+    y: number;
+    scale: number;
+    width: number;
+    height: number;
+  }): void => {
+    setBackgroundPositionData(imageData);
+    setShowBackgroundEditor(false);
+  };
+
+  const handleBackgroundEditorCancel = (): void => {
+    setShowBackgroundEditor(false);
+    setSelectedBackground(user?.profileBackground || null);
+    // Reset file input
+    if (backgroundInputRef.current) {
+      backgroundInputRef.current.value = "";
+    }
+  };
+
   return (
     <form className=" pb-16 " onSubmit={handleSubmit({ onSubmit, options })}>
       <div className="mt-16 pb-16 border-b-2">
@@ -99,6 +178,73 @@ const ChangeBioAndImage = () => {
           </LoadingButton>
         </div>
       </div>
+
+      {/* Profile Background Section */}
+      <div className="mt-16 pb-16 border-b-2">
+        <h3 className="text-lg font-bold mb-4 text-center">
+          Profile Background
+        </h3>
+        <div
+          className="relative w-full h-[200px] bg-gray-200 rounded-lg cursor-pointer overflow-hidden border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors"
+          onClick={handleBackgroundClick}
+        >
+          {selectedBackground ? (
+            <Image
+              src={selectedBackground}
+              alt="Background preview"
+              className="w-full h-full object-cover"
+              fill
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center text-gray-500">
+                <div className="text-4xl mb-2">📷</div>
+                <p>Click to upload background image</p>
+              </div>
+            </div>
+          )}
+        </div>
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          ref={backgroundInputRef}
+          onChange={handleBackgroundChange}
+        />
+        <div className="flex flex-col items-center">
+          {selectedBackground && !backgroundPositionData && (
+            <p className="text-sm text-gray-600 mt-2 mb-2">
+              Please adjust the position and save to enable upload
+            </p>
+          )}
+          <LoadingButton
+            isLoading={false}
+            size="lg"
+            className="mt-4"
+            type="button"
+            disabled={!backgroundPositionData}
+            onClick={async () => {
+              try {
+                const result = await onBackgroundSubmit();
+                if (result?.data) {
+                  dispatch(setAuthUser(result.data.data.user));
+                  setBackgroundPositionData(null); // Reset after successful upload
+
+                  // Force a page refresh to ensure the profile header updates
+                  window.location.reload();
+                }
+              } catch (error) {
+                console.error("Background upload failed:", error);
+              }
+            }}
+          >
+            {backgroundPositionData
+              ? "Update Background"
+              : "Select & Position Image First"}
+          </LoadingButton>
+        </div>
+      </div>
+
       <div className="mt-10 border-b-2 pb-10">
         <label htmlFor="bio" className="block text-lg font-bold mb-2">
           Bio
@@ -120,6 +266,14 @@ const ChangeBioAndImage = () => {
           Update Bio
         </LoadingButton>
       </div>
+
+      {showBackgroundEditor && selectedBackground && (
+        <BackgroundImageEditor
+          imageUrl={selectedBackground}
+          onSave={handleBackgroundEditorSave}
+          onCancel={handleBackgroundEditorCancel}
+        />
+      )}
     </form>
   );
 };

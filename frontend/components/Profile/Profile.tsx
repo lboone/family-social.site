@@ -49,6 +49,13 @@ const Profile = ({ id }: ProfileProps) => {
     getUserProfile();
   }, [id, formData, setUserProfile, setIsLoading]);
 
+  // Refetch profile data when current user is updated (for own profile)
+  useEffect(() => {
+    if (isOwnProfile && user) {
+      setUserProfile(user);
+    }
+  }, [user, isOwnProfile]);
+
   if (isLoading || !userProfile) {
     return <PageLoader />;
   }

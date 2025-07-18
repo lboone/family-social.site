@@ -20,6 +20,7 @@ const {
   getUnauthorizedUsers,
   allUsers,
   getAllUsersGeneral,
+  updateProfileBackground,
 } = require("../controllers/userController");
 const isSignedUp = require("../middleware/isSignedUp");
 const isAllowedUser = require("../middleware/isAllowedUser");
@@ -48,6 +49,12 @@ router.post(
   isAllowedUser,
   upload.single("profilePicture"),
   editProfile
+);
+router.post(
+  "/update-background",
+  isAllowedUser,
+  upload.single("profileBackground"),
+  updateProfileBackground
 );
 router.get("/suggested-users", isAllowedUser, suggestedUser);
 router.post("/follow-unfollow/:id", isAllowedUser, followUnfollow);
