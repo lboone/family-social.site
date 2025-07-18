@@ -54,17 +54,17 @@ const Comment = ({ user, post }: CommentProps) => {
             View All {post?.comments.length} Comments
           </p>
         </DialogTrigger>
-        <DialogContent className="max-w-6xl min-w-[90vw] sm:min-w-[80vw] lg:min-w-[70vw] xl:min-w-[60vw] min-h-[80vh] p-0 gap-0 flex flex-col">
+        <DialogContent className="max-w-6xl min-w-[90vw] sm:min-w-[80vw] lg:min-w-[70vw] xl:min-w-[60vw] min-h-[80vh] max-h-[90vh] p-0 gap-0 flex flex-col">
           <DialogTitle></DialogTitle>
           <div className="flex flex-1 h-full">
-            <div className="sm:w-1/2 hidden min-h-[70vh] sm:block">
+            <div className="sm:w-1/2 hidden min-h-[70vh] max-h-[80vh] sm:block">
               {post?.image ? (
                 <Image
                   src={`${post?.image?.url}`}
                   alt="Post Image"
                   width={600}
                   height={600}
-                  className="w-full h-full object-cover rounded-l-lg"
+                  className="w-full h-full max-h-[80vh] object-cover rounded-l-lg"
                 />
               ) : (
                 <div className="h-full w-full px-6 py-10 bg-gray-200/75 flex items-center justify-center">
@@ -76,7 +76,7 @@ const Comment = ({ user, post }: CommentProps) => {
                 </div>
               )}
             </div>
-            <div className="w-full sm:w-1/2 flex flex-col justify-between min-h-[70vh]">
+            <div className="w-full sm:w-1/2 flex flex-col justify-between min-h-[70vh] max-h-[80vh]">
               <div>
                 <div className="flex items-center justify-between px-4 mt-8 mb-4">
                   <div className="flex gap-3 items-center">

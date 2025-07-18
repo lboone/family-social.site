@@ -117,11 +117,22 @@ const Feed = () => {
         if (posts.length === index + 1) {
           return (
             <div ref={lastPostElementRef} key={post._id}>
-              <PostItem post={post} user={user} />
+              <PostItem
+                post={post}
+                user={user}
+                imageClassName="max-h-[60vh] object-cover rounded-lg"
+              />
             </div>
           );
         } else {
-          return <PostItem post={post} user={user} key={post._id} />;
+          return (
+            <PostItem
+              post={post}
+              user={user}
+              key={post._id}
+              imageClassName="max-h-[60vh] object-cover rounded-lg"
+            />
+          );
         }
       })}
 

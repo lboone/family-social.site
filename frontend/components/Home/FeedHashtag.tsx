@@ -151,7 +151,12 @@ export default function FeedHashtag({ hashtag }: FeedHashtagProps) {
           if (posts.length === index + 1) {
             return (
               <div ref={lastPostElementRef} key={post._id}>
-                <PostItem post={post} user={user} showOwner={true} />
+                <PostItem
+                  post={post}
+                  user={user}
+                  showOwner={true}
+                  imageClassName="max-h-[60vh] object-cover rounded-lg"
+                />
               </div>
             );
           } else {
@@ -161,6 +166,7 @@ export default function FeedHashtag({ hashtag }: FeedHashtagProps) {
                 post={post}
                 user={user}
                 showOwner={true}
+                imageClassName="max-h-[60vh] object-cover rounded-lg"
               />
             );
           }

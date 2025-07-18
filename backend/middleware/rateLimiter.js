@@ -73,7 +73,7 @@ const apiLimiter = createRateLimiter(
 // Admin action rate limiter
 const adminLimiter = createRateLimiter(
   60 * 60 * 1000, // 1 hour
-  20, // Limit each IP to 20 admin actions per hour
+  200, // Limit each IP to 20 admin actions per hour
   "Too many admin requests, please try again in 1 hour."
 );
 

@@ -345,7 +345,7 @@ const PostView = ({ postId, user }: PostViewProps) => {
               alt="Post Image"
               width={600}
               height={600}
-              className="w-full max-w-2xl mx-auto rounded-lg"
+              className="w-full max-w-2xl max-h-[70vh] mx-auto rounded-lg object-cover"
               priority
             />
           ) : (

@@ -214,7 +214,10 @@ const PostItem = ({
                 alt="Post Image"
                 width={imageWidth || 400}
                 height={imageHeight || 400}
-                className={cn("w-full", imageClassName)}
+                className={cn(
+                  "w-full max-h-[70vh] object-cover rounded-lg",
+                  imageClassName
+                )}
                 priority
               />
             </Link>
@@ -224,7 +227,10 @@ const PostItem = ({
               alt="Post Image"
               width={imageWidth || 400}
               height={imageHeight || 400}
-              className={cn("w-full", imageClassName)}
+              className={cn(
+                "w-full max-h-[70vh] object-cover rounded-lg",
+                imageClassName
+              )}
               priority
             />
           )

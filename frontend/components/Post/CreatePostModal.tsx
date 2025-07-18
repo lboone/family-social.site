@@ -173,7 +173,7 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
                   alt="Post Image"
                   width={400}
                   height={400}
-                  className="overflow-auto max-h-96 rounded-md object-contain w-full"
+                  className="overflow-auto max-h-[50vh] rounded-md object-cover w-full"
                 />
               ) : (
                 // Show default view
