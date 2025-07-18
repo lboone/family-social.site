@@ -18,21 +18,43 @@ const {
 } = require("../controllers/postController");
 const isAllowedUser = require("../middleware/isAllowedUser");
 const upload = require("../middleware/multer");
+const { uploadLimiter, apiLimiter } = require("../middleware/rateLimiter");
 
 // Test endpoint for file upload debugging
 
-router.post("/create", isAllowedUser, upload.single("postImage"), createPost);
-router.get("/all", isAllowedUser, getAllPost);
-router.get("/user/:id", isAllowedUser, getUserPosts);
-router.get("/saved/:id", isAllowedUser, getSavedPosts);
-router.get("/liked/:id", isAllowedUser, getLikedPosts);
-router.get("/following/:id", isAllowedUser, getFollowingPosts);
-router.post("/save-unsave/:postId", isAllowedUser, saveOrUnsavePost);
-router.post("/like-unlike/:postId", isAllowedUser, likeOrUnlikePost);
-router.post("/comment/:postId", isAllowedUser, addComment);
-router.delete("/delete/:postId", isAllowedUser, deletePost);
-router.get("/by-hashtag/:hashtag", isAllowedUser, getPostsByHashtag);
-router.get("/hashtags", isAllowedUser, getAllHashtags);
-router.get("/post/:id", isAllowedUser, getPostById);
+router.post(
+  "/create",
+  uploadLimiter,
+  isAllowedUser,
+  upload.single("postImage"),
+  createPost
+);
+router.get("/all", apiLimiter, isAllowedUser, getAllPost);
+router.get("/user/:id", apiLimiter, isAllowedUser, getUserPosts);
+router.get("/saved/:id", apiLimiter, isAllowedUser, getSavedPosts);
+router.get("/liked/:id", apiLimiter, isAllowedUser, getLikedPosts);
+router.get("/following/:id", apiLimiter, isAllowedUser, getFollowingPosts);
+router.post(
+  "/save-unsave/:postId",
+  apiLimiter,
+  isAllowedUser,
+  saveOrUnsavePost
+);
+router.post(
+  "/like-unlike/:postId",
+  apiLimiter,
+  isAllowedUser,
+  likeOrUnlikePost
+);
+router.post("/comment/:postId", apiLimiter, isAllowedUser, addComment);
+router.delete("/delete/:postId", apiLimiter, isAllowedUser, deletePost);
+router.get(
+  "/by-hashtag/:hashtag",
+  apiLimiter,
+  isAllowedUser,
+  getPostsByHashtag
+);
+router.get("/hashtags", apiLimiter, isAllowedUser, getAllHashtags);
+router.get("/post/:id", apiLimiter, isAllowedUser, getPostById);
 
 module.exports = router;

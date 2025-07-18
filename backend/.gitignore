@@ -108,3 +108,6 @@ docs/api/
 # Backup files
 *.backup
 *.bak
+
+# Misc
+RATE_LIMITING.md

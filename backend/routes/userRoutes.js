@@ -27,39 +27,50 @@ const isAllowedUser = require("../middleware/isAllowedUser");
 const isAdmin = require("../middleware/isAdmin");
 const upload = require("../middleware/multer");
 const { getPostById } = require("../controllers/postController");
+const {
+  authLimiter,
+  loginLimiter,
+  passwordResetLimiter,
+  otpLimiter,
+  uploadLimiter,
+  apiLimiter,
+  adminLimiter,
+} = require("../middleware/rateLimiter");
 
 const router = express.Router();
 // Auth Routes
-router.post("/signup", signup);
-router.post("/verify", isSignedUp, verifyAccount);
-router.post("/resend-otp", isSignedUp, resendOtp);
-router.post("/login", login);
+router.post("/signup", authLimiter, signup);
+router.post("/verify", otpLimiter, isSignedUp, verifyAccount);
+router.post("/resend-otp", otpLimiter, isSignedUp, resendOtp);
+router.post("/login", loginLimiter, login);
 router.post("/logout", isAllowedUser, logout);
-router.post("/forget-password", forgetPassword);
-router.post("/reset-password", resetPassword);
-router.post("/change-password", isAllowedUser, changePassword);
-router.post("/set-active", isAdmin, setActive);
-router.post("/set-admin", isAdmin, setAdmin);
-router.get("/all", isAdmin, allUsers);
+router.post("/forget-password", passwordResetLimiter, forgetPassword);
+router.post("/reset-password", passwordResetLimiter, resetPassword);
+router.post("/change-password", authLimiter, isAllowedUser, changePassword);
+router.post("/set-active", adminLimiter, isAdmin, setActive);
+router.post("/set-admin", adminLimiter, isAdmin, setAdmin);
+router.get("/all", adminLimiter, isAdmin, allUsers);
 
 // User Routes
-router.get("/profile/:id", isAllowedUser, getProfile);
+router.get("/profile/:id", apiLimiter, isAllowedUser, getProfile);
 router.post(
   "/edit-profile",
+  uploadLimiter,
   isAllowedUser,
   upload.single("profilePicture"),
   editProfile
 );
 router.post(
   "/update-background",
+  uploadLimiter,
   isAllowedUser,
   upload.single("profileBackground"),
   updateProfileBackground
 );
-router.get("/suggested-users", isAllowedUser, suggestedUser);
-router.post("/follow-unfollow/:id", isAllowedUser, followUnfollow);
-router.get("/me", isAllowedUser, getMe);
-router.get("/unauthorized-users", isAdmin, getUnauthorizedUsers);
-router.get("/all-general", isAllowedUser, getAllUsersGeneral);
+router.get("/suggested-users", apiLimiter, isAllowedUser, suggestedUser);
+router.post("/follow-unfollow/:id", apiLimiter, isAllowedUser, followUnfollow);
+router.get("/me", apiLimiter, isAllowedUser, getMe);
+router.get("/unauthorized-users", adminLimiter, isAdmin, getUnauthorizedUsers);
+router.get("/all-general", apiLimiter, isAllowedUser, getAllUsersGeneral);
 
 module.exports = router;
