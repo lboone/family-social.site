@@ -22,6 +22,7 @@ export interface User {
     width: number;
     height: number;
   };
+  usernameColor?: string;
   bio?: string;
   followers: string[];
   following: string[];
@@ -124,6 +125,7 @@ export interface PostFormData {
 export interface EditProfileFormData {
   bio: string | undefined;
   file: File | undefined;
+  usernameColor: string | undefined;
   [key: string]: string | File | undefined; // Index signature for compatibility
 }
 

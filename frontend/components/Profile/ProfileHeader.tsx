@@ -110,7 +110,17 @@ const ProfileHeader = ({ isOwnProfile, userProfile }: ProfileHeaderProps) => {
           </div>
           <div className="flex-1">
             <div className="flex items-center space-x-8">
-              <h1 className="text-2xl font-bold">{userProfile?.username}</h1>
+              <h1
+                className="hidden md:block text-2xl font-bold"
+                style={{
+                  color: userProfile?.usernameColor || "#000000",
+                }}
+              >
+                {userProfile?.username}
+              </h1>
+              <h1 className="block md:hidden text-2xl font-bold">
+                {userProfile?.username}
+              </h1>
               {isOwnProfile && (
                 <Link href="/profile/edit">
                   <Button

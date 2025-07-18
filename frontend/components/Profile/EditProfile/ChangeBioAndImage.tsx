@@ -19,6 +19,7 @@ const ChangeBioAndImage = () => {
     useForm<EditProfileFormData>({
       bio: user?.bio || undefined,
       file: undefined,
+      usernameColor: user?.usernameColor || "#000000",
     });
   const [selectedImage, setSelectedImage] = useState<string | null>(
     user?.profilePicture || null
@@ -79,6 +80,7 @@ const ChangeBioAndImage = () => {
   const onSubmit = async (data: EditProfileFormData) => {
     const newFormData = new FormData();
     newFormData.append("bio", data.bio || "");
+    newFormData.append("usernameColor", data.usernameColor || "#000000");
 
     if (fileInputRef.current?.files?.[0]) {
       newFormData.append("profilePicture", fileInputRef.current.files[0]);
@@ -257,13 +259,67 @@ const ChangeBioAndImage = () => {
           className="w-full h-[7rem] bg-gray-200 outline-none  p-6 rounded-md"
           placeholder="Tell us about yourself..."
         />
+      </div>
+
+      {/* Username Color Section */}
+      <div className="mt-10 border-b-2 pb-10">
+        <label htmlFor="usernameColor" className="block text-lg font-bold mb-2">
+          Username Color{" "}
+          <span className="text-sm font-normal text-gray-600">
+            (For larger screens)
+          </span>
+        </label>
+        <p className="text-sm text-gray-600 mb-4">
+          Choose a color for your username text on larger screens. This helps
+          with readability when you have a dark background image. On mobile
+          devices, the default black color will be used.
+        </p>
+        <div className="flex items-center gap-4 mb-4">
+          <input
+            type="color"
+            id="usernameColor"
+            name="usernameColor"
+            value={formData.usernameColor}
+            onChange={handleChange}
+            className="w-16 h-16 rounded-lg border-2 border-gray-300 cursor-pointer"
+          />
+          <div className="flex-1">
+            <input
+              type="text"
+              value={formData.usernameColor}
+              onChange={(e) =>
+                handleChange({
+                  target: { name: "usernameColor", value: e.target.value },
+                } as React.ChangeEvent<HTMLInputElement>)
+              }
+              className="w-full bg-gray-200 outline-none p-3 rounded-md font-mono"
+              placeholder="#000000"
+              pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+            />
+          </div>
+        </div>
+        <div className="p-4 bg-gray-100 rounded-lg">
+          <p className="text-sm text-gray-600 mb-2">Preview:</p>
+          <h2
+            className="text-2xl font-bold"
+            style={{ color: formData.usernameColor }}
+          >
+            {user?.username}
+          </h2>
+          <p className="text-xs text-gray-500 mt-1">
+            ↑ This is how your username will appear on larger screens
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-10">
         <LoadingButton
           isLoading={isLoading}
           size="lg"
-          className="mt-6 px-10"
+          className="w-full"
           type="submit"
         >
-          Update Bio
+          Update Profile
         </LoadingButton>
       </div>
 

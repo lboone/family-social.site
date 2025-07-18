@@ -49,6 +49,16 @@ const userSchema = new mongoose.Schema(
       width: { type: Number, default: 0 },
       height: { type: Number, default: 0 },
     },
+    usernameColor: {
+      type: String,
+      default: "#000000", // Default black color
+      validate: {
+        validator: function (v) {
+          return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(v);
+        },
+        message: "Username color must be a valid hex color code",
+      },
+    },
     bio: {
       type: String,
       maxlength: [150, "A bio must have less or equal than 150 characters"],

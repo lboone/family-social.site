@@ -40,7 +40,7 @@ exports.getProfile = catchAsync(async (req, res, next) => {
 
 exports.editProfile = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
-  const { bio } = req.body;
+  const { bio, usernameColor } = req.body;
   const profilePicture = req.file;
 
   let cloudResponse;
@@ -55,6 +55,18 @@ exports.editProfile = catchAsync(async (req, res, next) => {
 
   if (bio) {
     user.bio = bio;
+  }
+  if (usernameColor) {
+    // Validate hex color format
+    if (!/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(usernameColor)) {
+      return next(
+        new AppError(
+          "Invalid color format. Please provide a valid hex color.",
+          400
+        )
+      );
+    }
+    user.usernameColor = usernameColor;
   }
   if (profilePicture) {
     user.profilePicture = cloudResponse.secure_url;
