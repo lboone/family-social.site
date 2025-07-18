@@ -14,14 +14,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { addPost } from "@/store/postSlice";
-import { ImageIcon } from "lucide-react";
+import { Hash, ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import HashtagText from "../Form/HashtagText";
-import InputField from "../Form/InputField";
 import LoadingButton from "../Form/LoadingButton";
 import { Button } from "../ui/button";
+import HashtagPicker from "./HashtagPicker";
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -38,7 +38,9 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
 
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showHashtagPicker, setShowHashtagPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const captionInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -91,6 +93,26 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
     setSelectedFile(file);
     const imageUrl = URL.createObjectURL(file);
     setPreviewImage(imageUrl);
+  };
+
+  const handleHashtagSelect = (hashtag: string) => {
+    const currentCaption = formData.caption || "";
+    const newCaption =
+      currentCaption + (currentCaption ? " " : "") + `#${hashtag} `;
+    handleChange({
+      target: { name: "caption", value: newCaption },
+    } as React.ChangeEvent<HTMLInputElement>);
+    setShowHashtagPicker(false);
+
+    // Set focus back to caption input after a brief delay to ensure modal closes first
+    setTimeout(() => {
+      if (captionInputRef.current) {
+        captionInputRef.current.focus();
+        // Set cursor to the end of the text
+        const length = newCaption.length;
+        captionInputRef.current.setSelectionRange(length, length);
+      }
+    }, 100);
   };
 
   const onSubmit = async (data: CreatePostFormData) => {
@@ -186,19 +208,34 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
                 </>
               )}
             </div>
-            <InputField
-              name="caption"
-              label=""
-              type="text"
-              placeholder={
-                previewImage ? "Write a caption..." : "Write a message..."
-              }
-              value={formData.caption}
-              onChange={handleChange}
-              errors={errors}
-              containerClassName="mt-4 w-full"
-              inputClassName="focus:outline-none focus:ring-2 focus:ring-sky-600 rounded-md p-2 w-full"
-            />
+            <div className="mt-4 w-full">
+              <input
+                ref={captionInputRef}
+                name="caption"
+                type="text"
+                placeholder={
+                  previewImage ? "Write a caption..." : "Write a message..."
+                }
+                value={formData.caption}
+                onChange={handleChange}
+                className="focus:outline-none focus:ring-2 focus:ring-sky-600 rounded-md p-2 w-full border border-gray-300"
+              />
+              {errors.caption && (
+                <span className="text-red-500 text-sm">{errors.caption}</span>
+              )}
+            </div>
+
+            {/* Hashtag Button */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowHashtagPicker(true)}
+              className="mt-2 flex items-center gap-2 text-sky-600 hover:text-sky-700 hover:bg-sky-50 border-sky-300"
+            >
+              <Hash size={16} />
+              Add Hashtag
+            </Button>
+
             {formData.caption && (
               <div className="mt-2 p-2 bg-gray-50 rounded">
                 <p className="text-sm text-gray-600 mb-1">Preview:</p>
@@ -232,6 +269,14 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
             </div>
           </div>
         </form>
+
+        {/* Hashtag Picker */}
+        <HashtagPicker
+          isOpen={showHashtagPicker}
+          onClose={() => setShowHashtagPicker(false)}
+          onSelectHashtag={handleHashtagSelect}
+          currentCaption={formData.caption || ""}
+        />
       </DialogContent>
     </Dialog>
   );
