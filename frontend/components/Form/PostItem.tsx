@@ -8,7 +8,14 @@ import { addComment, likeOrDislikePost } from "@/store/postSlice";
 import { Post, User } from "@/types";
 import { formatRelativeTime } from "@/utils/functions"; // Adjust the import path as necessary
 import axios from "axios";
-import { BookmarkIcon, HeartIcon, LinkIcon, MessageCircle } from "lucide-react";
+import {
+  BookmarkIcon,
+  HeartIcon,
+  ImageDownIcon,
+  ImageUpIcon,
+  LinkIcon,
+  MessageCircle,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -144,13 +151,47 @@ const PostItem = ({
     [comment, dispatch, user]
   );
 
+  const handleDownloadImageToDevice = async () => {
+    if (!post.image || !post.image.url) return;
+
+    try {
+      // Fetch the image as a blob
+      const response = await fetch(post.image.url);
+      const blob = await response.blob();
+
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a temporary link element
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${post.image.publicId || "image"}.jpg`; // Set the filename
+
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up the temporary URL
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Image downloaded successfully!");
+    } catch (error) {
+      console.error("Error downloading image:", error);
+      toast.error("Failed to download image");
+    }
+  };
+
+  const handleOpenImageInNewTab = () => {
+    if (!post.image || !post.image.url) return;
+    window.open(post.image.url, "_blank");
+  };
   // Early return if post is invalid
   if (!post || !post._id) {
     console.warn("PostItem: Invalid post data", { post });
     return null;
   }
 
-  console.log({ user, post });
   return (
     <div key={post._id} className={cn("mt-8", postClassName)}>
       {showOwner && post.user && (
@@ -229,6 +270,24 @@ const PostItem = ({
                 router.push(`/post/${post._id}`);
               }}
             />
+          )}
+          {post.image && (
+            <div className="flex items-center space-x-4 ml-2">
+              <div
+                className="flex items-center space-x-1 cursor-pointer text-xs text-gray-500"
+                onClick={handleDownloadImageToDevice}
+              >
+                <ImageDownIcon className="cursor-pointer" />
+                <span>Download</span>
+              </div>
+              <div
+                className="flex items-center space-x-1 cursor-pointer text-xs text-gray-500"
+                onClick={handleOpenImageInNewTab}
+              >
+                <ImageUpIcon className="cursor-pointer" />
+                <span>Open in new tab</span>
+              </div>
+            </div>
           )}
         </div>
         <BookmarkIcon

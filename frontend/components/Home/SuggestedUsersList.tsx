@@ -30,9 +30,13 @@ const SuggestedUser = ({ user }: { user: User }) => {
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4 cursor-pointer">
-          <UserAvatar user={user} />
+          <UserAvatar
+            user={user}
+            avatarClassName="h-12 w-12"
+            avatarImageClassName="h-12 w-12"
+          />
           <div>
-            <h1 className="font-bold">{user.username}</h1>
+            <h1 className="font-bold">@{user.username.toLowerCase()}</h1>
             <p className="text-gray-700">
               {user.bio || "User Profile Bio Here"}
             </p>

@@ -13,14 +13,19 @@ const PostItemShort = ({ post }: PostItemShortProps) => {
       {/* Image/Content Container */}
       <div className="relative">
         {post?.image ? (
-          <Image
-            src={`${post?.image?.url}`}
-            alt="Post"
-            width={300}
-            height={300}
-            className="w-full h-full object-cover aspect-square"
-            priority
-          />
+          <Link
+            href={`/post/${post._id}`}
+            className="[@media(hover:hover)]:hidden flex items-center justify-between p-3 bg-white cursor-pointer"
+          >
+            <Image
+              src={`${post?.image?.url}`}
+              alt="Post"
+              width={300}
+              height={300}
+              className="w-full h-full object-cover aspect-square"
+              priority
+            />
+          </Link>
         ) : (
           <div className="h-full w-full px-6 py-10 bg-gray-200/75 flex items-center justify-center aspect-square">
             <HashtagText

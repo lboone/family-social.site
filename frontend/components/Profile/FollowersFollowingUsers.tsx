@@ -1,6 +1,6 @@
 import { User } from "@/types";
-import Image from "next/image";
 import Link from "next/link";
+import UserAvatar from "../Home/UserAvatar";
 import NoPostsFound from "./NoPostsFound";
 
 interface FollowersFollowingUsersProps {
@@ -52,13 +52,10 @@ const UserItem = ({ user }: { user: User }) => {
   return (
     <Link href={`/profile/${user._id}`}>
       <div className="flex items-center space-x-4 p-4 bg-sky-50 rounded-full">
-        <Image
-          src={user.profilePicture || "/images/default-profile.png"}
-          alt={user.username}
-          className="w-12 h-12 rounded-full"
-          width={48}
-          height={48}
-          priority
+        <UserAvatar
+          user={user}
+          avatarClassName="h-14 w-14"
+          avatarImageClassName="h-14 w-14"
         />
         <div>
           <h3 className="text-lg font-semibold text-gray-800">

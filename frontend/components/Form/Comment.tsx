@@ -2,6 +2,7 @@
 import { API_URL_POST } from "@/server";
 import { addComment } from "@/store/postSlice";
 import { Post, User } from "@/types";
+import { formatRelativeTime } from "@/utils/functions";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import axios from "axios";
 import Image from "next/image";
@@ -19,7 +20,6 @@ import {
 import { handleAuthRequest } from "../utils/apiRequests";
 import DotButton from "./DotButton";
 import HashtagText from "./HashtagText";
-import { formatRelativeTime } from "@/utils/functions";
 
 interface CommentProps {
   user: User | null;
@@ -122,7 +122,9 @@ const Comment = ({ user, post }: CommentProps) => {
                             {comment?.user?.username}
                           </p>
                           <span className="text-xs text-gray-500">
-                            {comment?.createdAt ? formatRelativeTime(comment.createdAt) : "Unknown"}
+                            {comment?.createdAt
+                              ? formatRelativeTime(comment.createdAt)
+                              : "Unknown"}
                           </span>
                           <div className="font-normal text-sm">
                             <HashtagText text={comment?.text} />

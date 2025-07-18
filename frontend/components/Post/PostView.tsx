@@ -9,7 +9,13 @@ import { Comment, Post, User } from "@/types";
 import { formatRelativeTime } from "@/utils/functions";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import axios from "axios";
-import { BookmarkIcon, HeartIcon, MessageCircle } from "lucide-react";
+import {
+  BookmarkIcon,
+  HeartIcon,
+  ImageDownIcon,
+  ImageUpIcon,
+  MessageCircle,
+} from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -258,6 +264,42 @@ const PostView = ({ postId, user }: PostViewProps) => {
     [comment, dispatch, user]
   );
 
+  const handleDownloadImageToDevice = async () => {
+    if (!post?.image || !post?.image.url) return;
+
+    try {
+      // Fetch the image as a blob
+      const response = await fetch(post.image.url);
+      const blob = await response.blob();
+
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a temporary link element
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${post.image.publicId || "image"}.jpg`; // Set the filename
+
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up the temporary URL
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Image downloaded successfully!");
+    } catch (error) {
+      console.error("Error downloading image:", error);
+      toast.error("Failed to download image");
+    }
+  };
+
+  const handleOpenImageInNewTab = () => {
+    if (!post?.image || !post?.image.url) return;
+    window.open(post.image.url, "_blank");
+  };
+
   useEffect(() => {
     if (postId) {
       fetchPost();
@@ -345,6 +387,25 @@ const PostView = ({ postId, user }: PostViewProps) => {
                   : ""
               }`}
             />
+
+            {post.image && (
+              <div className="flex items-center space-x-4 ml-2">
+                <div
+                  className="flex items-center space-x-1 cursor-pointer text-xs text-gray-500"
+                  onClick={handleDownloadImageToDevice}
+                >
+                  <ImageDownIcon className="cursor-pointer" />
+                  <span>Download</span>
+                </div>
+                <div
+                  className="flex items-center space-x-1 cursor-pointer text-xs text-gray-500"
+                  onClick={handleOpenImageInNewTab}
+                >
+                  <ImageUpIcon className="cursor-pointer" />
+                  <span>Open in new tab</span>
+                </div>
+              </div>
+            )}
           </div>
           <BookmarkIcon
             onClick={(e) => {

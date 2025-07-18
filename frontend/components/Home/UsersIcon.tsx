@@ -104,7 +104,7 @@ const UsersIcon = () => {
         <PageLoader />
       ) : (
         <CommandDialog open={open} onOpenChange={setOpen}>
-          <CommandInput placeholder="Search for a hashtag..." />
+          <CommandInput placeholder="Search for user by username..." />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup heading={`${usersCount} Users`}>
@@ -118,19 +118,19 @@ const UsersIcon = () => {
                 >
                   <div className="flex items-center justify-between w-full">
                     <div className="font-semibold">
-                      {user.username.toUpperCase()}
+                      @{user.username.toLowerCase()}
                     </div>
                     <div className="text-sm text-muted-foreground flex-shrink-0 font-semibold">
                       {user.postCount} {user.postCount === 1 ? "post" : "posts"}
                     </div>
                   </div>
-                  {user.bio && (
-                    <div className="text-sm text-muted-foreground break-words w-full">
-                      {user.bio.length > 60
+                  <div className="text-sm text-muted-foreground break-words w-full">
+                    {user.bio
+                      ? user.bio.length > 60
                         ? user.bio.substring(0, 60) + "..."
-                        : user.bio || "User has no bio at this time."}
-                    </div>
-                  )}
+                        : user.bio
+                      : "User has no bio at this time."}
+                  </div>
                 </CommandItem>
               ))}
             </CommandGroup>

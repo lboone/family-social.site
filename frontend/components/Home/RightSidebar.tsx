@@ -48,7 +48,11 @@ const RightSidebar = () => {
   }
   return (
     <div className="flex flex-col gap-2">
-      <UserProfileCard user={user!} />
+      <UserProfileCard
+        user={user!}
+        avatarClassName="h-12 w-12"
+        avatarImageClassName="h-12 w-12"
+      />
       <SuggestedUsersList suggestedUsers={suggestedUsers} />
     </div>
   );

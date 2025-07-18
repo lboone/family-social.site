@@ -6,7 +6,7 @@ export const formatRelativeTime = (dateString: string) => {
 
   const now = new Date();
   const postDate = new Date(dateString);
-  
+
   // Check if the date is valid
   if (isNaN(postDate.getTime())) {
     return "Unknown";
