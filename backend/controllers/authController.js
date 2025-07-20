@@ -27,9 +27,12 @@ const createSendToken = (user, statusCode, res, message) => {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // Set secure flag in production
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "Lax",
+    //httpOnly: true,
+    httpOnly: false,
+    //secure: process.env.NODE_ENV === "production", // Set secure flag in production
+    secure: true,
+    //sameSite: process.env.NODE_ENV === "production" ? "none" : "Lax",
+    sameSite: "none",
   };
 
   res.cookie("token", token, cookieOptions);
@@ -214,8 +217,10 @@ exports.login = catchAsync(async (req, res, next) => {
 exports.logout = catchAsync(async (req, res, next) => {
   res.cookie("token", "loggedout", {
     expires: new Date(Date.now() + 10 * 1000), // Set cookie to expire in 10 seconds
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // Set secure flag in production
+    //httpOnly: true,
+    httpOnly: false,
+    //secure: process.env.NODE_ENV === "production", // Set secure flag in production
+    secure: true,
   });
   res.status(200).json({
     status: "success",
