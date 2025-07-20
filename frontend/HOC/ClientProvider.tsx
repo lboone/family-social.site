@@ -16,7 +16,7 @@ const ClientProvider = ({ children }: ClientProviderProps) => {
   useEffect(() => {
     // Ensure we're on the client side
     setIsClient(true);
-    
+
     try {
       const clientPersistor = persistStore(store);
       setPersistor(clientPersistor);

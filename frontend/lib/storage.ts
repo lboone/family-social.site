@@ -2,7 +2,7 @@
 const createPersistStorage = () => {
   // Check if we're on the client side
   const isServer = typeof window === "undefined";
-  
+
   if (isServer) {
     // Return noop storage for server-side rendering
     return {

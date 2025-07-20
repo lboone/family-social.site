@@ -1,3 +1,4 @@
+import storage from "@/lib/storage";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import {
   FLUSH,
@@ -8,7 +9,6 @@ import {
   REGISTER,
   REHYDRATE,
 } from "redux-persist";
-import storage from "@/lib/storage";
 import authSlice from "./authSlice";
 import postSlice from "./postSlice";
 
