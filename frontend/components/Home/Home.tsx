@@ -23,15 +23,15 @@ const Home = () => {
   const refreshFeedData = useCallback(async () => {
     try {
       console.log("🔄 Refreshing feed data...");
-      
+
       // Refresh the posts feed
       const getAllPostReq = async () =>
         await axios.get(`${API_URL_POST}/all?page=1&limit=10`, {
           withCredentials: true,
         });
-      
+
       const result = await handleAuthRequest(null, getAllPostReq);
-      
+
       if (result?.data?.data?.posts) {
         dispatch(setPosts(result.data.data.posts));
         console.log("✅ Feed data refreshed successfully");
