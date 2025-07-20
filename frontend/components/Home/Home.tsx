@@ -1,8 +1,14 @@
 "use client";
 import useGetUser from "@/hooks/useGetUser";
 import { useMobilePullToRefresh } from "@/hooks/useMobilePullToRefresh";
+import { API_URL_POST } from "@/server";
+import { setPosts } from "@/store/postSlice";
+import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { toast } from "sonner";
+import { handleAuthRequest } from "../utils/apiRequests";
 import Feed from "./Feed";
 import LeftSidebar from "./LeftSidebar";
 import RightSidebar from "./RightSidebar";
@@ -11,9 +17,36 @@ import SidebarMobile from "./SidebarMobile";
 const Home = () => {
   const { user, isActive, isVerified } = useGetUser();
   const router = useRouter();
+  const dispatch = useDispatch();
+
+  // Custom refresh function that refreshes feed data instead of page reload
+  const refreshFeedData = useCallback(async () => {
+    try {
+      console.log("🔄 Refreshing feed data...");
+      
+      // Refresh the posts feed
+      const getAllPostReq = async () =>
+        await axios.get(`${API_URL_POST}/all?page=1&limit=10`, {
+          withCredentials: true,
+        });
+      
+      const result = await handleAuthRequest(null, getAllPostReq);
+      
+      if (result?.data?.data?.posts) {
+        dispatch(setPosts(result.data.data.posts));
+        console.log("✅ Feed data refreshed successfully");
+        toast.success("Feed updated!");
+      }
+    } catch (error) {
+      console.error("❌ Failed to refresh feed data:", error);
+      toast.error("Failed to refresh feed");
+      throw error; // Re-throw to let the hook handle fallback
+    }
+  }, [dispatch]);
 
   // Initialize pull-to-refresh for mobile/PWA users
-  const { isMobileDevice, isEnabled } = useMobilePullToRefresh({
+  const { isMobileDevice, isEnabled, isRefreshing } = useMobilePullToRefresh({
+    onRefresh: refreshFeedData, // Use custom refresh instead of page reload
     enabled: true,
     visibilityReloadDelay: 3000, // 3 seconds delay after tab becomes visible
     throttleInterval: 30000, // 30 seconds minimum between reloads (matches your backend throttle)
@@ -24,10 +57,11 @@ const Home = () => {
     console.log("🔄 Pull-to-refresh status:", {
       isMobileDevice,
       isEnabled,
+      isRefreshing,
       userAgent: navigator.userAgent,
       isPWA: window.matchMedia("(display-mode: standalone)").matches,
     });
-  }, [isMobileDevice, isEnabled]);
+  }, [isMobileDevice, isEnabled, isRefreshing]);
 
   useEffect(() => {
     if (!user) {
