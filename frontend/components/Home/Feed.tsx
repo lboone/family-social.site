@@ -16,6 +16,10 @@ const Feed = () => {
   const { user } = useGetUser();
   const posts = usePostsSelector();
 
+  useEffect(() => {
+    dispatch(setPosts([]));
+  }, [dispatch]);
+
   // Fetch function for infinite scroll
   const fetchPosts = useCallback(async (page: number) => {
     const response = await axios.get(
