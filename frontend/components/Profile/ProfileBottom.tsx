@@ -143,7 +143,7 @@ const ProfileBottom2 = ({ userProfile, isOwnProfile }: ProfileBottomProps) => {
                   </TabsContent>
                   <TabsContent value="FOLLOWINGUSERS" className="mt-2 pt-2">
                     <FollowersFollowingUsers
-                      users={userProfile.following as unknown as User[]}
+                      users={userProfile.following as User[]}
                       postType="followingUsers"
                       isOwnProfile={isOwnProfile}
                     />
@@ -152,7 +152,7 @@ const ProfileBottom2 = ({ userProfile, isOwnProfile }: ProfileBottomProps) => {
               </TabsContent>
               <TabsContent value="FOLLOWERS" className="border-y mt-2 py-2">
                 <FollowersFollowingUsers
-                  users={userProfile.followers as unknown as User[]}
+                  users={userProfile.followers as User[]}
                   postType="followersUsers"
                   isOwnProfile={isOwnProfile}
                 />

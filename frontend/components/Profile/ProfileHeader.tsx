@@ -5,6 +5,7 @@ import { User } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import FormattedBio from "../Form/FormattedBio";
 import UserAvatar from "../Home/UserAvatar";
 import { Button } from "../ui/button";
 
@@ -97,9 +98,10 @@ const ProfileHeader = ({ isOwnProfile, userProfile }: ProfileHeaderProps) => {
         <div className="absolute inset-0 bg-black/20"></div>
       </div>
 
-      {/* Profile Content */}
-      <div className="relative -mt-20 md:-mt-15 lg:-mt-15 xl:-mt-20 px-6">
-        <div className="flex md:flex-row flex-col md:items-end pb-16 border-b-2 md:space-x-20">
+      {/* Profile Content - Overlapping the background image */}
+      <div className="relative -mt-20 md:-mt-15 lg:-mt-15 xl:-mt-20 px-6 pb-16 border-b-2">
+        <div className="flex md:flex-row flex-col md:items-start md:space-x-20">
+          {/* Avatar */}
           <div className="flex-shrink-0">
             <UserAvatar
               user={userProfile}
@@ -108,46 +110,56 @@ const ProfileHeader = ({ isOwnProfile, userProfile }: ProfileHeaderProps) => {
               avatarFallbackClassName="text-xl"
             />
           </div>
-          <div className="flex-1">
-            <div className="flex items-center space-x-8">
-              <h1
-                className="hidden md:block text-2xl font-bold"
-                style={{
-                  color: userProfile?.usernameColor || "#000000",
-                }}
-              >
-                {userProfile?.username}
-              </h1>
-              <h1 className="block md:hidden text-2xl font-bold">
-                {userProfile?.username}
-              </h1>
-              {isOwnProfile && (
-                <Link href="/profile/edit">
-                  <Button
-                    variant="secondary"
-                    className="cursor-pointer hover:bg-gray-300"
-                  >
-                    Edit Profile
-                  </Button>
-                </Link>
-              )}
-              {!isOwnProfile && (
-                <Button
-                  variant={isFollowing ? "destructive" : "primary"}
-                  onClick={() =>
-                    handleFollowUnfollowWithUpdate(userProfile._id)
-                  }
-                  disabled={isLoading}
+
+          {/* Right side content */}
+          <div className="flex-1 md:pb-4">
+            {/* Username and Buttons row */}
+            <div className="flex md:items-center space-x-20 md:space-x-10 lg:space-x-20  mb-6 mt-4">
+              <>
+                <h1
+                  className="hidden md:block text-2xl font-bold"
+                  style={{
+                    color: userProfile?.usernameColor || "#000000",
+                  }}
                 >
-                  {isLoading
-                    ? "Updating..."
-                    : isFollowing
-                    ? "Unfollow"
-                    : "Follow"}
-                </Button>
-              )}
+                  {userProfile?.username}
+                </h1>
+                <h1 className="block md:hidden text-2xl font-bold">
+                  {userProfile?.username}
+                </h1>
+              </>
+
+              <div className="flex space-x-4">
+                {isOwnProfile && (
+                  <Link href="/profile/edit">
+                    <Button
+                      variant="secondary"
+                      className="cursor-pointer hover:bg-gray-300"
+                    >
+                      Edit Profile
+                    </Button>
+                  </Link>
+                )}
+                {!isOwnProfile && (
+                  <Button
+                    variant={isFollowing ? "destructive" : "primary"}
+                    onClick={() =>
+                      handleFollowUnfollowWithUpdate(userProfile._id)
+                    }
+                    disabled={isLoading}
+                  >
+                    {isLoading
+                      ? "Updating..."
+                      : isFollowing
+                      ? "Unfollow"
+                      : "Follow"}
+                  </Button>
+                )}
+              </div>
             </div>
-            <div className="flex items-center space-x-8 mt-6 mb-6">
+
+            {/* Stats row - positioned to stay below background */}
+            <div className="flex items-center space-x-8 mb-6 mt-10 md:mt-12">
               {accountActivity.map((activity) => (
                 <ActivityInfo
                   key={activity.label}
@@ -156,13 +168,19 @@ const ProfileHeader = ({ isOwnProfile, userProfile }: ProfileHeaderProps) => {
                 />
               ))}
             </div>
-            <p className="w-[80%] font-md">
-              {userProfile?.bio
-                ? userProfile.bio
-                : isOwnProfile
-                ? "Tell us something about yourself."
-                : "This user hasn't added a bio yet."}
-            </p>
+
+            {/* Bio - positioned to stay below background */}
+            <div className="w-full md:w-[80%] mt-4">
+              {userProfile?.bio ? (
+                <FormattedBio bio={userProfile.bio} className="font-md" />
+              ) : (
+                <p className="font-md text-gray-500">
+                  {isOwnProfile
+                    ? "Tell us something about yourself."
+                    : "This user hasn't added a bio yet."}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>

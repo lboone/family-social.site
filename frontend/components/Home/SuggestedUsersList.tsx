@@ -1,6 +1,7 @@
 "use client";
 import { User } from "@/types";
 import { useRouter } from "next/navigation";
+import FormattedBio from "../Form/FormattedBio";
 import UserAvatar from "./UserAvatar";
 
 interface SuggestedUsersListProps {
@@ -37,9 +38,15 @@ const SuggestedUser = ({ user }: { user: User }) => {
           />
           <div>
             <h1 className="font-bold">@{user.username.toLowerCase()}</h1>
-            <p className="text-gray-700">
-              {user.bio || "User Profile Bio Here"}
-            </p>
+            {user.bio ? (
+              <FormattedBio
+                bio={user.bio}
+                className="text-gray-700"
+                maxLength={60}
+              />
+            ) : (
+              <p className="text-gray-700">User Profile Bio Here</p>
+            )}
           </div>
         </div>
         <h1 className="font-medium text-sky-600 cursor-pointer">Details</h1>

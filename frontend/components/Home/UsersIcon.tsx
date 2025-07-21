@@ -13,6 +13,7 @@ import axios from "axios";
 import { UsersIcon as UsersIconOriginal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import FormattedBio from "../Form/FormattedBio";
 import PageLoader from "../Form/PageLoader";
 import { handleAuthRequest } from "../utils/apiRequests";
 
@@ -125,11 +126,11 @@ const UsersIcon = () => {
                     </div>
                   </div>
                   <div className="text-sm text-muted-foreground break-words w-full">
-                    {user.bio
-                      ? user.bio.length > 60
-                        ? user.bio.substring(0, 60) + "..."
-                        : user.bio
-                      : "User has no bio at this time."}
+                    {user.bio ? (
+                      <FormattedBio bio={user.bio} maxLength={60} />
+                    ) : (
+                      "User has no bio at this time."
+                    )}
                   </div>
                 </CommandItem>
               ))}

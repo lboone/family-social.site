@@ -24,8 +24,8 @@ export interface User {
   };
   usernameColor?: string;
   bio?: string;
-  followers: string[];
-  following: string[];
+  followers: User[] | string[]; // Can be populated User objects or just IDs
+  following: User[] | string[]; // Can be populated User objects or just IDs
   posts: Post[];
   savedPosts: string[] | Post[];
   isVerified: boolean;

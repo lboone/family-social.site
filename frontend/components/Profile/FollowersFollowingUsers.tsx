@@ -1,5 +1,6 @@
 import { User } from "@/types";
 import Link from "next/link";
+import FormattedBio from "../Form/FormattedBio";
 import UserAvatar from "../Home/UserAvatar";
 import NoPostsFound from "./NoPostsFound";
 
@@ -50,20 +51,26 @@ export default FollowersFollowingUsers;
 
 const UserItem = ({ user }: { user: User }) => {
   return (
-    <Link href={`/profile/${user._id}`}>
-      <div className="flex items-center space-x-4 p-4 bg-sky-50 rounded-full">
+    <div className="flex items-center space-x-4 p-4 bg-sky-50 rounded-full">
+      <Link href={`/profile/${user._id}`}>
         <UserAvatar
           user={user}
-          avatarClassName="h-14 w-14"
+          avatarClassName="h-14 w-14 cursor-pointer"
           avatarImageClassName="h-14 w-14"
         />
-        <div>
-          <h3 className="text-lg font-semibold text-gray-800">
+      </Link>
+      <div className="flex-1">
+        <Link href={`/profile/${user._id}`}>
+          <h3 className="text-lg font-semibold text-gray-800 cursor-pointer hover:text-blue-600">
             @{user.username}
           </h3>
-          <p className="text-sm text-gray-500">{user.bio || "No bio"}</p>
-        </div>
+        </Link>
+        {user.bio ? (
+          <FormattedBio bio={user.bio} className="text-sm text-gray-500" />
+        ) : (
+          <p className="text-sm text-gray-500">No bio</p>
+        )}
       </div>
-    </Link>
+    </div>
   );
 };

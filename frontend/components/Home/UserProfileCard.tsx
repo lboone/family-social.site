@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { User } from "@/types";
+import FormattedBio from "../Form/FormattedBio";
 import UserAvatar from "./UserAvatar";
 
 interface UserProfileCardProps {
@@ -53,15 +54,25 @@ const UserProfileCard = ({
           <h1 className="font-bold" style={textStyle}>
             @{user.username.toLowerCase()}
           </h1>
-          <p
-            className={cn(
-              "text-gray-500",
-              user.profileBackground && "text-white/90"
-            )}
-            style={user.usernameColor ? textStyle : undefined}
-          >
-            {user.bio || "My Profile Bio Here"}
-          </p>
+          {user.bio ? (
+            <FormattedBio
+              bio={user.bio}
+              className={cn(
+                "text-gray-500",
+                user.profileBackground && "text-white/90"
+              )}
+            />
+          ) : (
+            <p
+              className={cn(
+                "text-gray-500",
+                user.profileBackground && "text-white/90"
+              )}
+              style={user.usernameColor ? textStyle : undefined}
+            >
+              My Profile Bio Here
+            </p>
+          )}
         </div>
       </div>
     </div>

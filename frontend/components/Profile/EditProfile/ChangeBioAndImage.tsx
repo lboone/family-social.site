@@ -1,5 +1,6 @@
 "use client";
 import LoadingButton from "@/components/Form/LoadingButton";
+import RichTextEditor from "@/components/Form/RichTextEditor";
 import UserAvatar from "@/components/Home/UserAvatar";
 import useForm from "@/hooks/useForm";
 import useGetUser from "@/hooks/useGetUser";
@@ -251,13 +252,18 @@ const ChangeBioAndImage = () => {
         <label htmlFor="bio" className="block text-lg font-bold mb-2">
           Bio
         </label>
-        <textarea
+        <RichTextEditor
           id="bio"
           name="bio"
-          value={formData.bio}
-          onChange={handleChange}
-          className="w-full h-[7rem] bg-gray-200 outline-none  p-6 rounded-md"
+          value={formData.bio || ""}
+          onChange={(value) =>
+            handleChange({
+              target: { name: "bio", value },
+            } as React.ChangeEvent<HTMLTextAreaElement>)
+          }
           placeholder="Tell us about yourself..."
+          maxLength={500}
+          className="w-full"
         />
       </div>
 
