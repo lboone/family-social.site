@@ -93,31 +93,72 @@ const postSlice = createSlice({
       state.hashtagPosts = [...(state.hashtagPosts || []), ...action.payload];
     },
     setUserPosts: (state, action: PayloadAction<Post[]>) => {
-      state.userPosts = action.payload;
+      // Deduplicate posts based on _id
+      const uniquePosts = action.payload.filter(
+        (post, index, self) =>
+          index === self.findIndex((p) => p._id === post._id)
+      );
+      state.userPosts = uniquePosts;
     },
     appendUserPosts: (state, action: PayloadAction<Post[]>) => {
-      state.userPosts = [...(state.userPosts || []), ...action.payload];
+      const existingIds = new Set(
+        (state.userPosts || []).map((post) => post._id)
+      );
+      const newPosts = action.payload.filter(
+        (post) => !existingIds.has(post._id)
+      );
+      state.userPosts = [...(state.userPosts || []), ...newPosts];
     },
     setSavedPosts: (state, action: PayloadAction<Post[]>) => {
-      state.savedPosts = action.payload;
+      // Deduplicate posts based on _id
+      const uniquePosts = action.payload.filter(
+        (post, index, self) =>
+          index === self.findIndex((p) => p._id === post._id)
+      );
+      state.savedPosts = uniquePosts;
     },
     appendSavedPosts: (state, action: PayloadAction<Post[]>) => {
-      state.savedPosts = [...(state.savedPosts || []), ...action.payload];
+      const existingIds = new Set(
+        (state.savedPosts || []).map((post) => post._id)
+      );
+      const newPosts = action.payload.filter(
+        (post) => !existingIds.has(post._id)
+      );
+      state.savedPosts = [...(state.savedPosts || []), ...newPosts];
     },
     setLikedPosts: (state, action: PayloadAction<Post[]>) => {
-      state.likedPosts = action.payload;
+      // Deduplicate posts based on _id
+      const uniquePosts = action.payload.filter(
+        (post, index, self) =>
+          index === self.findIndex((p) => p._id === post._id)
+      );
+      state.likedPosts = uniquePosts;
     },
     appendLikedPosts: (state, action: PayloadAction<Post[]>) => {
-      state.likedPosts = [...(state.likedPosts || []), ...action.payload];
+      const existingIds = new Set(
+        (state.likedPosts || []).map((post) => post._id)
+      );
+      const newPosts = action.payload.filter(
+        (post) => !existingIds.has(post._id)
+      );
+      state.likedPosts = [...(state.likedPosts || []), ...newPosts];
     },
     setFollowingPosts: (state, action: PayloadAction<Post[]>) => {
-      state.followingPosts = action.payload;
+      // Deduplicate posts based on _id
+      const uniquePosts = action.payload.filter(
+        (post, index, self) =>
+          index === self.findIndex((p) => p._id === post._id)
+      );
+      state.followingPosts = uniquePosts;
     },
     appendFollowingPosts: (state, action: PayloadAction<Post[]>) => {
-      state.followingPosts = [
-        ...(state.followingPosts || []),
-        ...action.payload,
-      ];
+      const existingIds = new Set(
+        (state.followingPosts || []).map((post) => post._id)
+      );
+      const newPosts = action.payload.filter(
+        (post) => !existingIds.has(post._id)
+      );
+      state.followingPosts = [...(state.followingPosts || []), ...newPosts];
     },
   },
 });

@@ -6,6 +6,7 @@ import { CogIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Badge } from "../ui/badge";
+import LoadingSpinner from "../ui/LoadingSpinner";
 import { handleAuthRequest } from "../utils/apiRequests";
 
 const AdminIcon = () => {
@@ -29,7 +30,7 @@ const AdminIcon = () => {
     getAllPost();
   }, [dispatch]);
   if (isLoading) {
-    return <CogIcon className="animate-spin" />;
+    return <LoadingSpinner size="sm" />;
   }
   return (
     <div className="relative inline-block">

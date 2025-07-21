@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import DynamicBreadcrumb from "../Breadcrumb/DynamicBreadcrumb";
 import PageLoader from "../Form/PageLoader";
+import LoadingSpinner from "../ui/LoadingSpinner";
 import { handleAuthRequest } from "../utils/apiRequests";
 
 interface Hashtag {
@@ -191,8 +192,7 @@ export default function FeedHashtags() {
       {/* Loading indicator for more hashtags */}
       {isLoadingMore && (
         <div className="flex justify-center items-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <span className="ml-2 text-gray-600">Loading more hashtags...</span>
+          <LoadingSpinner size="md" text="Loading more hashtags..." />
         </div>
       )}
 
