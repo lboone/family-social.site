@@ -10,10 +10,19 @@ process.on("uncaughtException", (err) => {
 dotenv.config({ path: "./config.env" });
 const app = require("./app");
 
+let dbConnectionString = process.env.DB;
+if (process.env.NODE_ENV == "development") {
+  dbConnectionString = process.env.DEV_DB;
+}
+
 mongoose
-  .connect(process.env.DB)
-  .then(() => {
-    console.log("Connected to Database");
+  .connect(dbConnectionString)
+  .then(({ connection }) => {
+    if (connection && connection.db && connection.db.databaseName) {
+      console.log(`Connected to Database at ${connection.db.databaseName}`);
+    } else {
+      console.log("Connected to Database, but database name is not available");
+    }
   })
   .catch((err) => {
     console.error("Database connection error:", err);
