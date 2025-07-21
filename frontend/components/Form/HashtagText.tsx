@@ -5,7 +5,7 @@ import Link from "next/link";
 import React from "react";
 
 interface HashtagTextProps {
-  text: string;
+  text: string | undefined;
   className?: string;
   hashtagClassName?: string;
 }
@@ -15,6 +15,11 @@ const HashtagText: React.FC<HashtagTextProps> = ({
   className = "",
   hashtagClassName = "text-blue-600 hover:text-blue-800 font-medium",
 }) => {
+  // Handle undefined or null text
+  if (!text) {
+    return <div className={className}></div>;
+  }
+
   const renderTextWithHashtags = (inputText: string) => {
     // Split by spaces and handle each word
     const words = inputText.split(/(\s+)/); // Keep spaces in the array

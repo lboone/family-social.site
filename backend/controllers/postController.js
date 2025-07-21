@@ -332,6 +332,15 @@ exports.getPostsByHashtag = catchAsync(async (req, res, next) => {
     hashtags: hashtag.toLowerCase(),
   })
     .populate("user", "username profilePicture")
+    .populate({
+      path: "comments",
+      select: "text user createdAt",
+      options: { sort: { createdAt: -1 } },
+      populate: {
+        path: "user",
+        select: "username profilePicture",
+      },
+    })
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
