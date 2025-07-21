@@ -18,8 +18,47 @@ _These features can be implemented quickly and will significantly improve user e
 - [ ] **Push Notifications Setup** ⭐⭐⭐⭐⭐
 
   - Set up service worker for PWA notifications
-  - Basic like/comment notifications
+  - Setup push notifications for IOS/Android users
+  - Setup push notifications for web users
   - Browser permission handling
+  - Basic like/save/comment/follow/unfollow notifications
+  - New Posts/Following's New Posts notifications
+  - Ability to opt-out of notifications for:
+    - Push Notifications (Place in Profile Edit Screen)
+      - Toggle based on user's answer to "Do you want to receive push notifications?"
+      - If user opts out of push notifications, they will not receive any push notifications
+      - All interface options will be disabled.
+      - Once user answers push notification question, they will not see the question again, they will now be albe to opt-in/out in their user profile settings.
+    - Likes (Default is unchecked) (place options in Profile Edit Screen)
+      - Notification Message:
+        - Title: {username} liked your post
+        - Body: {first 100 characters of post caption...}
+        - Link: {post link}
+    - Saves (Default is unchecked) (place options in Profile Edit Screen)
+      - Notification Message:
+        - Title: {username} saved your post
+        - Body: {first 100 characters of post caption...}
+        - Link: {post link}
+    - Comments (Default is unchecked) (place options in Profile Edit Screen)
+      - Notification Message:
+        - Title: {username} commented on your post
+        - Body: {first 100 characters of comment...}
+        - Link: {post link}
+    - Follow (Default is unchecked) (place options in Profile Edit Screen)
+      - Notification Message:
+        - Title: {username} followed you
+        - Body: {username} followed you on {date}
+        - Link: {follower's profile link}
+    - Unfollow (Default is unchecked) (place options in Profile Edit Screen)
+      - Notification Message:
+        - Title: {username} unfollowed you
+        - Body: {username} unfollowed you on {date}
+        - Link: {unfollower's profile link}
+    - New Posts Or Following's New Posts or None (default is none) (place options in Profile Edit Screen)
+      - Notification Message:
+        - Title: {username} posted a new post
+        - Body: {first 100 characters of post caption...}
+        - Link: {post link}
   - _Impact: High | Difficulty: Easy | Time: 1-2 days_
 
 - [ ] **Real-Time Like/Comment Updates** ⭐⭐⭐⭐
