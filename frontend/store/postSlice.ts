@@ -24,7 +24,12 @@ const postSlice = createSlice({
   initialState,
   reducers: {
     setPosts: (state, action: PayloadAction<Post[]>) => {
-      state.posts = action.payload;
+      // Deduplicate posts based on _id
+      const uniquePosts = action.payload.filter(
+        (post, index, self) =>
+          index === self.findIndex((p) => p._id === post._id)
+      );
+      state.posts = uniquePosts;
     },
     addPost: (state, action: PayloadAction<Post>) => {
       state.posts.unshift(action.payload);
@@ -84,13 +89,28 @@ const postSlice = createSlice({
       updatePostInArray(state.followingPosts);
     },
     appendPosts: (state, action: PayloadAction<Post[]>) => {
-      state.posts = [...(state.posts || []), ...action.payload];
+      const existingIds = new Set((state.posts || []).map((post) => post._id));
+      const newPosts = action.payload.filter(
+        (post) => !existingIds.has(post._id)
+      );
+      state.posts = [...(state.posts || []), ...newPosts];
     },
     setHashtagPosts: (state, action: PayloadAction<Post[]>) => {
-      state.hashtagPosts = action.payload;
+      // Deduplicate posts based on _id
+      const uniquePosts = action.payload.filter(
+        (post, index, self) =>
+          index === self.findIndex((p) => p._id === post._id)
+      );
+      state.hashtagPosts = uniquePosts;
     },
     appendHashtagPosts: (state, action: PayloadAction<Post[]>) => {
-      state.hashtagPosts = [...(state.hashtagPosts || []), ...action.payload];
+      const existingIds = new Set(
+        (state.hashtagPosts || []).map((post) => post._id)
+      );
+      const newPosts = action.payload.filter(
+        (post) => !existingIds.has(post._id)
+      );
+      state.hashtagPosts = [...(state.hashtagPosts || []), ...newPosts];
     },
     setUserPosts: (state, action: PayloadAction<Post[]>) => {
       // Deduplicate posts based on _id

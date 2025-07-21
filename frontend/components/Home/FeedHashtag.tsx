@@ -21,6 +21,11 @@ export default function FeedHashtag({ hashtag }: FeedHashtagProps) {
   const { user } = useGetUser();
   const posts = useHashtagPostsSelector();
 
+  // Clear hashtag posts when component mounts or hashtag changes
+  useEffect(() => {
+    dispatch(setHashtagPosts([]));
+  }, [hashtag, dispatch]);
+
   // Fetch function for infinite scroll
   const fetchPosts = useCallback(
     async (page: number) => {
@@ -56,18 +61,28 @@ export default function FeedHashtag({ hashtag }: FeedHashtagProps) {
   // Sync infinite scroll data with Redux store
   useEffect(() => {
     if (infiniteScrollPosts.length > 0) {
+      // Create a map of existing post IDs for quick lookup
+      const existingPostIds = new Set(posts.map((post) => post._id));
+
       if (posts.length === 0) {
-        // Initial load
-        dispatch(setHashtagPosts(infiniteScrollPosts));
+        // Initial load - deduplicate just in case
+        const uniquePosts = infiniteScrollPosts.filter(
+          (post, index, self) =>
+            index === self.findIndex((p) => p._id === post._id)
+        );
+        dispatch(setHashtagPosts(uniquePosts));
       } else {
-        // Append new posts
-        const newPosts = infiniteScrollPosts.slice(posts.length);
+        // Append new posts - filter out duplicates
+        const newPosts = infiniteScrollPosts
+          .slice(posts.length)
+          .filter((post) => !existingPostIds.has(post._id));
+
         if (newPosts.length > 0) {
           dispatch(appendHashtagPosts(newPosts));
         }
       }
     }
-  }, [infiniteScrollPosts, posts.length, dispatch]);
+  }, [infiniteScrollPosts, posts, dispatch]);
 
   return (
     <div className="flex flex-col px-2 w-full md:w-[70%] md:px-0 mx-auto">
