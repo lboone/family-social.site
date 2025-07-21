@@ -26,6 +26,26 @@ const postSchema = new mongoose.Schema(
       },
       required: false,
     },
+    video: {
+      type: {
+        url: {
+          type: String,
+          required: [true, "Video URL is required when video is provided"],
+        },
+        publicId: {
+          type: String,
+          required: [
+            true,
+            "Video public ID is required when video is provided",
+          ],
+        },
+        thumbnail: {
+          type: String,
+          required: false,
+        },
+      },
+      required: false,
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -54,11 +74,26 @@ const postSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Custom validation to ensure if image is provided, both url and publicId are present
+// Custom validation to ensure if media is provided, both url and publicId are present
 postSchema.pre("save", function (next) {
   if (this.image && (!this.image.url || !this.image.publicId)) {
     const error = new Error(
       "When image is provided, both url and publicId are required"
+    );
+    error.name = "ValidationError";
+    return next(error);
+  }
+  if (this.video && (!this.video.url || !this.video.publicId)) {
+    const error = new Error(
+      "When video is provided, both url and publicId are required"
+    );
+    error.name = "ValidationError";
+    return next(error);
+  }
+  // Ensure only one media type is provided
+  if (this.image && this.video) {
+    const error = new Error(
+      "A post can have either an image or a video, not both"
     );
     error.name = "ValidationError";
     return next(error);

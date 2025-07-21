@@ -9,16 +9,17 @@ const getDataUri = require("../utils/dataUri");
 
 exports.createPost = catchAsync(async (req, res, next) => {
   const { caption } = req.body;
-  const postImage = req.file;
   const userId = req.user._id;
-  // if (!postImage) {
-  //   return next(new Error("Please upload an image", 400));
-  // }
 
-  // optimize our image
+  // Extract files from multer fields
+  const postImage = req.files?.postImage?.[0];
+  const postVideo = req.files?.postVideo?.[0];
+
   let post;
   let cloudResponse;
+
   if (postImage) {
+    // Handle image upload
     const fileUri = getDataUri(postImage);
     cloudResponse = await uploadToCloudinary(fileUri);
     post = await Post.create({
@@ -29,7 +30,27 @@ exports.createPost = catchAsync(async (req, res, next) => {
       },
       user: userId,
     });
+  } else if (postVideo) {
+    // Handle video upload
+    const fileUri = getDataUri(postVideo);
+    // Upload video to Cloudinary with video-specific options
+    cloudResponse = await uploadToCloudinary(fileUri, {
+      resource_type: "video",
+      format: "mp4",
+      quality: "auto",
+    });
+
+    post = await Post.create({
+      caption,
+      video: {
+        url: cloudResponse.secure_url,
+        publicId: cloudResponse.public_id,
+        thumbnail: cloudResponse.secure_url.replace(/\.[^/.]+$/, ".jpg"), // Generate thumbnail URL
+      },
+      user: userId,
+    });
   } else {
+    // No media, create text-only post
     post = await Post.create({
       caption,
       user: userId,

@@ -55,6 +55,11 @@ export interface Post {
     url: string;
     publicId: string;
   };
+  video?: {
+    url: string;
+    publicId: string;
+    thumbnail?: string;
+  };
   user: User | undefined;
   likes: string[];
   comments: Comment[];

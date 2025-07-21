@@ -13,8 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import VideoPlayer from "@/components/ui/VideoPlayer";
 import { addPost } from "@/store/postSlice";
-import { Hash, ImageIcon } from "lucide-react";
+import { Hash, ImageIcon, VideoIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -37,15 +38,39 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
     });
 
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewVideo, setPreviewVideo] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileType, setFileType] = useState<"image" | "video" | null>(null);
   const [showHashtagPicker, setShowHashtagPicker] = useState(false);
+  const [fileSize, setFileSize] = useState<number>(0);
+  const [isUploadWarning, setIsUploadWarning] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const captionInputRef = useRef<HTMLInputElement | null>(null);
+
+  // File size limits
+  const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+  const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+  const VIDEO_WARNING_SIZE = 25 * 1024 * 1024; // 25MB - warn user about large video
+
+  // Helper function to format file size
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
 
   useEffect(() => {
     if (!isOpen) {
       setPreviewImage(null);
+      setPreviewVideo(null);
       setSelectedFile(null);
+      setFileType(null);
+      setFileSize(0);
+      setIsUploadWarning(false);
+      setUploadProgress(0);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -63,36 +88,93 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
 
     if (!file) {
       setPreviewImage(null);
+      setPreviewVideo(null);
       setSelectedFile(null);
+      setFileType(null);
+      setFileSize(0);
+      setIsUploadWarning(false);
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select a valid image file.");
-      setPreviewImage(null);
-      setSelectedFile(null);
-      // Clear the input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+    setFileSize(file.size);
+
+    // Check if it's an image
+    if (file.type.startsWith("image/")) {
+      if (file.size > MAX_IMAGE_SIZE) {
+        toast.error(
+          `Image file is too large (${formatFileSize(
+            file.size
+          )}). Please select an image smaller than ${formatFileSize(
+            MAX_IMAGE_SIZE
+          )}.`
+        );
+        clearFileSelection();
+        return;
       }
+
+      setSelectedFile(file);
+      setFileType("image");
+      setIsUploadWarning(false);
+      const imageUrl = URL.createObjectURL(file);
+      setPreviewImage(imageUrl);
+      setPreviewVideo(null);
+
+      // Show success message for images
+      toast.success(`Image selected (${formatFileSize(file.size)})`);
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Please select an image smaller than 5MB.");
-      setPreviewImage(null);
-      setSelectedFile(null);
-      // Clear the input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+    // Check if it's a video
+    if (file.type.startsWith("video/")) {
+      if (file.size > MAX_VIDEO_SIZE) {
+        toast.error(
+          `Video file is too large (${formatFileSize(
+            file.size
+          )}). Please select a video smaller than ${formatFileSize(
+            MAX_VIDEO_SIZE
+          )}.`
+        );
+        clearFileSelection();
+        return;
       }
+
+      // Show warning for large videos
+      if (file.size > VIDEO_WARNING_SIZE) {
+        setIsUploadWarning(true);
+        toast.warning(
+          `Large video file detected (${formatFileSize(
+            file.size
+          )}). Upload may take longer and could fail on slower connections.`
+        );
+      } else {
+        setIsUploadWarning(false);
+        toast.success(`Video selected (${formatFileSize(file.size)})`);
+      }
+
+      setSelectedFile(file);
+      setFileType("video");
+      const videoUrl = URL.createObjectURL(file);
+      setPreviewVideo(videoUrl);
+      setPreviewImage(null);
       return;
     }
 
-    // File is valid, process it
-    setSelectedFile(file);
-    const imageUrl = URL.createObjectURL(file);
-    setPreviewImage(imageUrl);
+    // File is neither image nor video
+    toast.error("Please select a valid image or video file.");
+    clearFileSelection();
+  };
+
+  const clearFileSelection = () => {
+    setPreviewImage(null);
+    setPreviewVideo(null);
+    setSelectedFile(null);
+    setFileType(null);
+    setFileSize(0);
+    setIsUploadWarning(false);
+    setUploadProgress(0);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleHashtagSelect = (hashtag: string) => {
@@ -116,27 +198,78 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
   };
 
   const onSubmit = async (data: CreatePostFormData) => {
+    // Show additional warning for large video files
+    if (selectedFile && fileType === "video" && isUploadWarning) {
+      toast.loading(
+        `Uploading large video (${formatFileSize(
+          fileSize
+        )})... This may take a while.`,
+        {
+          id: "video-upload",
+        }
+      );
+    }
+
     const newFormData = new FormData();
     newFormData.append("caption", data.caption || "");
 
     if (selectedFile) {
-      newFormData.append("postImage", selectedFile);
+      if (fileType === "image") {
+        newFormData.append("postImage", selectedFile);
+      } else if (fileType === "video") {
+        newFormData.append("postVideo", selectedFile);
+      }
     }
-    return await axios.post(`${API_URL_POST}/create`, newFormData, {
-      withCredentials: true,
-      // Don't set Content-Type header, let axios handle it for FormData
-    });
+
+    try {
+      setUploadProgress(0);
+      const result = await axios.post(`${API_URL_POST}/create`, newFormData, {
+        withCredentials: true,
+        timeout: 300000, // 5 minutes timeout for large files
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setUploadProgress(percentCompleted);
+
+            // Update the loading toast for large files
+            if (isUploadWarning && percentCompleted < 100) {
+              toast.loading(`Uploading... ${percentCompleted}%`, {
+                id: "video-upload",
+              });
+            }
+          }
+        },
+      });
+
+      // Dismiss the loading toast on success
+      if (isUploadWarning) {
+        toast.dismiss("video-upload");
+        toast.success("Large video uploaded successfully!");
+      }
+
+      setUploadProgress(0);
+      return result;
+    } catch (error) {
+      // Dismiss the loading toast on error
+      if (isUploadWarning) {
+        toast.dismiss("video-upload");
+      }
+      setUploadProgress(0);
+      throw error;
+    }
   };
 
   const validateForm = (data: CreatePostFormData) => {
     const errors: Record<string, string> = {};
 
-    // Since image is now optional, we need either caption or image
-    const hasImage = selectedFile;
+    // Since media is now optional, we need either caption or media
+    const hasMedia = selectedFile;
     const hasCaption = data.caption && data.caption.trim().length > 0;
 
-    if (!hasCaption && !hasImage) {
-      errors.caption = "Please provide either a caption or an image";
+    if (!hasCaption && !hasMedia) {
+      errors.caption = "Please provide either a caption or media (image/video)";
     }
 
     if (data.caption && data.caption.length > 2200) {
@@ -149,9 +282,14 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
     validate: validateForm,
     onSuccess: (result) => {
       dispatch(addPost(result.data.data.post));
-      // Reset form and clear images on successful submission
+      // Reset form and clear media on successful submission
       setPreviewImage(null);
+      setPreviewVideo(null);
       setSelectedFile(null);
+      setFileType(null);
+      setFileSize(0);
+      setIsUploadWarning(false);
+      setUploadProgress(0);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -168,38 +306,117 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
           <div className="flex flex-col justify-center text-center space-y-4">
             <div className="mt-4">
               {previewImage ? (
-                <Image
-                  src={previewImage}
-                  alt="Post Image"
-                  width={400}
-                  height={400}
-                  className="overflow-auto max-h-[50vh] rounded-md object-cover w-full"
-                />
+                <>
+                  <Image
+                    src={previewImage}
+                    alt="Post Image"
+                    width={400}
+                    height={400}
+                    className="overflow-auto max-h-[50vh] rounded-md object-cover w-full"
+                  />
+                  {selectedFile && (
+                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-sm">
+                      <p className="text-green-700">
+                        📸 <strong>{selectedFile.name}</strong> (
+                        {formatFileSize(fileSize)})
+                      </p>
+                      {/* Upload Progress Bar */}
+                      {isLoading && uploadProgress > 0 && (
+                        <div className="mt-2">
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>Uploading...</span>
+                            <span>{uploadProgress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${uploadProgress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : previewVideo ? (
+                <>
+                  <VideoPlayer
+                    src={previewVideo}
+                    className="overflow-auto max-h-[50vh] rounded-md w-full"
+                    autoPlay={false}
+                    loop={false}
+                    muted={true}
+                    controls={true}
+                  />
+                  {selectedFile && (
+                    <div
+                      className={`mt-2 p-2 border rounded text-sm ${
+                        isUploadWarning
+                          ? "bg-yellow-50 border-yellow-200"
+                          : "bg-green-50 border-green-200"
+                      }`}
+                    >
+                      <p
+                        className={
+                          isUploadWarning ? "text-yellow-700" : "text-green-700"
+                        }
+                      >
+                        🎬 <strong>{selectedFile.name}</strong> (
+                        {formatFileSize(fileSize)})
+                      </p>
+                      {isUploadWarning && (
+                        <p className="text-yellow-600 text-xs mt-1">
+                          ⚠️ Large file - upload may be slow
+                        </p>
+                      )}
+                      {/* Upload Progress Bar */}
+                      {isLoading && uploadProgress > 0 && (
+                        <div className="mt-2">
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>Uploading...</span>
+                            <span>{uploadProgress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${uploadProgress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
               ) : (
                 // Show default view
                 <>
                   <DialogHeader>
                     <DialogTitle className="text-center mt-3 mb-6">
-                      Upload Photo
+                      Upload Photo or Video
                     </DialogTitle>
                   </DialogHeader>
                   <div className="flex flex-col items-center justify-center text-center space-y-4 p-4 border border-dashed border-gray-300 rounded-lg">
                     <div className="flex space-x-2 text-gray-600">
                       <ImageIcon size={40} />
+                      <VideoIcon size={40} />
                     </div>
                     <p className="text-gray-600 mt-4">
-                      Select a photo from your device
+                      Select a photo or video from your device
                     </p>
+                    <div className="text-xs text-gray-500 space-y-1">
+                      <p>📸 Images: up to {formatFileSize(MAX_IMAGE_SIZE)}</p>
+                      <p>🎬 Videos: up to {formatFileSize(MAX_VIDEO_SIZE)}</p>
+                    </div>
                     <Button
                       className=" bg-sky-600 text-white hover:bg-sky-700"
                       onClick={handleButtonClick}
                       type="button"
                     >
-                      Select Image
+                      Select Media
                     </Button>
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,video/mp4,video/avi,video/mov,video/wmv,video/webm"
                       className="hidden"
                       ref={fileInputRef}
                       onChange={handleFileChange}
@@ -214,7 +431,9 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
                 name="caption"
                 type="text"
                 placeholder={
-                  previewImage ? "Write a caption..." : "Write a message..."
+                  previewImage || previewVideo
+                    ? "Write a caption..."
+                    : "Write a message..."
                 }
                 value={formData.caption}
                 onChange={handleChange}
@@ -254,7 +473,12 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
                 className="px-4 py-6 text-lg rounded-lg hover:cursor-pointer"
                 onClick={() => {
                   setPreviewImage(null);
+                  setPreviewVideo(null);
                   setSelectedFile(null);
+                  setFileType(null);
+                  setFileSize(0);
+                  setIsUploadWarning(false);
+                  setUploadProgress(0);
                   if (fileInputRef.current) {
                     fileInputRef.current.value = "";
                   }

@@ -2,6 +2,7 @@ import { Post } from "@/types";
 import { HeartIcon, LinkIcon, MessageCircleIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import VideoPlayer from "../ui/VideoPlayer";
 import HashtagText from "./HashtagText";
 
 interface PostItemShortProps {
@@ -20,6 +21,18 @@ const PostItemShort = ({ post }: PostItemShortProps) => {
             height={300}
             className="w-full h-full object-cover aspect-square"
             priority
+          />
+        ) : post?.video ? (
+          <VideoPlayer
+            src={post.video.url}
+            poster={post.video.thumbnail}
+            className="w-full h-full aspect-square"
+            autoPlay={false}
+            loop={true}
+            muted={true}
+            controls={true}
+            aspectRatio="square"
+            autoPlayOnVisible={true}
           />
         ) : (
           <div className="h-full w-full px-6 py-10 bg-gray-200/75 flex items-center justify-center aspect-square">

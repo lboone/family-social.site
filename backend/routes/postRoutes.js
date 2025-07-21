@@ -26,7 +26,10 @@ router.post(
   "/create",
   uploadLimiter,
   isAllowedUser,
-  upload.single("postImage"),
+  upload.fields([
+    { name: "postImage", maxCount: 1 },
+    { name: "postVideo", maxCount: 1 },
+  ]),
   createPost
 );
 router.get("/all", apiLimiter, isAllowedUser, getAllPost);

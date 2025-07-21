@@ -27,6 +27,7 @@ import HashtagText from "../Form/HashtagText";
 import PageLoader from "../Form/PageLoader";
 import SpeechBubble from "../Form/SpeechBubble";
 import { Button } from "../ui/button";
+import VideoPlayer from "../ui/VideoPlayer";
 import { handleAuthRequest } from "../utils/apiRequests";
 
 interface PostViewProps {
@@ -343,7 +344,7 @@ const PostView = ({ postId, user }: PostViewProps) => {
           </div>
         )}
 
-        {/* Post Image/Content */}
+        {/* Post Image/Video/Content */}
         <div className="mt-2">
           {post.image ? (
             <Image
@@ -353,6 +354,18 @@ const PostView = ({ postId, user }: PostViewProps) => {
               height={600}
               className="w-full max-w-2xl max-h-[70vh] mx-auto rounded-lg object-cover"
               priority
+            />
+          ) : post.video ? (
+            <VideoPlayer
+              src={post.video.url}
+              poster={post.video.thumbnail}
+              className="w-full max-w-2xl max-h-[70vh] mx-auto rounded-lg"
+              autoPlay={false}
+              loop={true}
+              muted={true}
+              controls={true}
+              aspectRatio="auto"
+              autoPlayOnVisible={true}
             />
           ) : (
             <SpeechBubble>
@@ -442,7 +455,7 @@ const PostView = ({ postId, user }: PostViewProps) => {
         </div>
 
         {/* Post Caption */}
-        {post.image && (
+        {(post.image || post.video) && (
           <HashtagText text={post.caption} className="mt-2 font-medium" />
         )}
 

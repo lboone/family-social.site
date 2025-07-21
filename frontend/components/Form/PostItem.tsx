@@ -26,6 +26,7 @@ import Comment from "../Form/Comment";
 import DotButton from "../Form/DotButton";
 import HashtagText from "../Form/HashtagText";
 import SpeechBubble from "../Form/SpeechBubble";
+import VideoPlayer from "../ui/VideoPlayer";
 import { handleAuthRequest } from "../utils/apiRequests";
 
 // Utility function to format relative time
@@ -182,9 +183,45 @@ const PostItem = ({
     }
   };
 
+  const handleDownloadVideoToDevice = async () => {
+    if (!post.video || !post.video.url) return;
+
+    try {
+      // Fetch the video as a blob
+      const response = await fetch(post.video.url);
+      const blob = await response.blob();
+
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a temporary link element
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${post.video.publicId || "video"}.mp4`; // Set the filename
+
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up the temporary URL
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Video downloaded successfully!");
+    } catch (error) {
+      console.error("Error downloading video:", error);
+      toast.error("Failed to download video");
+    }
+  };
+
   const handleOpenImageInNewTab = () => {
     if (!post.image || !post.image.url) return;
     window.open(post.image.url, "_blank");
+  };
+
+  const handleOpenVideoInNewTab = () => {
+    if (!post.video || !post.video.url) return;
+    window.open(post.video.url, "_blank");
   };
   // Early return if post is invalid
   if (!post || !post._id) {
@@ -239,6 +276,21 @@ const PostItem = ({
               priority
             />
           )
+        ) : post.video ? (
+          <VideoPlayer
+            src={post.video.url}
+            poster={post.video.thumbnail}
+            className={cn("w-full max-h-[70vh] rounded-lg", imageClassName)}
+            autoPlay={false}
+            loop={true}
+            muted={true}
+            controls={true}
+            aspectRatio="auto"
+            autoPlayOnVisible={true}
+            onVideoClick={
+              showLink ? () => router.push(`/post/${post._id}`) : undefined
+            }
+          />
         ) : (
           <SpeechBubble>
             <HashtagText
@@ -274,7 +326,7 @@ const PostItem = ({
                 : ""
             }`}
           />
-          {!post.image && (
+          {!post.image && !post.video && (
             <LinkIcon
               className="cursor-pointer"
               onClick={() => {
@@ -294,6 +346,24 @@ const PostItem = ({
               <div
                 className="flex items-center space-x-1 cursor-pointer text-xs text-gray-500"
                 onClick={handleOpenImageInNewTab}
+              >
+                <ImageUpIcon className="cursor-pointer" />
+                <span>Open in new tab</span>
+              </div>
+            </div>
+          )}
+          {post.video && (
+            <div className="flex items-center space-x-4 ml-2">
+              <div
+                className="flex items-center space-x-1 cursor-pointer text-xs text-gray-500"
+                onClick={handleDownloadVideoToDevice}
+              >
+                <ImageDownIcon className="cursor-pointer" />
+                <span>Download</span>
+              </div>
+              <div
+                className="flex items-center space-x-1 cursor-pointer text-xs text-gray-500"
+                onClick={handleOpenVideoInNewTab}
               >
                 <ImageUpIcon className="cursor-pointer" />
                 <span>Open in new tab</span>
@@ -327,7 +397,7 @@ const PostItem = ({
         </span>
       </div>
       {/* {post.image && <p className="mt-2 font-medium">{post.caption}</p>} */}
-      {post.image && (
+      {(post.image || post.video) && (
         <HashtagText text={post.caption} className="mt-2 font-medium" />
       )}
       {post.user && <Comment user={post.user} post={post} />}
@@ -388,6 +458,7 @@ const areEqual = (prevProps: PostItemProps, nextProps: PostItemProps) => {
     prevProps.post._id !== nextProps.post._id ||
     prevProps.post.caption !== nextProps.post.caption ||
     prevProps.post.image?.url !== nextProps.post.image?.url ||
+    prevProps.post.video?.url !== nextProps.post.video?.url ||
     prevProps.post.likes.length !== nextProps.post.likes.length ||
     prevProps.post.comments.length !== nextProps.post.comments.length
   ) {
