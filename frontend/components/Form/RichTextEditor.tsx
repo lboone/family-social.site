@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { BoldIcon, ItalicIcon, LinkIcon, SmileIcon } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import EmojiPicker from "./EmojiPicker";
+import LinkDialog from "./LinkDialog";
 
 interface RichTextEditorProps {
   value: string;
@@ -26,8 +27,10 @@ export default function RichTextEditor({
 }: RichTextEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [selectionStart, setSelectionStart] = useState(0);
   const [selectionEnd, setSelectionEnd] = useState(0);
+  const [selectedText, setSelectedText] = useState("");
 
   // Handle text changes
   const handleChange = useCallback(
@@ -86,6 +89,13 @@ export default function RichTextEditor({
       const end = selectionEnd;
       const selectedText = value.substring(start, end);
 
+      if (formatType === "link") {
+        // Store selection info and open dialog
+        setSelectedText(selectedText);
+        setShowLinkDialog(true);
+        return;
+      }
+
       let formattedText = "";
 
       switch (formatType) {
@@ -95,26 +105,38 @@ export default function RichTextEditor({
         case "italic":
           formattedText = `*${selectedText}*`;
           break;
-        case "link":
-          let linkText = selectedText;
-          let url = "";
-
-          if (selectedText) {
-            // If text is selected, ask only for URL
-            url = prompt("Enter URL:") || "";
-            if (!url) return;
-            linkText = selectedText;
-          } else {
-            // If no text selected, ask for both link text and URL
-            linkText = prompt("Enter link text (what users will see):") || "";
-            if (!linkText) return;
-            url = prompt("Enter URL:") || "";
-            if (!url) return;
-          }
-
-          formattedText = `[${linkText}](${url})`;
-          break;
       }
+
+      const textBefore = value.substring(0, start);
+      const textAfter = value.substring(end);
+      const newText = textBefore + formattedText + textAfter;
+
+      if (newText.length <= maxLength) {
+        onChange(newText);
+
+        // Select the formatted text
+        setTimeout(() => {
+          if (textarea) {
+            const newStart = start;
+            const newEnd = start + formattedText.length;
+            textarea.setSelectionRange(newStart, newEnd);
+            textarea.focus();
+          }
+        }, 0);
+      }
+    },
+    [value, selectionStart, selectionEnd, onChange, maxLength]
+  );
+
+  // Handle link creation from dialog
+  const handleLinkCreate = useCallback(
+    (linkText: string, url: string) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const start = selectionStart;
+      const end = selectionEnd;
+      const formattedText = `[${linkText}](${url})`;
 
       const textBefore = value.substring(0, start);
       const textAfter = value.substring(end);
@@ -240,6 +262,14 @@ export default function RichTextEditor({
           {characterCount}/{maxLength}
         </div>
       </div>
+
+      {/* Link Dialog */}
+      <LinkDialog
+        open={showLinkDialog}
+        onOpenChange={setShowLinkDialog}
+        onConfirm={handleLinkCreate}
+        selectedText={selectedText}
+      />
     </div>
   );
 }
