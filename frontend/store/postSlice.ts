@@ -88,6 +88,29 @@ const postSlice = createSlice({
       updatePostInArray(state.likedPosts);
       updatePostInArray(state.followingPosts);
     },
+    removeComment: (
+      state,
+      action: PayloadAction<{ postId: string; commentId: string }>
+    ) => {
+      const { postId, commentId } = action.payload;
+
+      // Update the post in all arrays where it might exist
+      const updatePostInArray = (posts: Post[]) => {
+        const post = posts?.find((post) => post._id === postId);
+        if (post) {
+          post.comments = post.comments.filter(
+            (comment) => comment._id !== commentId
+          );
+        }
+      };
+
+      updatePostInArray(state.posts);
+      updatePostInArray(state.hashtagPosts);
+      updatePostInArray(state.userPosts);
+      updatePostInArray(state.savedPosts);
+      updatePostInArray(state.likedPosts);
+      updatePostInArray(state.followingPosts);
+    },
     appendPosts: (state, action: PayloadAction<Post[]>) => {
       const existingIds = new Set((state.posts || []).map((post) => post._id));
       const newPosts = action.payload.filter(
@@ -189,6 +212,7 @@ export const {
   deletePost,
   likeOrDislikePost,
   addComment,
+  removeComment,
   appendPosts,
   setHashtagPosts,
   appendHashtagPosts,

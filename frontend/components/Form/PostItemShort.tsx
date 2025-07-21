@@ -1,5 +1,10 @@
 import { Post } from "@/types";
-import { HeartIcon, LinkIcon, MessageCircleIcon } from "lucide-react";
+import {
+  ExternalLinkIcon,
+  HeartIcon,
+  LinkIcon,
+  MessageCircleIcon,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import VideoPlayer from "../ui/VideoPlayer";
@@ -56,7 +61,7 @@ const PostItemShort = ({ post }: PostItemShortProps) => {
             </button>
             <Link href={`/post/${post._id}`} className="cursor-pointer">
               <button className="p-2 rounded-full text-white space-x-2 flex items-center font-bold">
-                <LinkIcon className="w-7 h-7" />
+                <ExternalLinkIcon className="w-7 h-7" />
               </button>
             </Link>
           </div>

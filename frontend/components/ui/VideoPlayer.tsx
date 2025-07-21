@@ -1,7 +1,13 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { PauseIcon, PlayIcon, Volume2Icon, VolumeXIcon } from "lucide-react";
+import {
+  Maximize,
+  PauseIcon,
+  PlayIcon,
+  Volume2Icon,
+  VolumeXIcon,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface VideoPlayerProps {
@@ -14,7 +20,6 @@ interface VideoPlayerProps {
   controls?: boolean;
   aspectRatio?: "square" | "video" | "auto";
   autoPlayOnVisible?: boolean;
-  onVideoClick?: () => void;
 }
 
 export default function VideoPlayer({
@@ -27,7 +32,6 @@ export default function VideoPlayer({
   controls = true,
   aspectRatio = "auto",
   autoPlayOnVisible = true,
-  onVideoClick,
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -55,17 +59,20 @@ export default function VideoPlayer({
               console.log("Autoplay was prevented");
             });
           } else if (!visible && videoRef.current && !videoRef.current.paused) {
-            // Pause when out of view
+            // Pause when out of view - more aggressive for grid views
             videoRef.current.pause();
           }
         });
       },
-      { threshold: 0.5 }
+      {
+        threshold: aspectRatio === "square" ? 0.7 : 0.5, // Higher threshold for grid items (square aspect)
+        rootMargin: aspectRatio === "square" ? "-10px" : "0px", // Earlier pause for grid items
+      }
     );
 
     observer.observe(containerRef.current);
     return () => observer.disconnect();
-  }, [autoPlayOnVisible]);
+  }, [autoPlayOnVisible, aspectRatio]);
 
   // Update video volume when volume state changes
   useEffect(() => {
@@ -123,6 +130,20 @@ export default function VideoPlayer({
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+
+  const toggleFullscreen = async () => {
+    if (!containerRef.current) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await containerRef.current.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (error) {
+      console.log("Fullscreen failed:", error);
+    }
   };
 
   const handleVideoClick = (e: React.MouseEvent) => {
@@ -204,51 +225,6 @@ export default function VideoPlayer({
         </div>
       )}
 
-      {/* Clickable overlay for navigation - only if onVideoClick is provided */}
-      {onVideoClick && (
-        <div
-          className="absolute inset-0 z-10 cursor-pointer"
-          onClick={(e) => {
-            // Only handle clicks in areas that aren't controls
-            const rect = containerRef.current?.getBoundingClientRect();
-            if (!rect) return;
-
-            const clickY = e.clientY - rect.top;
-            const containerHeight = rect.height;
-            const controlsHeight = 80; // Approximate height of controls area
-
-            // If click is in the controls area (bottom 80px), don't navigate
-            if (clickY > containerHeight - controlsHeight) {
-              return;
-            }
-
-            // If controls are showing and click is in center area, don't navigate (play button area)
-            if (showControls || !isPlaying) {
-              const centerX = rect.width / 2;
-              const centerY = rect.height / 2;
-              const clickX = e.clientX - rect.left;
-              const clickYRelative = clickY;
-
-              // Check if click is near the play button (center area)
-              const playButtonRadius = 50;
-              const distance = Math.sqrt(
-                Math.pow(clickX - centerX, 2) +
-                  Math.pow(clickYRelative - centerY, 2)
-              );
-
-              if (distance <= playButtonRadius) {
-                return;
-              }
-            }
-
-            // Otherwise, navigate to post
-            e.preventDefault();
-            e.stopPropagation();
-            onVideoClick();
-          }}
-        />
-      )}
-
       {/* Enhanced Controls Bar */}
       {controls && (
         <div
@@ -327,9 +303,22 @@ export default function VideoPlayer({
               </div>
             </div>
 
-            {/* Right Controls - Time Display */}
-            <div className="text-xs">
-              {formatTime(currentTime)} / {formatTime(duration)}
+            {/* Right Controls - Time Display and Fullscreen */}
+            <div className="flex items-center space-x-3">
+              <div className="text-xs">
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </div>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleFullscreen();
+                }}
+                className="p-1 rounded hover:bg-white/20 transition-colors"
+                title="Fullscreen"
+              >
+                <Maximize className="w-5 h-5" />
+              </button>
             </div>
           </div>
         </div>

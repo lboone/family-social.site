@@ -24,11 +24,22 @@ const Home = () => {
     try {
       console.log("🔄 Refreshing feed data...");
 
-      // Refresh the posts feed
+      // Clear Redux store first to force a complete refresh
+      dispatch(setPosts([]));
+
+      // Refresh the posts feed with cache-busting
       const getAllPostReq = async () =>
-        await axios.get(`${API_URL_POST}/all?page=1&limit=10`, {
-          withCredentials: true,
-        });
+        await axios.get(
+          `${API_URL_POST}/all?page=1&limit=10&_t=${Date.now()}`,
+          {
+            withCredentials: true,
+            headers: {
+              "Cache-Control": "no-cache",
+              Pragma: "no-cache",
+              Expires: "0",
+            },
+          }
+        );
 
       const result = await handleAuthRequest(null, getAllPostReq);
 

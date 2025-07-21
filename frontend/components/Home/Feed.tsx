@@ -19,9 +19,14 @@ const Feed = () => {
   // Fetch function for infinite scroll
   const fetchPosts = useCallback(async (page: number) => {
     const response = await axios.get(
-      `${API_URL_POST}/all?page=${page}&limit=10`,
+      `${API_URL_POST}/all?page=${page}&limit=10&_t=${Date.now()}`, // Add timestamp to prevent caching
       {
         withCredentials: true,
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
       }
     );
 
@@ -40,26 +45,63 @@ const Feed = () => {
     isLoadingMore,
     hasMore,
     lastElementRef,
+    reset: resetInfiniteScroll,
   } = useInfiniteScroll<Post>({
     fetchFunction: fetchPosts,
-    dependencies: [],
+    dependencies: [user?._id], // Reset when user changes
   });
+
+  // Force refresh when Redux store is empty but we need data
+  useEffect(() => {
+    if (
+      user &&
+      posts.length === 0 &&
+      infiniteScrollPosts.length === 0 &&
+      !isLoading
+    ) {
+      console.log("🔄 Feed: Redux store empty, forcing data refresh...");
+      resetInfiniteScroll();
+    }
+  }, [
+    user,
+    posts.length,
+    infiniteScrollPosts.length,
+    isLoading,
+    resetInfiniteScroll,
+  ]);
 
   // Sync infinite scroll data with Redux store
   useEffect(() => {
     if (infiniteScrollPosts.length > 0) {
       if (posts.length === 0) {
-        // Initial load
+        // Initial load or refresh - always set the posts
+        console.log(
+          "🔄 Feed: Setting initial posts to Redux store",
+          infiniteScrollPosts.length
+        );
         dispatch(setPosts(infiniteScrollPosts));
-      } else {
-        // Append new posts
+      } else if (infiniteScrollPosts.length > posts.length) {
+        // Append new posts only if infinite scroll has more posts
         const newPosts = infiniteScrollPosts.slice(posts.length);
         if (newPosts.length > 0) {
+          console.log(
+            "📥 Feed: Appending new posts to Redux store",
+            newPosts.length
+          );
           dispatch(appendPosts(newPosts));
         }
       }
+    } else if (
+      posts.length > 0 &&
+      infiniteScrollPosts.length === 0 &&
+      !isLoading
+    ) {
+      // Redux has posts but infinite scroll is empty (shouldn't happen, but handle it)
+      console.log(
+        "⚠️ Feed: Redux has posts but infinite scroll is empty, keeping Redux data"
+      );
     }
-  }, [infiniteScrollPosts, posts.length, dispatch]);
+  }, [infiniteScrollPosts, posts.length, dispatch, isLoading]);
 
   return (
     <div className="mt-20 px-5 w-full md:w-[70%] md:px-0 mx-auto">

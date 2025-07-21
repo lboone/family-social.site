@@ -10,6 +10,7 @@ import { formatRelativeTime } from "@/utils/functions"; // Adjust the import pat
 import axios from "axios";
 import {
   BookmarkIcon,
+  ExternalLinkIcon,
   HeartIcon,
   ImageDownIcon,
   ImageUpIcon,
@@ -183,46 +184,11 @@ const PostItem = ({
     }
   };
 
-  const handleDownloadVideoToDevice = async () => {
-    if (!post.video || !post.video.url) return;
-
-    try {
-      // Fetch the video as a blob
-      const response = await fetch(post.video.url);
-      const blob = await response.blob();
-
-      // Create a temporary URL for the blob
-      const url = window.URL.createObjectURL(blob);
-
-      // Create a temporary link element
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${post.video.publicId || "video"}.mp4`; // Set the filename
-
-      // Append to body, click, and remove
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      // Clean up the temporary URL
-      window.URL.revokeObjectURL(url);
-
-      toast.success("Video downloaded successfully!");
-    } catch (error) {
-      console.error("Error downloading video:", error);
-      toast.error("Failed to download video");
-    }
-  };
-
   const handleOpenImageInNewTab = () => {
     if (!post.image || !post.image.url) return;
     window.open(post.image.url, "_blank");
   };
 
-  const handleOpenVideoInNewTab = () => {
-    if (!post.video || !post.video.url) return;
-    window.open(post.video.url, "_blank");
-  };
   // Early return if post is invalid
   if (!post || !post._id) {
     console.warn("PostItem: Invalid post data", { post });
@@ -287,9 +253,6 @@ const PostItem = ({
             controls={true}
             aspectRatio="auto"
             autoPlayOnVisible={true}
-            onVideoClick={
-              showLink ? () => router.push(`/post/${post._id}`) : undefined
-            }
           />
         ) : (
           <SpeechBubble>
@@ -352,21 +315,13 @@ const PostItem = ({
               </div>
             </div>
           )}
-          {post.video && (
+          {post.video && showLink && (
             <div className="flex items-center space-x-4 ml-2">
               <div
                 className="flex items-center space-x-1 cursor-pointer text-xs text-gray-500"
-                onClick={handleDownloadVideoToDevice}
+                onClick={() => router.push(`/post/${post._id}`)}
               >
-                <ImageDownIcon className="cursor-pointer" />
-                <span>Download</span>
-              </div>
-              <div
-                className="flex items-center space-x-1 cursor-pointer text-xs text-gray-500"
-                onClick={handleOpenVideoInNewTab}
-              >
-                <ImageUpIcon className="cursor-pointer" />
-                <span>Open in new tab</span>
+                <ExternalLinkIcon className="cursor-pointer" />
               </div>
             </div>
           )}
