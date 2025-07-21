@@ -1,7 +1,7 @@
 "use client";
 import useGetUser from "@/hooks/useGetUser";
 import { useLogout } from "@/utils/auth";
-import { HomeIcon, LogOutIcon, SquarePlusIcon } from "lucide-react";
+import { HashIcon, HomeIcon, LogOutIcon, SquarePlusIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -33,6 +33,9 @@ const LeftSidebar = () => {
     if (label === "Admin") {
       router.push("/admin");
     }
+    if (label === "Hashtags") {
+      router.push("/hashtags");
+    }
   };
 
   const handleLogout = async () => {
@@ -54,6 +57,10 @@ const LeftSidebar = () => {
     {
       icon: <UsersIcon />,
       label: "Users",
+    },
+    {
+      icon: <HashIcon />,
+      label: "Hashtags",
     },
     {
       icon: <SquarePlusIcon />,

@@ -17,9 +17,11 @@ import {
   MessageCircle,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
+import DynamicBreadcrumb from "../Breadcrumb/DynamicBreadcrumb";
 import DotButton from "../Form/DotButton";
 import HashtagText from "../Form/HashtagText";
 import PageLoader from "../Form/PageLoader";
@@ -319,20 +321,24 @@ const PostView = ({ postId, user }: PostViewProps) => {
   }
 
   return (
-    <div className="mt-20 px-5 w-full md:w-[70%] md:px-0 mx-auto">
+    <div className="px-5 w-full md:w-[70%] md:px-0 mx-auto">
+      <DynamicBreadcrumb className="mb-4" />
+
       <div className="mt-8 mb-8">
         {/* Post Header */}
         {post.user && (
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <UserAvatar
-                user={post.user}
-                avatarImageClassName="h-full w-full"
-              />
-              <h1 className="font-semibold text-gray-700">
-                {post.user?.username}
-              </h1>
-            </div>
+            <Link href={`/profile/${post.user._id}`}>
+              <div className="flex items-center space-x-2">
+                <UserAvatar
+                  user={post.user}
+                  avatarImageClassName="h-full w-full"
+                />
+                <h1 className="font-semibold text-gray-700">
+                  {post.user?.username}
+                </h1>
+              </div>
+            </Link>
             <DotButton post={post} user={user} />
           </div>
         )}

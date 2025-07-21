@@ -10,6 +10,7 @@ import axios from "axios";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
+import DynamicBreadcrumb from "../Breadcrumb/DynamicBreadcrumb";
 import PostItem from "../Form/PostItem";
 
 // This would be your hashtag search/feed page
@@ -136,7 +137,8 @@ export default function FeedHashtag({ hashtag }: FeedHashtagProps) {
   }
 
   return (
-    <div className="flex flex-col mt-10 md:mt-20 px-2 w-full md:w-[70%] md:px-0 mx-auto">
+    <div className="flex flex-col px-2 w-full md:w-[70%] md:px-0 mx-auto">
+      <DynamicBreadcrumb />
       <div className="mb-4">
         <h1 className="text-2xl font-bold mb-2">
           Posts for <span className="text-sky-600">#{hashtag}</span>

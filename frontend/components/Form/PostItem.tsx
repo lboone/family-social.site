@@ -196,12 +196,17 @@ const PostItem = ({
     <div key={post._id} className={cn("mt-8", postClassName)}>
       {showOwner && post.user && (
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <UserAvatar user={post.user} avatarImageClassName="h-full w-full" />
-            <h1 className="font-semibold text-gray-700">
-              {post.user?.username}
-            </h1>
-          </div>
+          <Link href={`/profile/${post.user._id}`}>
+            <div className="flex items-center space-x-2">
+              <UserAvatar
+                user={post.user}
+                avatarImageClassName="h-full w-full"
+              />
+              <h1 className="font-semibold text-gray-700">
+                {post.user?.username}
+              </h1>
+            </div>
+          </Link>
           <DotButton post={post} user={user} />
         </div>
       )}
