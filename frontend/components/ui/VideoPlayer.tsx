@@ -133,16 +133,63 @@ export default function VideoPlayer({
   };
 
   const toggleFullscreen = async () => {
-    if (!containerRef.current) return;
+    if (!videoRef.current) return;
 
     try {
-      if (!document.fullscreenElement) {
-        await containerRef.current.requestFullscreen();
+      // Check if we're on iOS Safari
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isSafari = /^((?!chrome|android).)*safari/i.test(
+        navigator.userAgent
+      );
+
+      if (isIOS) {
+        // iOS Safari specifically - use webkit fullscreen on video element
+        const video = videoRef.current as HTMLVideoElement & {
+          webkitEnterFullscreen?: () => void;
+          webkitExitFullscreen?: () => void;
+          webkitDisplayingFullscreen?: boolean;
+        };
+
+        if (video.webkitEnterFullscreen) {
+          console.log("🎬 iOS: Entering fullscreen mode");
+          video.webkitEnterFullscreen();
+        } else {
+          console.log("⚠️ iOS: webkitEnterFullscreen not available");
+          // Fallback for iOS - still try standard fullscreen
+          if (video.requestFullscreen) {
+            await video.requestFullscreen();
+          }
+        }
+      } else if (isSafari) {
+        // Desktop Safari - try both methods
+        const video = videoRef.current as HTMLVideoElement & {
+          webkitEnterFullscreen?: () => void;
+        };
+
+        if (video.webkitEnterFullscreen) {
+          video.webkitEnterFullscreen();
+        } else if (containerRef.current) {
+          await containerRef.current.requestFullscreen();
+        }
       } else {
-        await document.exitFullscreen();
+        // Other browsers - use container fullscreen
+        if (!document.fullscreenElement) {
+          if (containerRef.current && containerRef.current.requestFullscreen) {
+            await containerRef.current.requestFullscreen();
+          }
+        } else {
+          await document.exitFullscreen();
+        }
       }
     } catch (error) {
-      console.log("Fullscreen failed:", error);
+      console.log("❌ Fullscreen failed:", error);
+      // Show user-friendly message for debugging
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (isIOS) {
+        console.log(
+          "💡 iOS Tip: Make sure you're interacting with the video player"
+        );
+      }
     }
   };
 
@@ -186,6 +233,9 @@ export default function VideoPlayer({
         loop={loop}
         muted={isMuted}
         playsInline
+        webkit-playsinline="true"
+        x-webkit-airplay="allow"
+        preload="metadata"
         className="w-full h-full object-cover cursor-pointer"
         onClick={handleVideoClick}
         onPlay={() => setIsPlaying(true)}
