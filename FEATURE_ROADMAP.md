@@ -4,8 +4,8 @@
 
 - **Total Features**: 45 items
 - **Completed**: 1 ✅
-- **In Progress**: 0 🚧
-- **Not Started**: 44 ⏳
+- **In Progress**: 2 🚧
+- **Not Started**: 42 ⏳
 
 ---
 
@@ -15,14 +15,14 @@ _These features can be implemented quickly and will significantly improve user e
 
 ### Real-Time Features
 
-- [ ] **Push Notifications Setup** ⭐⭐⭐⭐⭐
+- [🚧] **Push Notifications Setup** ⭐⭐⭐⭐⭐
 
   - Set up service worker for PWA notifications
   - Basic like/comment notifications
   - Browser permission handling
   - _Impact: High | Difficulty: Easy | Time: 1-2 days_
 
-- [ ] **Real-Time Like/Comment Updates** ⭐⭐⭐⭐
+- [🚧] **Real-Time Like/Comment Updates** ⭐⭐⭐⭐
   - WebSocket or polling for live updates
   - Show new likes/comments without refresh
   - _Impact: High | Difficulty: Easy | Time: 1 day_
