@@ -197,6 +197,7 @@ const ChangeBioAndImage = () => {
               alt="Background preview"
               className="w-full h-full object-cover"
               fill
+              priority={false}
             />
           ) : (
             <div className="flex items-center justify-center h-full">

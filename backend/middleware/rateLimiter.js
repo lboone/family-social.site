@@ -66,7 +66,7 @@ const uploadLimiter = createRateLimiter(
 // General API rate limiter (less restrictive)
 const apiLimiter = createRateLimiter(
   15 * 60 * 1000, // 15 minutes
-  300, // Limit each IP to 300 requests per windowMs
+  1000, // Limit each IP to 300 requests per windowMs
   "Too many API requests, please try again later."
 );
 

@@ -40,8 +40,10 @@ exports.getProfile = catchAsync(async (req, res, next) => {
 
 exports.editProfile = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
-  const { bio, usernameColor } = req.body;
+  const { bio, usernameColor, pushNotificationSettings } = req.body;
   const profilePicture = req.file;
+
+  console.log({ pushNotificationSettings });
 
   let cloudResponse;
   if (profilePicture) {
@@ -55,6 +57,14 @@ exports.editProfile = catchAsync(async (req, res, next) => {
 
   if (bio) {
     user.bio = bio;
+  }
+  if (pushNotificationSettings) {
+    user.pushNotificationSettings = JSON.parse(pushNotificationSettings);
+
+    console.log(
+      "Push notification settings updated:",
+      user.pushNotificationSettings
+    );
   }
   if (usernameColor) {
     // Validate hex color format

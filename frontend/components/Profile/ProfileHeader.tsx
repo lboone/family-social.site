@@ -68,8 +68,6 @@ const ProfileHeader = ({ isOwnProfile, userProfile }: ProfileHeaderProps) => {
       count: userProfile?.following.length || 0,
     },
   ];
-
-  console.log("ProfileHeader userProfile:", userProfile);
   return (
     <div className="relative">
       {/* Background Image Section */}

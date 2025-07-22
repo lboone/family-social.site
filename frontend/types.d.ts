@@ -35,6 +35,15 @@ export interface User {
   resetPasswordOTP?: string;
   resetPasswordOTPExpires?: Date;
   role: "user" | "admin";
+  pushNotificationSettings: {
+    pushEnabled: boolean;
+    postType: "all" | "following" | "none";
+    likes: boolean;
+    comments: boolean;
+    follow: boolean;
+    unfollow: boolean;
+    fcmToken: string | null;
+  };
 }
 
 export interface Comment {

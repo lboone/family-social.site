@@ -23,7 +23,6 @@ const AdminIcon = () => {
         });
       const result = await handleAuthRequest(null, getAllPostReq, setIsLoading);
       if (result) {
-        console.log({ result });
         setUnauthorizedUsers(result.data.results);
       }
     };

@@ -20,17 +20,23 @@ const messaging = async () => {
 };
 
 export const fetchToken = async () => {
-  try {
-    const fcmMessaging = await messaging();
-    if (fcmMessaging) {
-      const token = await getToken(fcmMessaging, {
-        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_FCM_VAPID_KEY,
-      });
-      return token;
+  const permission = await Notification.requestPermission();
+  if (permission === "granted") {
+    try {
+      const fcmMessaging = await messaging();
+      if (fcmMessaging) {
+        const token = await getToken(fcmMessaging, {
+          vapidKey: process.env.NEXT_PUBLIC_FIREBASE_FCM_VAPID_KEY,
+        });
+        return token;
+      }
+      return null;
+    } catch (err) {
+      console.error("An error occurred while fetching the token:", err);
+      return null;
     }
-    return null;
-  } catch (err) {
-    console.error("An error occurred while fetching the token:", err);
+  } else {
+    console.log("User denied permission.");
     return null;
   }
 };

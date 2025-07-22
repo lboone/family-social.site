@@ -56,7 +56,7 @@ export default function VideoPlayer({
           if (visible && videoRef.current && videoRef.current.paused) {
             // Only auto-play if the video is paused
             videoRef.current.play().catch(() => {
-              console.log("Autoplay was prevented");
+              //console.log("Autoplay was prevented");
             });
           } else if (!visible && videoRef.current && !videoRef.current.paused) {
             // Pause when out of view - more aggressive for grid views
@@ -86,7 +86,7 @@ export default function VideoPlayer({
     if (videoRef.current) {
       if (videoRef.current.paused) {
         videoRef.current.play().catch((error) => {
-          console.log("Play failed:", error);
+          console.error("Play failed:", error);
         });
       } else {
         videoRef.current.pause();
@@ -151,10 +151,10 @@ export default function VideoPlayer({
         };
 
         if (video.webkitEnterFullscreen) {
-          console.log("🎬 iOS: Entering fullscreen mode");
+          //console.log("🎬 iOS: Entering fullscreen mode");
           video.webkitEnterFullscreen();
         } else {
-          console.log("⚠️ iOS: webkitEnterFullscreen not available");
+          //console.log("⚠️ iOS: webkitEnterFullscreen not available");
           // Fallback for iOS - still try standard fullscreen
           if (video.requestFullscreen) {
             await video.requestFullscreen();
@@ -186,9 +186,9 @@ export default function VideoPlayer({
       // Show user-friendly message for debugging
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (isIOS) {
-        console.log(
-          "💡 iOS Tip: Make sure you're interacting with the video player"
-        );
+        // console.log(
+        //   "💡 iOS Tip: Make sure you're interacting with the video player"
+        // );
       }
     }
   };

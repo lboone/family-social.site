@@ -4,6 +4,7 @@ import LeftSidebar from "../../Home/LeftSidebar";
 import SidebarMobile from "../../Home/SidebarMobile";
 import ChangeBioAndImage from "./ChangeBioAndImage";
 import ChangePassword from "./ChangePassword";
+import NotificationSettings from "./NotificationSettings";
 
 const EditProfile = () => {
   return (
@@ -15,6 +16,7 @@ const EditProfile = () => {
         <SidebarMobile />
         <div className="w-[80%] mx-auto">
           <ChangeBioAndImage />
+          <NotificationSettings />
           <ChangePassword />
         </div>
       </div>

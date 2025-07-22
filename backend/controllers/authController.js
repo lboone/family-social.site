@@ -353,8 +353,6 @@ exports.setActive = catchAsync(async (req, res, next) => {
   user.isActive = tmpIsActive;
 
   await user.save({ validateBeforeSave: false });
-
-  console.log({ user });
   if (user.isActive) {
     const htmlTemplate = loadTemplate("activeAccountTemplate.hbs", {
       title: "Account Activation",

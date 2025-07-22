@@ -1,7 +1,9 @@
 "use client";
+import useFcmToken from "@/hooks/useFcmToken";
 import useGetUser from "@/hooks/useGetUser";
 import { useMobilePullToRefresh } from "@/hooks/useMobilePullToRefresh";
-import { API_URL_POST } from "@/server";
+import { API_URL_POST, API_URL_USER } from "@/server";
+import { setAuthUser } from "@/store/authSlice";
 import { setPosts } from "@/store/postSlice";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -18,12 +20,11 @@ const Home = () => {
   const { user, isActive, isVerified } = useGetUser();
   const router = useRouter();
   const dispatch = useDispatch();
+  const { token, notificationPermissionStatus, isNewToken } = useFcmToken();
 
   // Custom refresh function that refreshes feed data instead of page reload
   const refreshFeedData = useCallback(async () => {
     try {
-      console.log("🔄 Refreshing feed data...");
-
       // Clear Redux store first to force a complete refresh
       dispatch(setPosts([]));
 
@@ -45,7 +46,6 @@ const Home = () => {
 
       if (result?.data?.data?.posts) {
         dispatch(setPosts(result.data.data.posts));
-        console.log("✅ Feed data refreshed successfully");
         toast.success("Feed updated!");
       }
     } catch (error) {
@@ -75,6 +75,54 @@ const Home = () => {
   }, [isMobileDevice, isEnabled, isRefreshing]);
 
   useEffect(() => {
+    // Only send FCM token to backend if:
+    // 1. Permission is granted
+    // 2. We have a token
+    // 3. It's a new token (first time or refreshed)
+    if (notificationPermissionStatus === "granted" && token && isNewToken) {
+      console.log("🔌 Sending new/refreshed FCM token to backend:", token);
+
+      const pns = {
+        fcmToken: token,
+        pushEnabled: true,
+        comments: false,
+        follow: false,
+        likes: false,
+        postType: "none",
+        unfollow: false,
+      };
+      const newFormData = new FormData();
+      newFormData.append("pushNotificationSettings", JSON.stringify(pns));
+
+      axios
+        .post(`${API_URL_USER}/edit-profile`, newFormData, {
+          withCredentials: true,
+        })
+        .then((response) => {
+          if (response.data.status === "success") {
+            dispatch(setAuthUser(response.data.data.user));
+            console.log("✅ FCM token successfully updated on backend");
+          }
+        })
+        .catch((error) => {
+          console.error("❌ Failed to update FCM token on backend:", error);
+        });
+    } else if (
+      notificationPermissionStatus === "granted" &&
+      token &&
+      !isNewToken
+    ) {
+      console.log(
+        "🔌 FCM token already exists and is current - skipping backend update"
+      );
+    } else if (notificationPermissionStatus === "denied") {
+      console.log("🔌 Push notifications denied by user");
+    } else if (!token) {
+      console.log("🔌 No FCM token available");
+    }
+  }, [dispatch, token, notificationPermissionStatus, isNewToken]);
+
+  useEffect(() => {
     if (!user) {
       router.push("/auth/signup");
     } else if (!isVerified) {
@@ -82,7 +130,7 @@ const Home = () => {
     } else if (!isActive) {
       router.push("/auth/not-active");
     }
-  }, [user, isActive, isVerified, router]);
+  }, [user, isActive, isVerified, router, dispatch]);
 
   if (!user || !isVerified || !isActive) {
     return null; // or return a loading spinner

@@ -108,6 +108,7 @@ const BackgroundImageEditor = ({
               fill
               className="object-contain pointer-events-none"
               draggable={false}
+              priority={false}
             />
           </div>
 

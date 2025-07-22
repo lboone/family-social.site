@@ -17,12 +17,6 @@ _These features can be implemented quickly and will significantly improve user e
 
 - [ ] **Push Notifications Setup** ⭐⭐⭐⭐⭐
 
-  - Set up service worker for PWA notifications
-  - Setup push notifications for IOS/Android users
-  - Setup push notifications for web users
-  - Browser permission handling
-  - Basic like/save/comment/follow/unfollow notifications
-  - New Posts/Following's New Posts notifications
   - Ability to opt-out of notifications for:
     - Push Notifications (Place in Profile Edit Screen)
       - Toggle based on user's answer to "Do you want to receive push notifications?"
@@ -59,6 +53,12 @@ _These features can be implemented quickly and will significantly improve user e
         - Title: {username} posted a new post
         - Body: {first 100 characters of post caption...}
         - Link: {post link}
+    - Basic like/save/comment/follow/unfollow notifications
+  - New Posts/Following's New Posts notifications
+  - Set up service worker for PWA notifications
+  - Setup push notifications for IOS/Android users
+  - Setup push notifications for web users
+  - Browser permission handling
   - _Impact: High | Difficulty: Easy | Time: 1-2 days_
 
 - [ ] **Real-Time Like/Comment Updates** ⭐⭐⭐⭐

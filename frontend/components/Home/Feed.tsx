@@ -63,7 +63,7 @@ const Feed = () => {
       infiniteScrollPosts.length === 0 &&
       !isLoading
     ) {
-      console.log("🔄 Feed: Redux store empty, forcing data refresh...");
+      // console.log("🔄 Feed: Redux store empty, forcing data refresh...");
       resetInfiniteScroll();
     }
   }, [
@@ -79,19 +79,19 @@ const Feed = () => {
     if (infiniteScrollPosts.length > 0) {
       if (posts.length === 0) {
         // Initial load or refresh - always set the posts
-        console.log(
-          "🔄 Feed: Setting initial posts to Redux store",
-          infiniteScrollPosts.length
-        );
+        // console.log(
+        //   "🔄 Feed: Setting initial posts to Redux store",
+        //   infiniteScrollPosts.length
+        // );
         dispatch(setPosts(infiniteScrollPosts));
       } else if (infiniteScrollPosts.length > posts.length) {
         // Append new posts only if infinite scroll has more posts
         const newPosts = infiniteScrollPosts.slice(posts.length);
         if (newPosts.length > 0) {
-          console.log(
-            "📥 Feed: Appending new posts to Redux store",
-            newPosts.length
-          );
+          // console.log(
+          //   "📥 Feed: Appending new posts to Redux store",
+          //   newPosts.length
+          // );
           dispatch(appendPosts(newPosts));
         }
       }
@@ -101,9 +101,9 @@ const Feed = () => {
       !isLoading
     ) {
       // Redux has posts but infinite scroll is empty (shouldn't happen, but handle it)
-      console.log(
-        "⚠️ Feed: Redux has posts but infinite scroll is empty, keeping Redux data"
-      );
+      // console.log(
+      //   "⚠️ Feed: Redux has posts but infinite scroll is empty, keeping Redux data"
+      // );
     }
   }, [infiniteScrollPosts, posts.length, dispatch, isLoading]);
 

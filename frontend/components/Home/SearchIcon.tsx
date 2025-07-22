@@ -40,7 +40,6 @@ const SearchIcon = () => {
           setIsLoading
         );
         if (result) {
-          console.log({ result });
           setHashtags(result.data.data.hashtags);
           setHashtagCount(result.data.results);
         }
@@ -66,7 +65,6 @@ const SearchIcon = () => {
               setIsLoading
             );
             if (result) {
-              console.log({ result });
               setHashtags(result.data.data.hashtags);
               setHashtagCount(result.data.results);
             }
@@ -111,9 +109,8 @@ const SearchIcon = () => {
               {hashtags.map((hashtag) => (
                 <CommandItem
                   key={hashtag.hashtag}
-                  onSelect={(currentValue) => {
+                  onSelect={() => {
                     router.push(`/hashtags/${hashtag.hashtag}`);
-                    console.log("Current value:", currentValue);
                   }}
                   className="flex items-center justify-between"
                 >

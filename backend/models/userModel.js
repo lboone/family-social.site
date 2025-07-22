@@ -117,6 +117,37 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    pushNotificationSettings: {
+      pushEnabled: {
+        type: Boolean,
+        default: false,
+      },
+      postType: {
+        type: String,
+        enum: ["all", "following", "none"],
+        default: "none",
+      },
+      likes: {
+        type: Boolean,
+        default: false,
+      },
+      comments: {
+        type: Boolean,
+        default: false,
+      },
+      follow: {
+        type: Boolean,
+        default: false,
+      },
+      unfollow: {
+        type: Boolean,
+        default: false,
+      },
+      fcmToken: {
+        type: String,
+        default: null,
+      },
+    },
   },
   {
     timestamps: true,

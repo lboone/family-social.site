@@ -41,7 +41,6 @@ const UsersIcon = () => {
           setIsLoading
         );
         if (result) {
-          console.log({ result });
           setUsers(result.data.data.users);
           setUsersCount(result.data.data.users.length);
         }
@@ -67,7 +66,6 @@ const UsersIcon = () => {
               setIsLoading
             );
             if (result) {
-              console.log({ result });
               setUsers(result.data.data.users);
               setUsersCount(result.data.data.users.length);
             }
