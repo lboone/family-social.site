@@ -1,4 +1,6 @@
 "use client";
+import { ServiceWorkerDebugWrapper } from "@/components/ServiceWorkerDebug";
+import ServiceWorkerProvider from "@/components/ServiceWorkerProvider";
 import store from "@/store/store";
 import { ReactNode, useEffect, useState } from "react";
 import { Provider } from "react-redux";
@@ -34,13 +36,21 @@ const ClientProvider = ({ children }: ClientProviderProps) => {
 
   // If persistor creation failed, render without persistence
   if (!persistor) {
-    return <Provider store={store}>{children}</Provider>;
+    return (
+      <Provider store={store}>
+        <ServiceWorkerProvider />
+        {children}
+        <ServiceWorkerDebugWrapper />
+      </Provider>
+    );
   }
 
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
+        <ServiceWorkerProvider />
         {children}
+        <ServiceWorkerDebugWrapper />
       </PersistGate>
     </Provider>
   );

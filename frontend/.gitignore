@@ -49,5 +49,6 @@ next-env.d.ts
 # todo file
 *todo.md
 *FEATURE_ROADMAP.md
+*PUSH_NOTIFICATIONS_IMPLEMENTATION_PLAN.md
 
 certificates
