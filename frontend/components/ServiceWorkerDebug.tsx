@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  clearServiceWorkerCache,
+  forceServiceWorkerUpdate,
+} from "@/utils/clearServiceWorkerCache";
 import serviceWorkerManager, {
   ServiceWorkerManager,
 } from "@/utils/serviceWorkerManager";
@@ -86,6 +90,16 @@ export default function ServiceWorkerDebug() {
     serviceWorkerManager.activateUpdate();
   };
 
+  const handleClearCache = async () => {
+    await clearServiceWorkerCache();
+    // Reload after clearing cache
+    setTimeout(() => window.location.reload(), 1000);
+  };
+
+  const handleForceUpdate = async () => {
+    await forceServiceWorkerUpdate();
+  };
+
   return (
     <div className="fixed bottom-4 right-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border max-w-sm">
       <h3 className="font-bold text-sm mb-2">Service Worker Status</h3>
@@ -142,6 +156,20 @@ export default function ServiceWorkerDebug() {
           className="w-full px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
         >
           Test Notification
+        </button>
+
+        <button
+          onClick={handleClearCache}
+          className="w-full px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+        >
+          Clear SW Cache
+        </button>
+
+        <button
+          onClick={handleForceUpdate}
+          className="w-full px-3 py-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700"
+        >
+          Force SW Update
         </button>
 
         <button

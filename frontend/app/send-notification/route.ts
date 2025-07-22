@@ -27,6 +27,24 @@ if (!admin.apps.length) {
 export async function POST(request: NextRequest) {
   const { token, title, message, link } = await request.json();
 
+  console.log("📧 Notification Request:", {
+    tokenLength: token?.length,
+    tokenStart: token?.substring(0, 20) + "...",
+    title,
+    message,
+    link,
+  });
+
+  if (!token) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "No FCM token provided",
+      },
+      { status: 400 }
+    );
+  }
+
   const payload: Message = {
     token,
     notification: {
@@ -40,11 +58,43 @@ export async function POST(request: NextRequest) {
     },
   };
 
+  console.log("🚀 Sending payload:", JSON.stringify(payload, null, 2));
+
   try {
     await admin.messaging().send(payload);
 
     return NextResponse.json({ success: true, message: "Notification sent!" });
   } catch (error) {
-    return NextResponse.json({ success: false, error });
+    console.error("Firebase messaging error:", error);
+    console.error("Error details:", {
+      name: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : "Unknown",
+      code: (error as Record<string, unknown>)?.code,
+      errorInfo: (error as Record<string, unknown>)?.errorInfo,
+    });
+
+    // Convert error to string for safe JSON serialization
+    let errorMessage = "Unknown error occurred";
+
+    if (error instanceof Error) {
+      errorMessage = error.message;
+
+      // Handle specific Firebase errors
+      if (error.message.includes("Requested entity was not found")) {
+        errorMessage =
+          "FCM token is invalid or expired. Please refresh the page and try again.";
+      } else if (error.message.includes("registration-token-not-registered")) {
+        errorMessage =
+          "FCM token is not registered. Please refresh the page and generate a new token.";
+      }
+    }
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: errorMessage,
+      },
+      { status: 500 }
+    );
   }
 }

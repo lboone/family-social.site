@@ -1,5 +1,5 @@
 "use client";
-import { ServiceWorkerDebugWrapper } from "@/components/ServiceWorkerDebug";
+import ServiceWorkerDebugToggle from "@/components/ServiceWorkerDebugToggle";
 import ServiceWorkerProvider from "@/components/ServiceWorkerProvider";
 import store from "@/store/store";
 import { ReactNode, useEffect, useState } from "react";
@@ -40,7 +40,7 @@ const ClientProvider = ({ children }: ClientProviderProps) => {
       <Provider store={store}>
         <ServiceWorkerProvider />
         {children}
-        <ServiceWorkerDebugWrapper />
+        <ServiceWorkerDebugToggle />
       </Provider>
     );
   }
@@ -50,7 +50,7 @@ const ClientProvider = ({ children }: ClientProviderProps) => {
       <PersistGate loading={null} persistor={persistor}>
         <ServiceWorkerProvider />
         {children}
-        <ServiceWorkerDebugWrapper />
+        <ServiceWorkerDebugToggle />
       </PersistGate>
     </Provider>
   );
