@@ -30,9 +30,12 @@ class ServiceWorkerManager {
     try {
       console.log("Registering service worker...");
 
-      const registration = await navigator.serviceWorker.register("/sw.js", {
-        scope: "/", // Service worker will control all pages
-      });
+      const registration = await navigator.serviceWorker.register(
+        "/firebase-messaging-sw.js",
+        {
+          scope: "/", // Service worker will control all pages
+        }
+      );
 
       this.registration = registration;
 

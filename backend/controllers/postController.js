@@ -6,6 +6,11 @@ const Post = require("../models/postModel");
 const User = require("../models/userModel");
 const Comment = require("../models/commentModel");
 const getDataUri = require("../utils/dataUri");
+const NotificationService = require("../services/notificationService");
+
+// Use the singleton notification service instance
+console.log("NotificationService module loaded");
+const notificationService = NotificationService;
 
 exports.createPost = catchAsync(async (req, res, next) => {
   const { caption } = req.body;
@@ -261,23 +266,45 @@ exports.deletePost = catchAsync(async (req, res, next) => {
 exports.likeOrUnlikePost = catchAsync(async (req, res, next) => {
   const { postId } = req.params;
   const userId = req.user._id;
+  const username = req.user.username;
+
   const post = await Post.findById(postId);
 
   if (!post) {
     return next(new AppError("Post not found", 404));
   }
+
   const isLiked = post.likes.includes(userId);
+
   if (isLiked) {
+    // Unlike the post
     await Post.findByIdAndUpdate(
       { _id: postId },
       { $pull: { likes: userId } },
       { new: true }
     );
   } else {
+    // Like the post
     await Post.findByIdAndUpdate(
       { _id: postId },
       { $addToSet: { likes: userId } }
     );
+
+    // 🔔 NEW: Send like notification (only when liking, not unliking)
+    try {
+      console.log(
+        `🔔 Attempting to send like notification for post ${postId} by ${username}`
+      );
+      const notificationResult = await notificationService.sendLikeNotification(
+        postId,
+        userId,
+        username
+      );
+      console.log(`📧 Like notification result:`, notificationResult);
+    } catch (error) {
+      // Don't fail the request if notification fails
+      console.error("❌ Failed to send like notification:", error);
+    }
   }
 
   return res.status(200).json({

@@ -77,24 +77,39 @@ Complete the remaining 30% of push notification setup to achieve full functional
 
 ##### **Like Notifications**
 
-- [ ] Update `likeOrUnlikePost` controller
+- [ ] Update `likeOrUnlikePost` controller (backend/controllers/postController.js)
 - [ ] Check if post owner has likes notifications enabled
-- [ ] Send notification: "{username} liked your post"
-- [ ] Include post preview and deep link
+- [ ] Send notification:
+  - **Title:** "{username} liked your post"
+  - **Body:** "{first 100 characters of post caption...}"
+  - **Link:** "{post link}"
 
 ##### **Comment Notifications**
 
 - [ ] Update `addComment` controller
 - [ ] Check if post owner has comment notifications enabled
-- [ ] Send notification: "{username} commented on your post"
-- [ ] Include comment preview and deep link
+- [ ] Send notification:
+  - **Title:** "{username} commented on your post"
+  - **Body:** "{first 100 characters of comment...}"
+  - **Link:** "{post link}"
 
-##### **Follow/Unfollow Notifications**
+##### **Follow Notifications**
 
 - [ ] Update `followUnfollow` controller
-- [ ] Check if user has follow/unfollow notifications enabled
-- [ ] Send notifications: "{username} followed/unfollowed you"
-- [ ] Include profile link
+- [ ] Check if user has follow notifications enabled
+- [ ] Send notification:
+  - **Title:** "{username} followed you"
+  - **Body:** "{username} followed you on {date}"
+  - **Link:** "{follower's profile link}"
+
+##### **Unfollow Notifications**
+
+- [ ] Update `followUnfollow` controller
+- [ ] Check if user has unfollow notifications enabled
+- [ ] Send notification:
+  - **Title:** "{username} unfollowed you"
+  - **Body:** "{username} unfollowed you on {date}"
+  - **Link:** "{unfollower's profile link}"
 
 ##### **Save Notifications**
 
@@ -107,8 +122,10 @@ Complete the remaining 30% of push notification setup to achieve full functional
 
 - [ ] Update post creation controller
 - [ ] Get all followers with "following" or "all" post notifications
-- [ ] Send batch notifications: "{username} posted a new post"
-- [ ] Include post preview and deep link
+- [ ] Send notification:
+  - **Title:** "{username} posted a new post"
+  - **Body:** "{first 100 characters of post caption...}"
+  - **Link:** "{post link}"
 
 #### **2.3 Content Generation**
 
