@@ -1,256 +1,499 @@
 "use client";
 
+import { API_URL_USER } from "@/server";
 import { fetchToken, messaging } from "@/services/firebase";
+import {
+  selectFcmToken,
+  selectNotificationPermissionStatus,
+  selectPushEnabled,
+  selectPushNotificationSettings,
+  selectTokenNeedsRefresh,
+  setAuthUser,
+} from "@/store/authSlice";
+import axios from "axios";
 import { onMessage, Unsubscribe } from "firebase/messaging";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
-const FCM_TOKEN_KEY = "fcm_token";
-const FCM_TOKEN_TIMESTAMP_KEY = "fcm_token_timestamp";
-const TOKEN_REFRESH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-
-// Check if stored token is still valid (not older than 24 hours)
-function isTokenValid(): boolean {
-  const timestamp = localStorage.getItem(FCM_TOKEN_TIMESTAMP_KEY);
-  if (!timestamp) return false;
-
-  const tokenAge = Date.now() - parseInt(timestamp);
-  return tokenAge < TOKEN_REFRESH_INTERVAL;
-}
-
-// Get stored token if it's still valid
-function getStoredToken(): string | null {
-  if (!isTokenValid()) {
-    localStorage.removeItem(FCM_TOKEN_KEY);
-    localStorage.removeItem(FCM_TOKEN_TIMESTAMP_KEY);
-    return null;
-  }
-  return localStorage.getItem(FCM_TOKEN_KEY);
-}
-
-// Store token with timestamp
-function storeToken(token: string): void {
-  localStorage.setItem(FCM_TOKEN_KEY, token);
-  localStorage.setItem(FCM_TOKEN_TIMESTAMP_KEY, Date.now().toString());
-}
-
-// Completely clean up FCM data and unsubscribe from messaging
-function cleanupFCMData(): void {
-  localStorage.removeItem(FCM_TOKEN_KEY);
-  localStorage.removeItem(FCM_TOKEN_TIMESTAMP_KEY);
-  console.log("FCM data cleaned up");
-}
-
-// Check current notification permission status
-function getNotificationPermissionStatus(): NotificationPermission {
-  if (!("Notification" in window)) {
-    return "denied"; // Treat unsupported as denied
-  }
-  return Notification.permission;
-}
-
-async function getNotificationPermissionAndToken() {
-  // Step 1: Check if Notifications are supported in the browser.
-  if (!("Notification" in window)) {
-    console.info("This browser does not support desktop notification");
-    return null;
-  }
-
-  // Step 2: Check if permission is already granted.
-  if (Notification.permission === "granted") {
-    // Check for stored valid token first
-    const storedToken = getStoredToken();
-    if (storedToken) {
-      console.log("Using stored FCM token");
-      return storedToken;
-    }
-
-    // If no valid stored token, fetch new one
-    console.log("Fetching new FCM token");
-    const newToken = await fetchToken();
-    if (newToken) {
-      storeToken(newToken);
-    }
-    return newToken;
-  }
-
-  // Step 3: If permission is not denied, request permission from the user.
-  if (Notification.permission !== "denied") {
-    const permission = await Notification.requestPermission();
-    if (permission === "granted") {
-      console.log("Permission granted, fetching new FCM token");
-      const newToken = await fetchToken();
-      if (newToken) {
-        storeToken(newToken);
-      }
-      return newToken;
-    }
-  }
-
-  console.log("Notification permission not granted.");
-  return null;
-}
+// ============================================================================
+// REDUX-BASED FCM TOKEN MANAGEMENT HOOK
+// ============================================================================
 
 const useFcmToken = () => {
-  const router = useRouter(); // Initialize the router for navigation.
-  const [notificationPermissionStatus, setNotificationPermissionStatus] =
-    useState<NotificationPermission | null>(null); // State to store the notification permission status.
-  const [token, setToken] = useState<string | null>(null); // State to store the FCM token.
-  const [isNewToken, setIsNewToken] = useState<boolean>(false); // Flag to indicate if this is a new/refreshed token
-  const retryLoadToken = useRef(0); // Ref to keep track of retry attempts.
-  const isLoading = useRef(false); // Ref to keep track if a token fetch is currently in progress.
+  const dispatch = useDispatch();
 
-  // Initialize previousTokenRef with stored token to avoid false positives
-  const previousTokenRef = useRef<string | null>(
-    typeof window !== "undefined" ? getStoredToken() : null
-  ); // Track previous token to detect changes
+  // Redux selectors - single source of truth
+  const pushSettings = useSelector(selectPushNotificationSettings);
+  const fcmToken = useSelector(selectFcmToken);
+  const tokenNeedsRefresh = useSelector(selectTokenNeedsRefresh);
+  const pushEnabled = useSelector(selectPushEnabled);
+  const permissionStatus = useSelector(selectNotificationPermissionStatus);
 
-  const loadToken = async () => {
-    // Step 4: Prevent multiple fetches if already fetched or in progress.
-    if (isLoading.current) return;
+  // Local component state for loading/error
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    isLoading.current = true; // Mark loading as in progress.
-    const newToken = await getNotificationPermissionAndToken(); // Fetch the token.
+  // Refs for cleanup
+  const messageUnsubscribe = useRef<Unsubscribe | null>(null);
 
-    // Step 5: Handle the case where permission is denied.
-    if (Notification.permission === "denied") {
-      setNotificationPermissionStatus("denied");
-      console.info(
-        "%cPush Notifications issue - permission denied",
-        "color: green; background: #c7c7c7; padding: 8px; font-size: 20px"
+  // ============================================================================
+  // HELPER FUNCTIONS FOR DIFFERENT FCM SCENARIOS
+  // ============================================================================
+
+  const saveNegativeNotificationSettings = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      const negativeSettings = {
+        pushEnabled: false,
+        likes: false,
+        comments: false,
+        follow: false,
+        unfollow: false,
+        postType: "none",
+        fcmToken: null,
+        tokenTimestamp: null,
+        tokenValid: false,
+        deviceInfo: null,
+        lastSyncAt: new Date().toISOString(),
+      };
+
+      const formData = new FormData();
+      formData.append(
+        "pushNotificationSettings",
+        JSON.stringify(negativeSettings)
       );
-      isLoading.current = false;
-      return;
-    }
 
-    // Step 6: Retry fetching the token if necessary. (up to 3 times)
-    // This step is typical initially as the service worker may not be ready/installed yet.
-    if (!newToken) {
-      if (retryLoadToken.current >= 3) {
-        alert("Unable to load token, refresh the browser");
-        console.info(
-          "%cPush Notifications issue - unable to load token after 3 retries",
-          "color: green; background: #c7c7c7; padding: 8px; font-size: 20px"
+      const response = await axios.post(
+        `${API_URL_USER}/edit-profile`,
+        formData,
+        {
+          withCredentials: true,
+          timeout: 10000,
+        }
+      );
+
+      if (response.data.status === "success") {
+        dispatch(setAuthUser(response.data.data.user));
+        console.log("✅ Negative notification settings saved to backend");
+      }
+    } catch (error) {
+      console.error("❌ Failed to save negative settings:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dispatch]);
+
+  const syncTokenWithBackend = useCallback(
+    async (token: string) => {
+      try {
+        console.log("🔄 Syncing FCM token with backend...");
+
+        // Get device info for tracking
+        const deviceInfo = `${navigator.userAgent.substring(0, 100)}`;
+
+        // Create push notification settings with defaults
+        const pushNotificationSettings = {
+          fcmToken: token,
+          tokenTimestamp: new Date().toISOString(),
+          tokenValid: true,
+          deviceInfo: deviceInfo,
+          lastSyncAt: new Date().toISOString(),
+          pushEnabled: true,
+          likes: true,
+          comments: true,
+          follow: true,
+          unfollow: false,
+          postType: "following",
+        };
+
+        // Sync with backend
+        const formData = new FormData();
+        formData.append(
+          "pushNotificationSettings",
+          JSON.stringify(pushNotificationSettings)
         );
-        isLoading.current = false;
+
+        const response = await axios.post(
+          `${API_URL_USER}/edit-profile`,
+          formData,
+          {
+            withCredentials: true,
+            timeout: 10000,
+          }
+        );
+
+        if (response.data.status === "success") {
+          // Update Redux store with backend response
+          dispatch(setAuthUser(response.data.data.user));
+          console.log(
+            "✅ FCM token successfully synced with backend and Redux store updated"
+          );
+          toast.success("🔔 Notifications enabled!");
+        } else {
+          throw new Error("Backend returned non-success status");
+        }
+      } catch (error) {
+        console.error("❌ Failed to sync FCM token with backend:", error);
+        setError("Failed to sync with server");
+
+        if (axios.isAxiosError(error)) {
+          if (error.response?.status === 429) {
+            toast.error("Too many requests. Please try again later.");
+          } else if (error.response && error.response.status >= 500) {
+            toast.error("Server error. Please try again later.");
+          } else {
+            toast.error("Failed to enable notifications. Please try again.");
+          }
+        } else {
+          toast.error("Network error. Please try again later.");
+        }
+      }
+    },
+    [dispatch]
+  );
+
+  const refreshFcmToken = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      console.log("🔄 Refreshing FCM token...");
+      const token = await fetchToken();
+
+      if (!token) {
+        console.error("❌ Failed to refresh FCM token");
         return;
       }
 
-      retryLoadToken.current += 1;
-      console.error("An error occurred while retrieving token. Retrying...");
-      isLoading.current = false;
-      await loadToken();
+      await syncTokenWithBackend(token);
+    } catch (error) {
+      console.error("❌ Error refreshing FCM token:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [syncTokenWithBackend]);
+
+  const initializeWithDefaults = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      // Generate FCM token since permission is already granted
+      console.log("🔄 Generating FCM token for existing user...");
+      const token = await fetchToken();
+
+      if (!token) {
+        console.error("❌ Failed to generate FCM token");
+        return;
+      }
+
+      await syncTokenWithBackend(token);
+    } catch (error) {
+      console.error("❌ Error initializing with defaults:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [syncTokenWithBackend]);
+
+  const requestPermissionAndInitialize = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      // Request notification permission
+      console.log("🔔 Requesting notification permission...");
+      const permission = await Notification.requestPermission();
+
+      if (permission === "denied") {
+        console.log("❌ User denied notification permission");
+        await saveNegativeNotificationSettings();
+        return;
+      }
+
+      if (permission === "granted") {
+        console.log("✅ User granted notification permission");
+        await initializeWithDefaults();
+        return;
+      }
+
+      // Permission is still "default" somehow - shouldn't happen but handle it
+      console.log(
+        "⚠️ Permission request returned 'default' - treating as denied"
+      );
+      await saveNegativeNotificationSettings();
+    } catch (error) {
+      console.error("❌ Error requesting permission:", error);
+      await saveNegativeNotificationSettings();
+    } finally {
+      setIsLoading(false);
+    }
+  }, [saveNegativeNotificationSettings, initializeWithDefaults]);
+
+  // ============================================================================
+  // COMPREHENSIVE FCM INITIALIZATION - HANDLES ALL SCENARIOS
+  // ============================================================================
+
+  const initializeFcm = useCallback(async () => {
+    // Check if browser supports notifications
+    if (!("Notification" in window)) {
+      console.error("❌ This browser does not support notifications");
+      setError("Browser does not support notifications");
       return;
     }
 
-    // Step 7: Check if this is a new token (different from previous or first time)
-    const isTokenNew = previousTokenRef.current !== newToken;
-    console.log("🔍 Token comparison:", {
-      previousToken: previousTokenRef.current,
-      newToken: newToken,
-      isNewToken: isTokenNew,
+    const currentPermission = Notification.permission;
+    const userHasPushSettings =
+      pushSettings !== undefined && pushSettings !== null;
+    const userPushEnabled = pushSettings?.pushEnabled || false;
+
+    console.log("🔍 FCM Scenario Analysis:", {
+      permission: currentPermission,
+      userHasPushSettings,
+      userPushEnabled,
+      hasToken: !!fcmToken,
+      tokenNeedsRefresh,
+      pushSettingsObject: pushSettings,
     });
 
-    previousTokenRef.current = newToken;
-
-    // Set the fetched token and mark as fetched.
-    setNotificationPermissionStatus(Notification.permission);
-    setToken(newToken);
-    setIsNewToken(isTokenNew);
-    isLoading.current = false;
-  };
-
-  useEffect(() => {
-    // Step 8: Initialize token loading when the component mounts.
-    if ("Notification" in window) {
-      loadToken();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const setupListener = async () => {
-      if (!token) return; // Exit if no token is available.
-
-      console.log(`onMessage registered with token ${token}`);
-      const m = await messaging();
-      if (!m) return;
-
-      // Step 9: Register a listener for incoming FCM messages.
-      const unsubscribe = onMessage(m, (payload) => {
-        if (Notification.permission !== "granted") return;
-
-        console.log("Foreground push notification received:", payload);
-        const link = payload.fcmOptions?.link || payload.data?.link;
-
-        if (link) {
-          toast.info(
-            `${payload.notification?.title}: ${payload.notification?.body}`,
-            {
-              action: {
-                label: "Visit",
-                onClick: () => {
-                  const link = payload.fcmOptions?.link || payload.data?.link;
-                  if (link) {
-                    router.push(link);
-                  }
-                },
-              },
-            }
-          );
-        } else {
-          toast.info(
-            `${payload.notification?.title}: ${payload.notification?.body}`
-          );
-        }
-
-        // --------------------------------------------
-        // Disable this if you only want toast notifications.
-        const n = new Notification(
-          payload.notification?.title || "New message",
-          {
-            body: payload.notification?.body || "This is a new message",
-            data: link ? { url: link } : undefined,
-          }
-        );
-
-        // Step 10: Handle notification click event to navigate to a link if present.
-        n.onclick = (event) => {
-          event.preventDefault();
-          const target = event.target as Notification;
-          const link = (target.data as { url?: string })?.url;
-          if (link) {
-            router.push(link);
-          } else {
-            console.log("No link found in the notification payload");
-          }
-        };
-        // --------------------------------------------
+    // Add detailed logging for permission reset scenario
+    if (currentPermission === "default") {
+      console.log("🔍 Permission is 'default' - detailed analysis:", {
+        userHasPushSettings,
+        userPushEnabled,
+        pushSettingsExists: !!pushSettings,
+        pushEnabledValue: pushSettings?.pushEnabled,
+        willTriggerScenario5: !userHasPushSettings || userPushEnabled,
+        willTriggerScenario5B: userHasPushSettings && !userPushEnabled,
       });
+    }
 
-      return unsubscribe;
+    // ========================================
+    // SCENARIO 1: Permission granted, pushEnabled false - IGNORE
+    // ========================================
+    if (
+      currentPermission === "granted" &&
+      userHasPushSettings &&
+      !userPushEnabled
+    ) {
+      console.log(
+        "✅ User has explicitly disabled push notifications. Ignoring."
+      );
+      return;
+    }
+
+    // ========================================
+    // SCENARIO 2: Permission denied, pushEnabled false - IGNORE
+    // ========================================
+    if (
+      currentPermission === "denied" &&
+      userHasPushSettings &&
+      !userPushEnabled
+    ) {
+      console.log("✅ User denied permission and disabled push. Ignoring.");
+      return;
+    }
+
+    // ========================================
+    // SCENARIO 3: Permission denied, pushEnabled true/missing - Save negative values
+    // ========================================
+    if (
+      currentPermission === "denied" &&
+      (!userHasPushSettings || userPushEnabled)
+    ) {
+      console.log(
+        "🔄 User denied permission. Saving negative values to backend."
+      );
+      await saveNegativeNotificationSettings();
+      return;
+    }
+
+    // ========================================
+    // SCENARIO 4: Permission granted, pushEnabled missing - New user, set defaults
+    // ========================================
+    if (currentPermission === "granted" && !userHasPushSettings) {
+      console.log(
+        "🔄 Existing user with granted permission but no settings. Setting defaults."
+      );
+      await initializeWithDefaults();
+      return;
+    }
+
+    // ========================================
+    // SCENARIO 5: Permission not asked, pushEnabled true/missing - New user flow
+    // ========================================
+    if (
+      currentPermission === "default" &&
+      (!userHasPushSettings || userPushEnabled)
+    ) {
+      console.log(
+        "🔄 New user or permission not asked. Starting full initialization."
+      );
+      await requestPermissionAndInitialize();
+      return;
+    }
+
+    // ========================================
+    // SCENARIO 5B: Permission reset to default, but user had settings - Re-ask permission
+    // ========================================
+    if (
+      currentPermission === "default" &&
+      userHasPushSettings &&
+      !userPushEnabled
+    ) {
+      console.log(
+        "🔄 Browser permission reset but user had settings. Re-asking permission."
+      );
+      await requestPermissionAndInitialize();
+      return;
+    }
+
+    // ========================================
+    // SCENARIO 6: Permission granted, pushEnabled true, token valid - Skip
+    // ========================================
+    if (
+      currentPermission === "granted" &&
+      userPushEnabled &&
+      fcmToken &&
+      !tokenNeedsRefresh
+    ) {
+      console.log(
+        "✅ Valid FCM token exists and user has enabled push. Skipping initialization."
+      );
+      return;
+    }
+
+    // ========================================
+    // SCENARIO 7: Permission granted, pushEnabled true, token needs refresh - Refresh
+    // ========================================
+    if (
+      currentPermission === "granted" &&
+      userPushEnabled &&
+      tokenNeedsRefresh
+    ) {
+      console.log("🔄 Token needs refresh. Refreshing FCM token.");
+      await refreshFcmToken();
+      return;
+    }
+
+    console.log("⚠️ Unhandled FCM scenario - defaulting to ignore");
+  }, [
+    pushSettings,
+    fcmToken,
+    tokenNeedsRefresh,
+    saveNegativeNotificationSettings,
+    initializeWithDefaults,
+    requestPermissionAndInitialize,
+    refreshFcmToken,
+  ]);
+
+  // ============================================================================
+  // NOTIFICATION DISABLING
+  // ============================================================================
+
+  const disableNotifications = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      // Update backend to disable notifications
+      const disabledSettings = {
+        ...pushSettings,
+        pushEnabled: false,
+        fcmToken: null,
+        tokenValid: false,
+      };
+
+      const formData = new FormData();
+      formData.append(
+        "pushNotificationSettings",
+        JSON.stringify(disabledSettings)
+      );
+
+      const response = await axios.post(
+        `${API_URL_USER}/edit-profile`,
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.status === "success") {
+        dispatch(setAuthUser(response.data.data.user));
+        console.log("✅ Notifications disabled successfully");
+        toast.success("🔕 Notifications disabled");
+      }
+    } catch (error) {
+      console.error("❌ Failed to disable notifications:", error);
+      toast.error("Failed to disable notifications");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [pushSettings, dispatch]);
+
+  // ============================================================================
+  // FOREGROUND MESSAGE HANDLING
+  // ============================================================================
+
+  useEffect(() => {
+    const setupForegroundMessaging = async () => {
+      try {
+        const fcmMessaging = await messaging();
+        if (fcmMessaging && fcmToken) {
+          messageUnsubscribe.current = onMessage(fcmMessaging, (payload) => {
+            console.log("🔔 Foreground message received:", payload);
+
+            if (payload.notification) {
+              toast.success(
+                `${payload.notification.title}\n${payload.notification.body}`,
+                {
+                  duration: 5000,
+                }
+              );
+            }
+          });
+          console.log("✅ Foreground message listener registered");
+        }
+      } catch (error) {
+        console.error("❌ Error setting up foreground messaging:", error);
+      }
     };
 
-    let unsubscribe: Unsubscribe | null = null;
+    setupForegroundMessaging();
 
-    setupListener().then((unsub) => {
-      if (unsub) {
-        unsubscribe = unsub;
+    return () => {
+      if (messageUnsubscribe.current) {
+        messageUnsubscribe.current();
+        messageUnsubscribe.current = null;
+        console.log("🔄 Foreground message listener unregistered");
       }
-    });
+    };
+  }, [fcmToken]);
 
-    // Step 11: Cleanup the listener when the component unmounts.
-    return () => unsubscribe?.();
-  }, [token, router]);
+  // ============================================================================
+  // HOOK RETURN INTERFACE
+  // ============================================================================
 
   return {
-    token,
-    notificationPermissionStatus,
-    isNewToken, // Return flag indicating if this is a new token that needs to be sent to backend
+    // Token state from Redux
+    token: fcmToken,
+    isValid: !tokenNeedsRefresh,
+    needsSync: tokenNeedsRefresh,
+
+    // Settings from Redux
+    settings: pushSettings,
+    pushEnabled,
+    permissionStatus,
+
+    // Actions
+    initializeFcm,
+    disableNotifications,
+
+    // Status
+    isLoading,
+    error,
+
+    // Legacy compatibility (for existing components)
+    notificationPermissionStatus: permissionStatus,
+    isNewToken: false, // No longer relevant in Redux approach
   };
 };
 
-// Export utility functions for external use
-export { cleanupFCMData, getNotificationPermissionStatus };
 export default useFcmToken;

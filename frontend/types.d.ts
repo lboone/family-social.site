@@ -43,7 +43,15 @@ export interface User {
     follow: boolean;
     unfollow: boolean;
     fcmToken: string | null;
+    // NEW FIELDS FOR REDUX-BASED APPROACH
+    tokenTimestamp?: string | null;
+    tokenValid?: boolean;
+    deviceInfo?: string | null;
+    lastSyncAt?: string | null;
   };
+  // Add timestamps for tracking
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Comment {

@@ -2,7 +2,6 @@
 
 import LoadingButton from "@/components/Form/LoadingButton";
 import { Switch } from "@/components/ui/switch";
-import { cleanupFCMData } from "@/hooks/useFcmToken";
 import useGetUser from "@/hooks/useGetUser";
 import { API_URL_USER } from "@/server";
 import { setAuthUser } from "@/store/authSlice";
@@ -112,12 +111,10 @@ const NotificationSettings = () => {
   ) => {
     setIsLoading(true);
     try {
-      // If push notifications are being disabled, clean up
+      // If push notifications are being disabled, handle cleanup
       if (!newSettings.pushEnabled) {
-        // Clear localStorage tokens using utility function
-        cleanupFCMData();
-
-        // Unsubscribe from Firebase messaging to stop receiving messages
+        // No localStorage cleanup needed in Redux approach
+        // Firebase cleanup is still useful
         try {
           const { messaging } = await import("@/services/firebase");
           const fcmMessaging = await messaging();
@@ -134,10 +131,22 @@ const NotificationSettings = () => {
       const formData = new FormData();
       const settingsWithToken = {
         ...newSettings,
-        // Null out FCM token when notifications are disabled, otherwise preserve it
+        // Handle FCM data based on pushEnabled state
         fcmToken: newSettings.pushEnabled
           ? user?.pushNotificationSettings?.fcmToken || null
-          : null,
+          : null, // Clear token when disabled
+        tokenTimestamp: newSettings.pushEnabled
+          ? user?.pushNotificationSettings?.tokenTimestamp || null
+          : null, // Clear timestamp when disabled
+        tokenValid: newSettings.pushEnabled
+          ? user?.pushNotificationSettings?.tokenValid || false
+          : false, // Set invalid when disabled
+        deviceInfo: newSettings.pushEnabled
+          ? user?.pushNotificationSettings?.deviceInfo || null
+          : null, // Clear device info when disabled
+        lastSyncAt: newSettings.pushEnabled
+          ? user?.pushNotificationSettings?.lastSyncAt || null
+          : null, // Clear last sync when disabled
       };
       formData.append(
         "pushNotificationSettings",
@@ -196,8 +205,8 @@ const NotificationSettings = () => {
       // Save the disabled settings to backend (this will null out the FCM token)
       await updateNotificationSettings(disabledSettings);
 
-      // Additional cleanup for complete reset
-      cleanupFCMData();
+      // No additional cleanup needed in Redux approach
+      // The backend sync above handles everything
 
       // Inform user about manual browser permission reset
       toast.success(

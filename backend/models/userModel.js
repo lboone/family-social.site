@@ -147,6 +147,23 @@ const userSchema = new mongoose.Schema(
         type: String,
         default: null,
       },
+      // NEW FIELDS FOR REDUX-BASED APPROACH
+      tokenTimestamp: {
+        type: Date,
+        default: null,
+      },
+      tokenValid: {
+        type: Boolean,
+        default: false,
+      },
+      deviceInfo: {
+        type: String,
+        default: null,
+      },
+      lastSyncAt: {
+        type: Date,
+        default: null,
+      },
     },
   },
   {
