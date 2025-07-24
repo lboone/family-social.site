@@ -111,3 +111,5 @@ docs/api/
 
 # Misc
 RATE_LIMITING.md
+
+firebase-service-account.json
