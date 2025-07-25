@@ -143,9 +143,11 @@ const Home = () => {
       </div>
 
       {/* Debug Component - Floating debugger that doesn't affect layout */}
-      <div className="fixed bottom-4 right-4 z-50 max-w-sm max-h-96 overflow-y-auto">
-        <ReduxFcmDebugger />
-      </div>
+      {process.env.NODE_ENV === "development" && (
+        <div className="fixed top-4 right-4 z-50 max-w-sm max-h-96 overflow-y-auto">
+          <ReduxFcmDebugger />
+        </div>
+      )}
     </div>
   );
 };

@@ -50,7 +50,7 @@ const ClientProvider = ({ children }: ClientProviderProps) => {
       <PersistGate loading={null} persistor={persistor}>
         <ServiceWorkerProvider />
         {children}
-        <ServiceWorkerDebugToggle />
+        {process.env.NODE_ENV === "development" && <ServiceWorkerDebugToggle />}
       </PersistGate>
     </Provider>
   );
