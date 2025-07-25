@@ -55,7 +55,7 @@ router.get("/all", adminLimiter, isAdmin, allUsers);
 router.get("/profile/:id", apiLimiter, isAllowedUser, getProfile);
 router.post(
   "/edit-profile",
-  uploadLimiter,
+  apiLimiter,
   isAllowedUser,
   upload.single("profilePicture"),
   editProfile
