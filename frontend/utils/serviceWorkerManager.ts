@@ -28,7 +28,9 @@ class ServiceWorkerManager {
     }
 
     try {
-      console.log("Registering service worker...");
+      if (process.env.NODE_ENV === "development") {
+        console.log("Registering service worker...");
+      }
 
       const registration = await navigator.serviceWorker.register(
         "/firebase-messaging-sw.js",
@@ -45,7 +47,9 @@ class ServiceWorkerManager {
       // Handle messages from service worker
       this.handleMessages();
 
-      console.log("Service Worker registered successfully:", registration);
+      if (process.env.NODE_ENV === "development") {
+        console.log("Service Worker registered successfully:", registration);
+      }
 
       return {
         registration,
@@ -71,18 +75,24 @@ class ServiceWorkerManager {
       const newWorker = registration.installing;
       if (!newWorker) return;
 
-      console.log("New service worker found, installing...");
+      if (process.env.NODE_ENV === "development") {
+        console.log("New service worker found, installing...");
+      }
 
       newWorker.addEventListener("statechange", () => {
         if (newWorker.state === "installed") {
           if (navigator.serviceWorker.controller) {
             // New update available
-            console.log("New service worker installed, update available");
+            if (process.env.NODE_ENV === "development") {
+              console.log("New service worker installed, update available");
+            }
             this.updateAvailable = true;
             this.notifyUpdateAvailable();
           } else {
             // First time installation
-            console.log("Service worker installed for the first time");
+            if (process.env.NODE_ENV === "development") {
+              console.log("Service worker installed for the first time");
+            }
           }
         }
       });
@@ -90,7 +100,9 @@ class ServiceWorkerManager {
 
     // Handle controller change (when new SW takes control)
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      console.log("Service worker controller changed, reloading page...");
+      if (process.env.NODE_ENV === "development") {
+        console.log("Service worker controller changed, reloading page...");
+      }
       window.location.reload();
     });
   }
@@ -100,7 +112,9 @@ class ServiceWorkerManager {
    */
   private handleMessages() {
     navigator.serviceWorker.addEventListener("message", (event) => {
-      console.log("Message from service worker:", event.data);
+      if (process.env.NODE_ENV === "development") {
+        console.log("Message from service worker:", event.data);
+      }
 
       // Handle navigation requests from notification clicks
       if (event.data.type === "NOTIFICATION_CLICK") {
@@ -145,7 +159,9 @@ class ServiceWorkerManager {
 
     try {
       const result = await this.registration.unregister();
-      console.log("Service worker unregistered:", result);
+      if (process.env.NODE_ENV === "development") {
+        console.log("Service worker unregistered:", result);
+      }
       this.registration = null;
       return result;
     } catch (error) {

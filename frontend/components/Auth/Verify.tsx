@@ -68,7 +68,9 @@ const Verify = () => {
 
   // Handle OTP completion (optional - auto-submit or validation)
   const handleOTPComplete = (value: string) => {
-    console.log("OTP completed:", value);
+    if (process.env.NODE_ENV === "development") {
+      console.log("OTP completed:", value);
+    }
     // Optional: Auto-submit when OTP is complete
     // if (value.length === 6) {
     //   // Trigger form submission

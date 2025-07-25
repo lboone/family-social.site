@@ -121,7 +121,9 @@ const NotificationSettings = () => {
           if (fcmMessaging) {
             // Note: We don't delete the token from Firebase servers as user might re-enable
             // The token will become invalid after some time automatically
-            console.log("FCM messaging cleanup completed");
+            if (process.env.NODE_ENV === "development") {
+              console.log("FCM messaging cleanup completed");
+            }
           }
         } catch (error) {
           console.warn("FCM cleanup failed:", error);

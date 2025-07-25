@@ -111,17 +111,21 @@ export const useMobilePullToRefresh = ({
     async (source: string = "unknown") => {
       // Prevent multiple simultaneous refreshes
       if (isRefreshing) {
-        // console.log(
-        //   `🚫 Refresh blocked - already refreshing (source: ${source})`
-        // );
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `🚫 Refresh blocked - already refreshing (source: ${source})`
+          );
+        }
         return;
       }
 
       // Check if refresh is locked (recent refresh in progress)
       if (isRefreshLocked()) {
-        // console.log(
-        //   `🚫 Refresh locked - recent refresh in progress (source: ${source})`
-        // );
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `🚫 Refresh locked - recent refresh in progress (source: ${source})`
+          );
+        }
         return;
       }
 
@@ -133,13 +137,17 @@ export const useMobilePullToRefresh = ({
         const remainingTime = Math.ceil(
           (throttleInterval - (now - lastReload)) / 1000
         );
-        // console.log(
-        //   `🚫 Refresh throttled - ${remainingTime}s remaining (source: ${source})`
-        // );
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `🚫 Refresh throttled - ${remainingTime}s remaining (source: ${source})`
+          );
+        }
         return;
       }
 
-      // console.log(`🔄 Starting refresh (source: ${source})`);
+      if (process.env.NODE_ENV === "development") {
+        console.log(`🔄 Starting refresh (source: ${source})`);
+      }
 
       try {
         setIsRefreshing(true);
@@ -149,10 +157,14 @@ export const useMobilePullToRefresh = ({
         if (onRefresh) {
           // Use custom refresh function if provided
           await onRefresh();
-          // console.log(`✅ Custom refresh completed (source: ${source})`);
+          if (process.env.NODE_ENV === "development") {
+            console.log(`✅ Custom refresh completed (source: ${source})`);
+          }
         } else {
           // Safe page reload with proper cleanup
-          // console.log(`🔄 Performing page reload (source: ${source})`);
+          if (process.env.NODE_ENV === "development") {
+            console.log(`🔄 Performing page reload (source: ${source})`);
+          }
           // Use replace instead of reload to prevent back button issues
           window.location.href = window.location.href;
         }
@@ -208,7 +220,9 @@ export const useMobilePullToRefresh = ({
         shouldPullToRefresh: () => !window.scrollY,
       });
 
-      // console.log("✅ Pull-to-refresh initialized for mobile device");
+      if (process.env.NODE_ENV === "development") {
+        console.log("✅ Pull-to-refresh initialized for mobile device");
+      }
     } catch (error) {
       console.error("Failed to initialize pull-to-refresh:", error);
     }
@@ -218,7 +232,9 @@ export const useMobilePullToRefresh = ({
         try {
           PullToRefresh.destroyAll();
           pullToRefreshInstance.current = null;
-          // console.log("🧹 Pull-to-refresh destroyed");
+          if (process.env.NODE_ENV === "development") {
+            console.log("🧹 Pull-to-refresh destroyed");
+          }
         } catch (error) {
           console.error("Error destroying pull-to-refresh:", error);
         }
@@ -240,7 +256,9 @@ export const useMobilePullToRefresh = ({
         // User came back to the tab/app - be more conservative
         visibilityTimeoutRef.current = setTimeout(() => {
           // Only refresh if user explicitly requests it via pull-to-refresh
-          // console.log("🔄 Tab became visible - pull-to-refresh available");
+          if (process.env.NODE_ENV === "development") {
+            console.log("🔄 Tab became visible - pull-to-refresh available");
+          }
         }, visibilityReloadDelay);
       }
     };
@@ -261,13 +279,17 @@ export const useMobilePullToRefresh = ({
 
     const handlePageShow = () => {
       // Page was restored from cache (back/forward navigation)
-      // console.log("🔄 Page shown from cache - pull-to-refresh available");
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔄 Page shown from cache - pull-to-refresh available");
+      }
       // Don't auto-refresh, let user manually pull to refresh
     };
 
     const handleFocus = () => {
       // Window gained focus
-      // console.log("🔄 Window focused - pull-to-refresh available");
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔄 Window focused - pull-to-refresh available");
+      }
       // Don't auto-refresh, let user manually pull to refresh
     };
 

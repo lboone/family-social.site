@@ -76,7 +76,9 @@ const useFcmToken = () => {
 
       if (response.data.status === "success") {
         dispatch(setAuthUser(response.data.data.user));
-        console.log("✅ Negative notification settings saved to backend");
+        if (process.env.NODE_ENV === "development") {
+          console.log("✅ Negative notification settings saved to backend");
+        }
       }
     } catch (error) {
       console.error("❌ Failed to save negative settings:", error);
@@ -88,7 +90,9 @@ const useFcmToken = () => {
   const syncTokenWithBackend = useCallback(
     async (token: string) => {
       try {
-        console.log("🔄 Syncing FCM token with backend...");
+        if (process.env.NODE_ENV === "development") {
+          console.log("🔄 Syncing FCM token with backend...");
+        }
 
         // Get device info for tracking
         const deviceInfo = `${navigator.userAgent.substring(0, 100)}`;
@@ -127,9 +131,11 @@ const useFcmToken = () => {
         if (response.data.status === "success") {
           // Update Redux store with backend response
           dispatch(setAuthUser(response.data.data.user));
-          console.log(
-            "✅ FCM token successfully synced with backend and Redux store updated"
-          );
+          if (process.env.NODE_ENV === "development") {
+            console.log(
+              "✅ FCM token successfully synced with backend and Redux store updated"
+            );
+          }
           toast.success("🔔 Notifications enabled!");
         } else {
           throw new Error("Backend returned non-success status");
@@ -158,7 +164,9 @@ const useFcmToken = () => {
     try {
       setIsLoading(true);
 
-      console.log("🔄 Refreshing FCM token...");
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔄 Refreshing FCM token...");
+      }
       const token = await fetchToken();
 
       if (!token) {
@@ -179,7 +187,9 @@ const useFcmToken = () => {
       setIsLoading(true);
 
       // Generate FCM token since permission is already granted
-      console.log("🔄 Generating FCM token for existing user...");
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔄 Generating FCM token for existing user...");
+      }
       const token = await fetchToken();
 
       if (!token) {
@@ -245,25 +255,29 @@ const useFcmToken = () => {
       pushSettings !== undefined && pushSettings !== null;
     const userPushEnabled = pushSettings?.pushEnabled || false;
 
-    console.log("🔍 FCM Scenario Analysis:", {
-      permission: currentPermission,
-      userHasPushSettings,
-      userPushEnabled,
-      hasToken: !!fcmToken,
-      tokenNeedsRefresh,
-      pushSettingsObject: pushSettings,
-    });
+    if (process.env.NODE_ENV === "development") {
+      console.log("🔍 FCM Scenario Analysis:", {
+        permission: currentPermission,
+        userHasPushSettings,
+        userPushEnabled,
+        hasToken: !!fcmToken,
+        tokenNeedsRefresh,
+        pushSettingsObject: pushSettings,
+      });
+    }
 
     // Add detailed logging for permission reset scenario
     if (currentPermission === "default") {
-      console.log("🔍 Permission is 'default' - detailed analysis:", {
-        userHasPushSettings,
-        userPushEnabled,
-        pushSettingsExists: !!pushSettings,
-        pushEnabledValue: pushSettings?.pushEnabled,
-        willTriggerScenario5: !userHasPushSettings || userPushEnabled,
-        willTriggerScenario5B: userHasPushSettings && !userPushEnabled,
-      });
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔍 Permission is 'default' - detailed analysis:", {
+          userHasPushSettings,
+          userPushEnabled,
+          pushSettingsExists: !!pushSettings,
+          pushEnabledValue: pushSettings?.pushEnabled,
+          willTriggerScenario5: !userHasPushSettings || userPushEnabled,
+          willTriggerScenario5B: userHasPushSettings && !userPushEnabled,
+        });
+      }
     }
 
     // ========================================
@@ -274,9 +288,11 @@ const useFcmToken = () => {
       userHasPushSettings &&
       !userPushEnabled
     ) {
-      console.log(
-        "✅ User has explicitly disabled push notifications. Ignoring."
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          "✅ User has explicitly disabled push notifications. Ignoring."
+        );
+      }
       return;
     }
 
@@ -288,7 +304,9 @@ const useFcmToken = () => {
       userHasPushSettings &&
       !userPushEnabled
     ) {
-      console.log("✅ User denied permission and disabled push. Ignoring.");
+      if (process.env.NODE_ENV === "development") {
+        console.log("✅ User denied permission and disabled push. Ignoring.");
+      }
       return;
     }
 
@@ -299,9 +317,11 @@ const useFcmToken = () => {
       currentPermission === "denied" &&
       (!userHasPushSettings || userPushEnabled)
     ) {
-      console.log(
-        "🔄 User denied permission. Saving negative values to backend."
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          "🔄 User denied permission. Saving negative values to backend."
+        );
+      }
       await saveNegativeNotificationSettings();
       return;
     }
@@ -310,9 +330,11 @@ const useFcmToken = () => {
     // SCENARIO 4: Permission granted, pushEnabled missing - New user, set defaults
     // ========================================
     if (currentPermission === "granted" && !userHasPushSettings) {
-      console.log(
-        "🔄 Existing user with granted permission but no settings. Setting defaults."
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          "🔄 Existing user with granted permission but no settings. Setting defaults."
+        );
+      }
       await initializeWithDefaults();
       return;
     }
@@ -324,9 +346,11 @@ const useFcmToken = () => {
       currentPermission === "default" &&
       (!userHasPushSettings || userPushEnabled)
     ) {
-      console.log(
-        "🔄 New user or permission not asked. Starting full initialization."
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          "🔄 New user or permission not asked. Starting full initialization."
+        );
+      }
       await requestPermissionAndInitialize();
       return;
     }
@@ -339,9 +363,11 @@ const useFcmToken = () => {
       userHasPushSettings &&
       !userPushEnabled
     ) {
-      console.log(
-        "🔄 Browser permission reset but user had settings. Re-asking permission."
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          "🔄 Browser permission reset but user had settings. Re-asking permission."
+        );
+      }
       await requestPermissionAndInitialize();
       return;
     }
@@ -355,9 +381,11 @@ const useFcmToken = () => {
       fcmToken &&
       !tokenNeedsRefresh
     ) {
-      console.log(
-        "✅ Valid FCM token exists and user has enabled push. Skipping initialization."
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          "✅ Valid FCM token exists and user has enabled push. Skipping initialization."
+        );
+      }
       return;
     }
 
@@ -369,7 +397,9 @@ const useFcmToken = () => {
       userPushEnabled &&
       tokenNeedsRefresh
     ) {
-      console.log("🔄 Token needs refresh. Refreshing FCM token.");
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔄 Token needs refresh. Refreshing FCM token.");
+      }
       await refreshFcmToken();
       return;
     }
@@ -417,7 +447,9 @@ const useFcmToken = () => {
 
       if (response.data.status === "success") {
         dispatch(setAuthUser(response.data.data.user));
-        console.log("✅ Notifications disabled successfully");
+        if (process.env.NODE_ENV === "development") {
+          console.log("✅ Notifications disabled successfully");
+        }
         toast.success("🔕 Notifications disabled");
       }
     } catch (error) {
@@ -438,7 +470,9 @@ const useFcmToken = () => {
         const fcmMessaging = await messaging();
         if (fcmMessaging && fcmToken) {
           messageUnsubscribe.current = onMessage(fcmMessaging, (payload) => {
-            console.log("🔔 Foreground message received:", payload);
+            if (process.env.NODE_ENV === "development") {
+              console.log("🔔 Foreground message received:", payload);
+            }
 
             if (payload.notification) {
               toast.success(
@@ -449,7 +483,9 @@ const useFcmToken = () => {
               );
             }
           });
-          console.log("✅ Foreground message listener registered");
+          if (process.env.NODE_ENV === "development") {
+            console.log("✅ Foreground message listener registered");
+          }
         }
       } catch (error) {
         console.error("❌ Error setting up foreground messaging:", error);
@@ -462,7 +498,9 @@ const useFcmToken = () => {
       if (messageUnsubscribe.current) {
         messageUnsubscribe.current();
         messageUnsubscribe.current = null;
-        console.log("🔄 Foreground message listener unregistered");
+        if (process.env.NODE_ENV === "development") {
+          console.log("🔄 Foreground message listener unregistered");
+        }
       }
     };
   }, [fcmToken]);

@@ -26,14 +26,15 @@ if (!admin.apps.length) {
 
 export async function POST(request: NextRequest) {
   const { token, title, message, link } = await request.json();
-
-  console.log("📧 Notification Request:", {
-    tokenLength: token?.length,
-    tokenStart: token?.substring(0, 20) + "...",
-    title,
-    message,
-    link,
-  });
+  if (process.env.NODE_ENV === "development") {
+    console.log("📧 Notification Request:", {
+      tokenLength: token?.length,
+      tokenStart: token?.substring(0, 20) + "...",
+      title,
+      message,
+      link,
+    });
+  }
 
   if (!token) {
     return NextResponse.json(
@@ -57,8 +58,9 @@ export async function POST(request: NextRequest) {
       },
     },
   };
-
-  console.log("🚀 Sending payload:", JSON.stringify(payload, null, 2));
+  if (process.env.NODE_ENV === "development") {
+    console.log("🚀 Sending payload:", JSON.stringify(payload, null, 2));
+  }
 
   try {
     await admin.messaging().send(payload);

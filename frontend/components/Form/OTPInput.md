@@ -135,7 +135,9 @@ function VerifyComponent() {
   const options = {
     validate: validateForm,
     onSuccess: (result) => {
-      console.log("OTP verified successfully:", result);
+      if (process.env.NODE_ENV === "development") {
+        console.log("OTP verified successfully:", result);
+      }
     },
   };
 

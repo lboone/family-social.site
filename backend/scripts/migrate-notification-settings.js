@@ -11,8 +11,9 @@ const User = require("../models/userModel");
 
 const migrateNotificationSettings = async () => {
   try {
-    console.log("Starting notification settings migration...");
-
+    if (process.env.NODE_ENV === "development") {
+      console.log("Starting notification settings migration...");
+    }
     // Update all users with old enum values
     const updateOperations = [
       // Update "allposts" to "all"
@@ -45,8 +46,10 @@ const migrateNotificationSettings = async () => {
     // Execute the bulk operations
     const results = await User.bulkWrite(updateOperations);
 
-    console.log("Migration completed successfully!");
-    console.log("Results:", results);
+    if (process.env.NODE_ENV === "development") {
+      console.log("Migration completed successfully!");
+      console.log("Results:", results);
+    }
 
     // Verify the migration
     const remainingOldValues = await User.countDocuments({
@@ -55,7 +58,9 @@ const migrateNotificationSettings = async () => {
       },
     });
 
-    console.log(`Remaining documents with old values: ${remainingOldValues}`);
+    if (process.env.NODE_ENV === "development") {
+      console.log(`Remaining documents with old values: ${remainingOldValues}`);
+    }
 
     if (remainingOldValues === 0) {
       console.log("✅ Migration successful - all old values updated!");

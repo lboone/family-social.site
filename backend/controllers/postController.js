@@ -9,7 +9,6 @@ const getDataUri = require("../utils/dataUri");
 const NotificationService = require("../services/notificationService");
 
 // Use the singleton notification service instance
-console.log("NotificationService module loaded");
 const notificationService = NotificationService;
 
 exports.createPost = catchAsync(async (req, res, next) => {
@@ -292,15 +291,19 @@ exports.likeOrUnlikePost = catchAsync(async (req, res, next) => {
 
     // 🔔 NEW: Send like notification (only when liking, not unliking)
     try {
-      console.log(
-        `🔔 Attempting to send like notification for post ${postId} by ${username}`
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `🔔 Attempting to send like notification for post ${postId} by ${username}`
+        );
+      }
       const notificationResult = await notificationService.sendLikeNotification(
         postId,
         userId,
         username
       );
-      console.log(`📧 Like notification result:`, notificationResult);
+      if (process.env.NODE_ENV === "development") {
+        console.log(`📧 Like notification result:`, notificationResult);
+      }
     } catch (error) {
       // Don't fail the request if notification fails
       console.error("❌ Failed to send like notification:", error);

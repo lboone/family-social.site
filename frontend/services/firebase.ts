@@ -27,23 +27,29 @@ export const fetchToken = async (): Promise<string | null> => {
   try {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
-      console.log("� Notification permission denied");
+      if (process.env.NODE_ENV === "development") {
+        console.log("� Notification permission denied");
+      }
       return null;
     }
 
     const fcmMessaging = await messaging();
     if (!fcmMessaging) {
-      console.log("❌ FCM messaging not supported");
+      if (process.env.NODE_ENV === "development") {
+        console.log("❌ FCM messaging not supported");
+      }
       return null;
     }
 
     // Make sure service worker is ready
     if ("serviceWorker" in navigator) {
       const registration = await navigator.serviceWorker.ready;
-      console.log(
-        "🔧 Service worker ready for FCM token generation:",
-        registration.scope
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          "🔧 Service worker ready for FCM token generation:",
+          registration.scope
+        );
+      }
     }
 
     const token = await getToken(fcmMessaging, {
@@ -51,11 +57,17 @@ export const fetchToken = async (): Promise<string | null> => {
     });
 
     if (token) {
-      console.log("🆕 Fresh FCM token generated:", token);
+      if (process.env.NODE_ENV === "development") {
+        console.log("🆕 Fresh FCM token generated:", token);
+      }
       // Do NOT store token in localStorage; Redux and backend will handle persistence
       return token;
     } else {
-      console.log("❌ No FCM token generated - check VAPID key configuration");
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          "❌ No FCM token generated - check VAPID key configuration"
+        );
+      }
       return null;
     }
   } catch (error) {

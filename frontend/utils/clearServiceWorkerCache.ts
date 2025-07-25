@@ -9,31 +9,45 @@ export const clearServiceWorkerCache = async (): Promise<void> => {
       // Get all registrations
       const registrations = await navigator.serviceWorker.getRegistrations();
 
-      console.log(`Found ${registrations.length} service worker registrations`);
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `Found ${registrations.length} service worker registrations`
+        );
+      }
 
       // Unregister all service workers
       for (const registration of registrations) {
-        console.log("Unregistering service worker:", registration.scope);
+        if (process.env.NODE_ENV === "development") {
+          console.log("Unregistering service worker:", registration.scope);
+        }
         await registration.unregister();
       }
 
       // Clear caches
       if ("caches" in window) {
         const cacheNames = await caches.keys();
-        console.log(`Found ${cacheNames.length} caches to clear`);
+        if (process.env.NODE_ENV === "development") {
+          console.log(`Found ${cacheNames.length} caches to clear`);
+        }
 
         for (const cacheName of cacheNames) {
-          console.log("Deleting cache:", cacheName);
+          if (process.env.NODE_ENV === "development") {
+            console.log("Deleting cache:", cacheName);
+          }
           await caches.delete(cacheName);
         }
       }
 
-      console.log("✅ Service worker cache cleared successfully");
-      console.log(
-        "🔄 Please refresh the page to re-register the service worker"
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log("✅ Service worker cache cleared successfully");
+        console.log(
+          "🔄 Please refresh the page to re-register the service worker"
+        );
+      }
     } else {
-      console.log("Service Workers not supported");
+      if (process.env.NODE_ENV === "development") {
+        console.log("Service Workers not supported");
+      }
     }
   } catch (error) {
     console.error("Error clearing service worker cache:", error);
@@ -45,11 +59,17 @@ export const forceServiceWorkerUpdate = async (): Promise<void> => {
     if ("serviceWorker" in navigator) {
       const registration = await navigator.serviceWorker.getRegistration();
       if (registration) {
-        console.log("Forcing service worker update...");
+        if (process.env.NODE_ENV === "development") {
+          console.log("Forcing service worker update...");
+        }
         await registration.update();
-        console.log("✅ Service worker update forced");
+        if (process.env.NODE_ENV === "development") {
+          console.log("✅ Service worker update forced");
+        }
       } else {
-        console.log("No service worker registration found");
+        if (process.env.NODE_ENV === "development") {
+          console.log("No service worker registration found");
+        }
       }
     }
   } catch (error) {

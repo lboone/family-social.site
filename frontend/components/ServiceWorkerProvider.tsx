@@ -21,7 +21,9 @@ export default function ServiceWorkerProvider() {
         if (!mounted) return;
 
         if (result.isSupported && result.registration) {
-          console.log("✅ Service Worker registered successfully");
+          if (process.env.NODE_ENV === "development") {
+            console.log("✅ Service Worker registered successfully");
+          }
 
           // Optional: Show user that PWA features are available
           if (result.registration.active) {

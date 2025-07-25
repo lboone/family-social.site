@@ -27,8 +27,9 @@ export const LoginExample = () => {
     if (data.email === "error@test.com") {
       throw new Error("Invalid credentials");
     }
-
-    console.log("Login successful:", data);
+    if (process.env.NODE_ENV === "development") {
+      console.log("Login successful:", data);
+    }
   };
 
   // Validation function
@@ -135,7 +136,9 @@ export const ContactFormExample = () => {
   const onSubmit = async (data: ContactFormData) => {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Message sent:", data);
+    if (process.env.NODE_ENV === "development") {
+      console.log("Message sent:", data);
+    }
   };
 
   const validateForm = (data: ContactFormData) => {
@@ -256,7 +259,9 @@ export const RegistrationExample = () => {
       throw new Error("Username 'admin' is not available");
     }
 
-    console.log("User registered:", data);
+    if (process.env.NODE_ENV === "development") {
+      console.log("User registered:", data);
+    }
   };
 
   const validateForm = (data: RegistrationFormData) => {

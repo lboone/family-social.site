@@ -72,13 +72,15 @@ const Home = () => {
 
   // Log pull-to-refresh status for debugging
   useEffect(() => {
-    console.log("🔄 Pull-to-refresh status:", {
-      isMobileDevice,
-      isEnabled,
-      isRefreshing,
-      userAgent: navigator.userAgent,
-      isPWA: window.matchMedia("(display-mode: standalone)").matches,
-    });
+    if (process.env.NODE_ENV === "development") {
+      console.log("🔄 Pull-to-refresh status:", {
+        isMobileDevice,
+        isEnabled,
+        isRefreshing,
+        userAgent: navigator.userAgent,
+        isPWA: window.matchMedia("(display-mode: standalone)").matches,
+      });
+    }
   }, [isMobileDevice, isEnabled, isRefreshing]);
 
   // ============================================================================
@@ -88,19 +90,25 @@ const Home = () => {
   useEffect(() => {
     // Simple: only initialize if store says we need to
     if (needsSync) {
-      console.log("� Redux indicates FCM token needs initialization");
+      if (process.env.NODE_ENV === "development") {
+        console.log("� Redux indicates FCM token needs initialization");
+      }
       initializeFcm();
     } else {
-      console.log(
-        "✅ Redux indicates FCM token is valid, skipping initialization"
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          "✅ Redux indicates FCM token is valid, skipping initialization"
+        );
+      }
     }
   }, [needsSync, initializeFcm]);
 
   // Show FCM loading state and errors in console for debugging
   useEffect(() => {
     if (fcmLoading) {
-      console.log("� FCM initialization in progress...");
+      if (process.env.NODE_ENV === "development") {
+        console.log("� FCM initialization in progress...");
+      }
     }
     if (fcmError) {
       console.error("❌ FCM initialization error:", fcmError);

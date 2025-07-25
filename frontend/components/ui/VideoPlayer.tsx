@@ -182,7 +182,7 @@ export default function VideoPlayer({
         }
       }
     } catch (error) {
-      console.log("❌ Fullscreen failed:", error);
+      console.error("❌ Fullscreen failed:", error);
       // Show user-friendly message for debugging
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (isIOS) {

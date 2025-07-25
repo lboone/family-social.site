@@ -28,7 +28,9 @@ const messaging = firebase.messaging();
 
 // Handle background messages when app is not in focus
 messaging.onBackgroundMessage((payload) => {
-  console.log("[Service Worker] Received background message:", payload);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[Service Worker] Received background message:", payload);
+  }
 
   // Extract notification data
   const notificationTitle = payload.notification?.title || "Family Social";
@@ -71,7 +73,9 @@ messaging.onBackgroundMessage((payload) => {
 
 // Handle notification clicks
 self.addEventListener("notificationclick", (event) => {
-  console.log("[Service Worker] Notification clicked:", event);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[Service Worker] Notification clicked:", event);
+  }
 
   const notification = event.notification;
   const action = event.action;
@@ -142,7 +146,9 @@ self.addEventListener("notificationclick", (event) => {
 
 // Handle push events (alternative to onBackgroundMessage)
 self.addEventListener("push", (event) => {
-  console.log("[Service Worker] Push received:", event);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[Service Worker] Push received:", event);
+  }
 
   let data;
   try {
@@ -173,7 +179,9 @@ self.addEventListener("push", (event) => {
 
 // Handle service worker installation
 self.addEventListener("install", (event) => {
-  console.log("[Service Worker] Installing...");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[Service Worker] Installing...");
+  }
 
   // Force waiting service worker to become active
   event.waitUntil(self.skipWaiting());
@@ -181,7 +189,9 @@ self.addEventListener("install", (event) => {
 
 // Handle service worker activation
 self.addEventListener("activate", (event) => {
-  console.log("[Service Worker] Activating...");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[Service Worker] Activating...");
+  }
 
   // Claim all clients immediately
   event.waitUntil(self.clients.claim());
@@ -189,7 +199,9 @@ self.addEventListener("activate", (event) => {
 
 // Handle messages from the main app
 self.addEventListener("message", (event) => {
-  console.log("[Service Worker] Message received:", event.data);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[Service Worker] Message received:", event.data);
+  }
 
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
@@ -198,7 +210,12 @@ self.addEventListener("message", (event) => {
 
 // Optional: Handle notification close events
 self.addEventListener("notificationclose", (event) => {
-  console.log("[Service Worker] Notification closed:", event.notification.data);
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "[Service Worker] Notification closed:",
+      event.notification.data
+    );
+  }
 
   // Track notification dismissals for analytics
   // You could send this data to your analytics service

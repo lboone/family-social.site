@@ -8,7 +8,6 @@ dotenv.config({ path: "./config.env" });
 
 class NotificationService {
   constructor() {
-    console.log("NotificationService constructor called");
     this.initialized = false;
     this.initializeFirebase();
   }
@@ -17,18 +16,18 @@ class NotificationService {
    * Initialize Firebase Admin SDK
    */
   initializeFirebase() {
-    console.log("Initialize Firebase Admin SDK");
     try {
       // Check if Firebase is already initialized
-      console.log("Admin Apps Length:", admin.apps.length);
       if (admin.apps.length === 0) {
         // Load service account from file if path is provided
         const fs = require("fs");
         if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY_PATH) {
-          console.log(
-            "Loading FIREBASE_SERVICE_ACCOUNT_KEY_PATH:",
-            process.env.FIREBASE_SERVICE_ACCOUNT_KEY_PATH
-          );
+          if (process.env.NODE_ENV === "development") {
+            console.log(
+              "Loading FIREBASE_SERVICE_ACCOUNT_KEY_PATH:",
+              process.env.FIREBASE_SERVICE_ACCOUNT_KEY_PATH
+            );
+          }
           const serviceAccount = JSON.parse(
             fs.readFileSync(
               process.env.FIREBASE_SERVICE_ACCOUNT_KEY_PATH,
@@ -232,17 +231,13 @@ class NotificationService {
     };
 
     try {
-      console.log({
-        Admin: admin,
-        Messaging: admin.messaging(),
-        Message: message,
-      });
       const response = await admin.messaging().send(message);
-      console.log("Notification sent successfully:", response);
+      if (process.env.NODE_ENV === "development") {
+        console.log("Notification sent successfully:", response);
+      }
       return { success: true, messageId: response };
     } catch (error) {
       console.error("Error sending notification:", error);
-
       // Handle invalid FCM tokens
       if (
         error.code === "messaging/invalid-registration-token" ||
@@ -312,9 +307,11 @@ class NotificationService {
 
     try {
       const response = await admin.messaging().sendMulticast(message);
-      console.log(
-        `Batch notification sent. Success: ${response.successCount}, Failure: ${response.failureCount}`
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `Batch notification sent. Success: ${response.successCount}, Failure: ${response.failureCount}`
+        );
+      }
 
       // Handle failed tokens
       const invalidTokens = [];
@@ -355,50 +352,69 @@ class NotificationService {
    */
   async sendLikeNotification(postId, likerId, likerUsername) {
     try {
-      console.log(
-        `📍 Starting sendLikeNotification for post ${postId} by ${likerUsername}`
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `📍 Starting sendLikeNotification for post ${postId} by ${likerUsername}`
+        );
+      }
 
       // Get the post and populate owner
       const post = await Post.findById(postId).populate("user");
 
       if (!post) {
-        console.log(`❌ Post ${postId} not found`);
+        if (process.env.NODE_ENV === "development") {
+          console.log(`❌ Post ${postId} not found`);
+        }
         return { success: false, error: "Post not found" };
       }
 
-      console.log(`📍 User : ${post.user}`);
+      if (process.env.NODE_ENV === "development") {
+        console.log(`📍 User : ${post.user}`);
+      }
       const postOwner = post.user;
-      console.log(
-        `📍 Post owner Token: ${postOwner.pushNotificationSettings?.fcmToken}`
-      );
-      console.log(`📍 Post owner: ${postOwner.username}`);
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `📍 Post owner Token: ${postOwner.pushNotificationSettings?.fcmToken}`
+        );
+        console.log(`📍 Post owner: ${postOwner.username}`);
+      }
 
       // Don't send notification if user liked their own post
       if (postOwner._id.toString() === likerId.toString()) {
-        console.log(`⏭️ Skipping self-notification for ${postOwner.username}`);
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `⏭️ Skipping self-notification for ${postOwner.username}`
+          );
+        }
         return { success: false, error: "Self-notification skipped" };
       }
 
       // Check if post owner has like notifications enabled
       if (!this.isNotificationEnabled(postOwner, "likes")) {
-        console.log(`⏭️ Like notifications disabled for ${postOwner.username}`);
-        console.log(`User settings:`, {
-          pushEnabled: postOwner.pushNotificationSettings?.pushEnabled,
-          likes: postOwner.pushNotificationSettings?.likes,
-        });
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `⏭️ Like notifications disabled for ${postOwner.username}`
+          );
+          console.log(`User settings:`, {
+            pushEnabled: postOwner.pushNotificationSettings?.pushEnabled,
+            likes: postOwner.pushNotificationSettings?.likes,
+          });
+        }
         return { success: false, error: "Notifications disabled" };
       }
 
       // Check if post owner has a valid FCM token
       if (!postOwner.pushNotificationSettings?.fcmToken) {
-        console.log(`⏭️ No FCM token for ${postOwner.username}`);
+        if (process.env.NODE_ENV === "development") {
+          console.log(`⏭️ No FCM token for ${postOwner.username}`);
+        }
         return { success: false, error: "No FCM token" };
       }
-
-      console.log(
-        `🔔 Sending notification to ${postOwner.username} with token: ${postOwner.pushNotificationSettings.fcmToken}`
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `🔔 Sending notification to ${postOwner.username} with token: ${postOwner.pushNotificationSettings.fcmToken}`
+        );
+      }
 
       const notificationContent = this.generateNotificationContent("like", {
         username: likerUsername,
@@ -414,7 +430,9 @@ class NotificationService {
 
       // If token is invalid, clean it up
       if (result.invalidToken) {
-        console.log(`🧹 Cleaning up invalid token for ${postOwner.username}`);
+        if (process.env.NODE_ENV === "development") {
+          console.log(`🧹 Cleaning up invalid token for ${postOwner.username}`);
+        }
         await User.findByIdAndUpdate(postOwner._id, {
           $unset: { "pushNotificationSettings.fcmToken": 1 },
         });
@@ -628,10 +646,11 @@ class NotificationService {
       if (result.invalidTokens && result.invalidTokens.length > 0) {
         await this.cleanupInvalidTokens(result.invalidTokens);
       }
-
-      console.log(
-        `New post notifications sent: ${result.successCount} success, ${result.failureCount} failed`
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `New post notifications sent: ${result.successCount} success, ${result.failureCount} failed`
+        );
+      }
     } catch (error) {
       console.error("Error sending new post notifications:", error);
     }
@@ -647,7 +666,9 @@ class NotificationService {
         { "pushNotificationSettings.fcmToken": { $in: invalidTokens } },
         { $unset: { "pushNotificationSettings.fcmToken": 1 } }
       );
-      console.log(`Cleaned up ${invalidTokens.length} invalid FCM tokens`);
+      if (process.env.NODE_ENV === "development") {
+        console.log(`🧹 Cleaned up ${invalidTokens.length} invalid FCM tokens`);
+      }
     } catch (error) {
       console.error("Error cleaning up invalid tokens:", error);
     }
