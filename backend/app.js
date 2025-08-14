@@ -9,6 +9,7 @@ const path = require("path");
 const AppError = require("./utils/appError");
 const userRouter = require("./routes/userRoutes");
 const postRouter = require("./routes/postRoutes");
+const webPushRouter = require("./routes/webPushRoutes");
 
 const app = express();
 
@@ -35,6 +36,11 @@ if (process.env.NODE_ENV === "development") {
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
+// Test route
+app.get("/health", (req, res) => {
+  res.json({ status: "success", message: "Server is running" });
+});
+
 // app.use(
 //   mongoSanitize({
 //     replaceWith: "_",
@@ -46,6 +52,9 @@ app.use(`${process.env.API_ROUTE}/users`, userRouter);
 
 // Routes for posts
 app.use(`${process.env.API_ROUTE}/posts`, postRouter);
+
+// Routes for web push notifications
+app.use(`${process.env.API_ROUTE}/webpush`, webPushRouter);
 
 // 404 handler - must be defined AFTER all other routes
 app.use((req, res, next) => {

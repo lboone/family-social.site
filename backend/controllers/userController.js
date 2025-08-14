@@ -4,6 +4,7 @@ const catchAsync = require("../utils/catchAsync");
 const getDataUri = require("../utils/dataUri");
 const { uploadToCloudinary } = require("../utils/cloudinary");
 const mongoose = require("mongoose");
+const notificationService = require("../services/notificationService");
 
 exports.getProfile = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -109,6 +110,7 @@ exports.suggestedUser = catchAsync(async (req, res, next) => {
 
 exports.followUnfollow = catchAsync(async (req, res, next) => {
   const loginUserId = req.user.id;
+  const loginUsername = req.user.username;
   const targetUserId = req.params.id;
   if (loginUserId.toString() === targetUserId.toString()) {
     return next(new AppError("You cannot follow/unfollow yourself", 400));
@@ -119,6 +121,7 @@ exports.followUnfollow = catchAsync(async (req, res, next) => {
   }
   const isFollowing = targetUser.followers.includes(loginUserId);
   if (isFollowing) {
+    // UNFOLLOWING
     await Promise.all([
       User.updateOne(
         { _id: loginUserId },
@@ -129,7 +132,29 @@ exports.followUnfollow = catchAsync(async (req, res, next) => {
         { $pull: { followers: loginUserId } }
       ),
     ]);
+
+    // 🔔 NEW: Send unfollow notification
+    try {
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `🔔 Attempting to send unfollow notification from ${loginUsername} to ${targetUser.username}`
+        );
+      }
+      const notificationResult =
+        await notificationService.sendUnfollowNotification(
+          targetUserId,
+          loginUserId,
+          loginUsername
+        );
+      if (process.env.NODE_ENV === "development") {
+        console.log(`📧 Unfollow notification result:`, notificationResult);
+      }
+    } catch (error) {
+      // Don't fail the request if notification fails
+      console.error("❌ Failed to send unfollow notification:", error);
+    }
   } else {
+    // FOLLOWING
     await Promise.all([
       User.updateOne(
         { _id: loginUserId },
@@ -140,6 +165,27 @@ exports.followUnfollow = catchAsync(async (req, res, next) => {
         { $addToSet: { followers: loginUserId } }
       ),
     ]);
+
+    // 🔔 NEW: Send follow notification
+    try {
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `🔔 Attempting to send follow notification from ${loginUsername} to ${targetUser.username}`
+        );
+      }
+      const notificationResult =
+        await notificationService.sendFollowNotification(
+          targetUserId,
+          loginUserId,
+          loginUsername
+        );
+      if (process.env.NODE_ENV === "development") {
+        console.log(`📧 Follow notification result:`, notificationResult);
+      }
+    } catch (error) {
+      // Don't fail the request if notification fails
+      console.error("❌ Failed to send follow notification:", error);
+    }
   }
 
   const updatedLoggedInUser = await User.findById(loginUserId).select(

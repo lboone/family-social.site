@@ -87,7 +87,33 @@ class NotificationService {
     }
 
     if (postType === "following") {
-      return recipient.following.includes(poster._id);
+      // Safety check: ensure following array exists
+      if (!recipient.following || !Array.isArray(recipient.following)) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(`⚠️ No following array for user ${recipient.username}`);
+        }
+        return false;
+      }
+
+      // Check if the poster is in the recipient's following list
+      // Handle both populated objects and ObjectIds
+      const isFollowing = recipient.following.some((followedUser) => {
+        const followedId = followedUser._id || followedUser;
+        return followedId.toString() === poster._id.toString();
+      });
+
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `🔍 ${recipient.username} following check for ${poster.username}: ${isFollowing}`
+        );
+        console.log(
+          `🔍 Following list: ${recipient.following
+            .map((f) => f.username || f)
+            .join(", ")}`
+        );
+      }
+
+      return isFollowing;
     }
 
     return false;
@@ -127,7 +153,7 @@ class NotificationService {
 
       case "unfollow":
         title = "Follower Update";
-        body = `${username} unfollowed you`;
+        body = `${username} stopped following you`;
         clickAction = `/profile/${username}`;
         break;
 
@@ -155,15 +181,28 @@ class NotificationService {
         clickAction = "/";
     }
 
-    return {
+    const content = {
       title,
       body,
       data: {
         clickAction,
         type,
+        timestamp: Date.now(),
         ...data,
       },
     };
+
+    // Add debugging log to see what content is being generated
+    if (process.env.NODE_ENV === "development") {
+      console.log(`📝 Generated notification content for ${type}:`, {
+        title: content.title,
+        body: content.body,
+        type: content.data.type,
+        username: data.username,
+      });
+    }
+
+    return content;
   }
 
   /**
@@ -306,39 +345,139 @@ class NotificationService {
     };
 
     try {
-      const response = await admin.messaging().sendMulticast(message);
+      // Use individual send calls instead of sendMulticast for compatibility
+      const promises = validTokens.map(async (token) => {
+        try {
+          const singleMessage = {
+            token: token,
+            notification: message.notification,
+            data: message.data,
+            webpush: message.webpush,
+          };
+          const response = await admin.messaging().send(singleMessage);
+          return { success: true, messageId: response, token };
+        } catch (error) {
+          return { success: false, error: error.message, token };
+        }
+      });
+
+      const results = await Promise.all(promises);
+
+      let successCount = 0;
+      let failureCount = 0;
+      const invalidTokens = [];
+
+      results.forEach((result) => {
+        if (result.success) {
+          successCount++;
+        } else {
+          failureCount++;
+          // Check if it's an invalid token error
+          if (
+            result.error.includes("invalid-registration-token") ||
+            result.error.includes("registration-token-not-registered")
+          ) {
+            invalidTokens.push(result.token);
+          }
+          if (process.env.NODE_ENV === "development") {
+            console.error(`Failed to send to token:`, result.error);
+          }
+        }
+      });
+
       if (process.env.NODE_ENV === "development") {
         console.log(
-          `Batch notification sent. Success: ${response.successCount}, Failure: ${response.failureCount}`
+          `Batch notification sent. Success: ${successCount}, Failure: ${failureCount}`
         );
-      }
-
-      // Handle failed tokens
-      const invalidTokens = [];
-      if (response.failureCount > 0) {
-        response.responses.forEach((resp, idx) => {
-          if (!resp.success) {
-            const error = resp.error;
-            if (
-              error.code === "messaging/invalid-registration-token" ||
-              error.code === "messaging/registration-token-not-registered"
-            ) {
-              invalidTokens.push(validTokens[idx]);
-            }
-            console.error(`Failed to send to token ${idx}:`, error);
-          }
-        });
       }
 
       return {
         success: true,
-        successCount: response.successCount,
-        failureCount: response.failureCount,
+        successCount,
+        failureCount,
         invalidTokens,
-        results: response.responses,
+        results,
       };
     } catch (error) {
       console.error("Error sending batch notifications:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Send unified notification (FCM + Web Push)
+   * Attempts FCM first, falls back to Web Push if needed
+   * @param {Object} user - User object with notification settings
+   * @param {Object} notificationContent - Notification content
+   * @param {string} notificationType - Type of notification
+   * @returns {Promise<Object>} - Result of notification sending
+   */
+  async sendUnifiedNotification(user, notificationContent, notificationType) {
+    try {
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `🔄 Sending unified notification of type: ${notificationType} to user: ${user.username}`
+        );
+      }
+
+      let result = { success: false };
+
+      // Try FCM first if token is available
+      if (user.pushNotificationSettings?.fcmToken) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(`📱 Attempting FCM notification for ${user.username}`);
+        }
+
+        result = await this.sendSingleNotification(
+          user.pushNotificationSettings.fcmToken,
+          notificationContent
+        );
+
+        // If FCM failed due to invalid token, clean it up
+        if (!result.success && result.invalidToken) {
+          await User.findByIdAndUpdate(user._id, {
+            $unset: { "pushNotificationSettings.fcmToken": 1 },
+          });
+          if (process.env.NODE_ENV === "development") {
+            console.log(`🧹 Cleaned up invalid FCM token for ${user.username}`);
+          }
+        }
+      }
+
+      // Try Web Push if FCM failed or unavailable
+      if (
+        !result.success &&
+        user.pushNotificationSettings?.webPushSubscription?.endpoint
+      ) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `🌐 Attempting Web Push notification for ${user.username}`
+          );
+        }
+
+        // TODO: Implement Web Push sending
+        // For now, we'll just log that we would send via Web Push
+        console.log(`📧 Would send Web Push notification to ${user.username}`);
+        result = {
+          success: true,
+          method: "webpush",
+          message: "Web Push notification would be sent (not implemented yet)",
+        };
+      }
+
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `📊 Unified notification result for ${user.username}:`,
+          result
+        );
+      }
+
+      return result;
+    } catch (error) {
+      console.error(
+        `❌ Error in sendUnifiedNotification for ${user.username}:`,
+        error
+      );
       return { success: false, error: error.message };
     }
   }
@@ -461,19 +600,58 @@ class NotificationService {
     commentText
   ) {
     try {
-      const post = await Post.findById(postId).populate(
-        "user",
-        "pushNotificationSettings username"
-      );
-      if (!post) return;
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `📍 Starting sendCommentNotification for post ${postId} by ${commenterUsername}`
+        );
+      }
+
+      const post = await Post.findById(postId).populate("user");
+      if (!post) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(`❌ Post ${postId} not found`);
+        }
+        return { success: false, error: "Post not found" };
+      }
 
       const postOwner = post.user;
 
       // Don't send notification if user commented on their own post
-      if (postOwner._id.toString() === commenterId.toString()) return;
+      if (postOwner._id.toString() === commenterId.toString()) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `⏭️ Skipping self-notification for ${postOwner.username}`
+          );
+        }
+        return { success: false, error: "Self-notification skipped" };
+      }
 
-      if (!this.isNotificationEnabled(postOwner, "comments")) return;
-      if (!postOwner.pushNotificationSettings?.fcmToken) return;
+      // Check if post owner has comment notifications enabled
+      if (!this.isNotificationEnabled(postOwner, "comments")) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `⏭️ Comment notifications disabled for ${postOwner.username}`
+          );
+        }
+        return { success: false, error: "Notifications disabled" };
+      }
+
+      // Check if post owner has push notifications enabled
+      if (
+        !postOwner.pushNotificationSettings?.fcmToken &&
+        !postOwner.pushNotificationSettings?.webPushSubscription?.endpoint
+      ) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `⏭️ No notification methods available for ${postOwner.username}`
+          );
+        }
+        return { success: false, error: "No notification methods available" };
+      }
+
+      if (process.env.NODE_ENV === "development") {
+        console.log(`🔔 Sending comment notification to ${postOwner.username}`);
+      }
 
       const notificationContent = this.generateNotificationContent("comment", {
         username: commenterUsername,
@@ -484,12 +662,16 @@ class NotificationService {
         commenterId: commenterId,
       });
 
-      await this.sendSingleNotification(
-        postOwner.pushNotificationSettings.fcmToken,
-        notificationContent
+      const result = await this.sendUnifiedNotification(
+        postOwner,
+        notificationContent,
+        "comment"
       );
+
+      return result;
     } catch (error) {
-      console.error("Error sending comment notification:", error);
+      console.error("❌ Error in sendCommentNotification:", error);
+      return { success: false, error: error.message };
     }
   }
 
@@ -501,11 +683,48 @@ class NotificationService {
    */
   async sendFollowNotification(followedUserId, followerId, followerUsername) {
     try {
-      const followedUser = await User.findById(followedUserId);
-      if (!followedUser) return;
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `📍 Starting sendFollowNotification from ${followerUsername} to ${followedUserId}`
+        );
+      }
 
-      if (!this.isNotificationEnabled(followedUser, "follow")) return;
-      if (!followedUser.pushNotificationSettings?.fcmToken) return;
+      const followedUser = await User.findById(followedUserId);
+      if (!followedUser) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(`❌ User ${followedUserId} not found`);
+        }
+        return { success: false, error: "User not found" };
+      }
+
+      // Check if user has follow notifications enabled
+      if (!this.isNotificationEnabled(followedUser, "follow")) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `⏭️ Follow notifications disabled for ${followedUser.username}`
+          );
+        }
+        return { success: false, error: "Notifications disabled" };
+      }
+
+      // Check if user has push notifications enabled
+      if (
+        !followedUser.pushNotificationSettings?.fcmToken &&
+        !followedUser.pushNotificationSettings?.webPushSubscription?.endpoint
+      ) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `⏭️ No notification methods available for ${followedUser.username}`
+          );
+        }
+        return { success: false, error: "No notification methods available" };
+      }
+
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `🔔 Sending follow notification to ${followedUser.username}`
+        );
+      }
 
       const notificationContent = this.generateNotificationContent("follow", {
         username: followerUsername,
@@ -513,12 +732,16 @@ class NotificationService {
         followedUserId: followedUserId,
       });
 
-      await this.sendSingleNotification(
-        followedUser.pushNotificationSettings.fcmToken,
-        notificationContent
+      const result = await this.sendUnifiedNotification(
+        followedUser,
+        notificationContent,
+        "follow"
       );
+
+      return result;
     } catch (error) {
-      console.error("Error sending follow notification:", error);
+      console.error("❌ Error in sendFollowNotification:", error);
+      return { success: false, error: error.message };
     }
   }
 
@@ -534,11 +757,48 @@ class NotificationService {
     unfollowerUsername
   ) {
     try {
-      const unfollowedUser = await User.findById(unfollowedUserId);
-      if (!unfollowedUser) return;
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `📍 Starting sendUnfollowNotification from ${unfollowerUsername} to ${unfollowedUserId}`
+        );
+      }
 
-      if (!this.isNotificationEnabled(unfollowedUser, "unfollow")) return;
-      if (!unfollowedUser.pushNotificationSettings?.fcmToken) return;
+      const unfollowedUser = await User.findById(unfollowedUserId);
+      if (!unfollowedUser) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(`❌ User ${unfollowedUserId} not found`);
+        }
+        return { success: false, error: "User not found" };
+      }
+
+      // Check if user has unfollow notifications enabled
+      if (!this.isNotificationEnabled(unfollowedUser, "unfollow")) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `⏭️ Unfollow notifications disabled for ${unfollowedUser.username}`
+          );
+        }
+        return { success: false, error: "Notifications disabled" };
+      }
+
+      // Check if user has push notifications enabled
+      if (
+        !unfollowedUser.pushNotificationSettings?.fcmToken &&
+        !unfollowedUser.pushNotificationSettings?.webPushSubscription?.endpoint
+      ) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `⏭️ No notification methods available for ${unfollowedUser.username}`
+          );
+        }
+        return { success: false, error: "No notification methods available" };
+      }
+
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `🔔 Sending unfollow notification to ${unfollowedUser.username}`
+        );
+      }
 
       const notificationContent = this.generateNotificationContent("unfollow", {
         username: unfollowerUsername,
@@ -546,12 +806,16 @@ class NotificationService {
         unfollowedUserId: unfollowedUserId,
       });
 
-      await this.sendSingleNotification(
-        unfollowedUser.pushNotificationSettings.fcmToken,
-        notificationContent
+      const result = await this.sendUnifiedNotification(
+        unfollowedUser,
+        notificationContent,
+        "unfollow"
       );
+
+      return result;
     } catch (error) {
-      console.error("Error sending unfollow notification:", error);
+      console.error("❌ Error in sendUnfollowNotification:", error);
+      return { success: false, error: error.message };
     }
   }
 
@@ -609,26 +873,88 @@ class NotificationService {
     postCaption
   ) {
     try {
-      // Get the poster with their followers
-      const poster = await User.findById(posterId).populate(
-        "followers",
-        "pushNotificationSettings username"
-      );
-      if (!poster || !poster.followers.length) return;
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `📍 Starting sendNewPostNotifications for post ${postId} by ${posterUsername}`
+        );
+      }
 
-      // Filter followers who should receive notifications
-      const eligibleFollowers = poster.followers.filter((follower) =>
-        this.shouldReceivePostNotification(follower, poster)
-      );
+      // Find all users who might want to receive post notifications
+      // We need to check users who either:
+      // 1. Have "all" posts setting enabled, OR
+      // 2. Have "following" posts setting and follow this poster
+      const potentialRecipients = await User.find({
+        "pushNotificationSettings.pushEnabled": true,
+        "pushNotificationSettings.postType": { $in: ["all", "following"] },
+        $or: [
+          { "pushNotificationSettings.fcmToken": { $exists: true } },
+          {
+            "pushNotificationSettings.webPushSubscription.endpoint": {
+              $exists: true,
+            },
+          },
+        ],
+      }).populate("following");
 
-      if (eligibleFollowers.length === 0) return;
+      if (!potentialRecipients || potentialRecipients.length === 0) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(`⏭️ No users with post notifications enabled`);
+        }
+        return {
+          success: true,
+          message: "No users with post notifications enabled",
+        };
+      }
 
-      // Get FCM tokens
-      const fcmTokens = eligibleFollowers
-        .map((follower) => follower.pushNotificationSettings?.fcmToken)
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `🔍 Found ${potentialRecipients.length} potential recipients`
+        );
+      }
+
+      // Get the poster for filtering
+      const poster = await User.findById(posterId);
+      if (!poster) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(`❌ Poster ${posterId} not found`);
+        }
+        return { success: false, error: "Poster not found" };
+      }
+
+      // Filter recipients who should actually receive this notification
+      const eligibleRecipients = potentialRecipients.filter((recipient) => {
+        // Don't send to the poster themselves
+        if (recipient._id.toString() === posterId.toString()) {
+          return false;
+        }
+
+        return this.shouldReceivePostNotification(recipient, poster);
+      });
+
+      if (eligibleRecipients.length === 0) {
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `⏭️ No eligible recipients for post notifications from ${posterUsername}`
+          );
+        }
+        return { success: true, message: "No eligible recipients" };
+      }
+
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `🔔 Sending new post notifications to ${eligibleRecipients.length} recipients`
+        );
+        console.log(
+          `📋 Recipients: ${eligibleRecipients
+            .map((r) => r.username)
+            .join(", ")}`
+        );
+      }
+
+      // Get FCM tokens from eligible recipients
+      const fcmTokens = eligibleRecipients
+        .map((recipient) => recipient.pushNotificationSettings?.fcmToken)
         .filter((token) => token);
-
-      if (fcmTokens.length === 0) return;
 
       const notificationContent = this.generateNotificationContent("new_post", {
         username: posterUsername,
@@ -637,22 +963,39 @@ class NotificationService {
         posterId: posterId,
       });
 
-      const result = await this.sendBatchNotifications(
-        fcmTokens,
-        notificationContent
-      );
+      let result = { success: false, successCount: 0, failureCount: 0 };
 
-      // Handle invalid tokens by cleaning them up
-      if (result.invalidTokens && result.invalidTokens.length > 0) {
-        await this.cleanupInvalidTokens(result.invalidTokens);
+      // Send FCM notifications in batch if we have tokens
+      if (fcmTokens.length > 0) {
+        result = await this.sendBatchNotifications(
+          fcmTokens,
+          notificationContent
+        );
+
+        // Handle invalid tokens by cleaning them up
+        if (result.invalidTokens && result.invalidTokens.length > 0) {
+          await this.cleanupInvalidTokens(result.invalidTokens);
+        }
       }
+
+      // TODO: In the future, we could also send individual Web Push notifications here
+      // for recipients who only have Web Push subscriptions
+
       if (process.env.NODE_ENV === "development") {
         console.log(
-          `New post notifications sent: ${result.successCount} success, ${result.failureCount} failed`
+          `📧 New post notifications sent: ${result.successCount} success, ${result.failureCount} failed`
         );
       }
+
+      return {
+        success: true,
+        successCount: result.successCount || 0,
+        failureCount: result.failureCount || 0,
+        totalEligible: eligibleRecipients.length,
+      };
     } catch (error) {
-      console.error("Error sending new post notifications:", error);
+      console.error("❌ Error in sendNewPostNotifications:", error);
+      return { success: false, error: error.message };
     }
   }
 
