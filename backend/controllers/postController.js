@@ -73,6 +73,28 @@ exports.createPost = catchAsync(async (req, res, next) => {
     select: "username email bio profilePicture",
   });
 
+  // 🔔 NEW: Send new post notifications to followers
+  try {
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        `🔔 Attempting to send new post notifications for post ${post._id} by ${user.username}`
+      );
+    }
+    const notificationResult =
+      await notificationService.sendNewPostNotifications(
+        post._id,
+        userId,
+        user.username,
+        caption
+      );
+    if (process.env.NODE_ENV === "development") {
+      console.log(`📧 New post notification result:`, notificationResult);
+    }
+  } catch (error) {
+    // Don't fail the request if notification fails
+    console.error("❌ Failed to send new post notifications:", error);
+  }
+
   return res.status(201).json({
     status: "success",
     message: "Post created successfully",
@@ -322,6 +344,7 @@ exports.likeOrUnlikePost = catchAsync(async (req, res, next) => {
 exports.addComment = catchAsync(async (req, res, next) => {
   const { postId } = req.params;
   const userId = req.user._id;
+  const username = req.user.username;
   const { text } = req.body;
   const post = await Post.findById(postId);
   if (!post) {
@@ -343,6 +366,30 @@ exports.addComment = catchAsync(async (req, res, next) => {
     path: "user",
     select: "username profilePicture bio",
   });
+
+  // 🔔 NEW: Send comment notification
+  try {
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        `🔔 Attempting to send comment notification for post ${postId} by ${username}`
+      );
+    }
+    const notificationResult =
+      await notificationService.sendCommentNotification(
+        postId,
+        comment._id,
+        userId,
+        username,
+        text
+      );
+    if (process.env.NODE_ENV === "development") {
+      console.log(`📧 Comment notification result:`, notificationResult);
+    }
+  } catch (error) {
+    // Don't fail the request if notification fails
+    console.error("❌ Failed to send comment notification:", error);
+  }
+
   return res.status(201).json({
     status: "success",
     message: "Comment added successfully",
